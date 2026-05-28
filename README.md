@@ -23,6 +23,7 @@ Based on the score, the platform automatically logs, blocks, sends alerts, or de
 🔐 Multi-client SaaS — each client manages their own websites, API keys, and threat history
 
 
+
 🏗️ Architecture
 Incoming HTTP Request
         │
@@ -44,6 +45,8 @@ Incoming HTTP Request
           ▼
    PostgreSQL + Redis         ←→      React Dashboard (WebSocket)
 Score Formula: combined_score = min(100, rule_score + (ml_score × 30))
+
+
 
 🛠️ Tech Stack
 LayerTechnologyBackend APIFastAPI (Python 3.11)ML Modelsscikit-learn — Isolation Forest + Random ForestDatabasePostgreSQL 15Cache / Rate LimitingRedis 7Frontend DashboardReact 18 + Chart.jsHoneypot TemplatesJinja2AuthenticationPyJWT (HS256) + bcryptGeolocationip-api.com (cached in Redis)NotificationsSMTP email alertsSDKPython (pip-installable)DeploymentDocker + Docker Compose + Caddy (TLS)Training DatasetCSIC 2010 HTTP Dataset (~100K+ samples after augmentation)Attack SimulationKali Linux + DVWA
