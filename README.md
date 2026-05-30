@@ -3,6 +3,7 @@
 An AI-powered, real-time web application security platform that detects, blocks, and traps attackers — built as a B.Tech Major Project at UCER Prayagraj (AKTU), 2026.
 
 
+
 🚀 What It Does
 AI Cyber Guardian acts as an intelligent security layer that sits in front of any web application. Every incoming HTTP request passes through a two-stage detection pipeline:
 
