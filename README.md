@@ -144,3 +144,4 @@ Stage 1 ingress filter latency: < 1 ms
 
 ⚠️ Ethical Use
 This project is built for defensive purposes only. All attack simulations were performed in an isolated, authorised lab environment using DVWA. This tool must only be deployed to protect websites you own or have explicit permission to protect. Misuse of any component of this system is strictly prohibited.
+
