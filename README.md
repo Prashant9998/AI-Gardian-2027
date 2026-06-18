@@ -9,7 +9,6 @@ Stage 2 — AI Decision Engine: Combines a rule-based engine (6 attack rules) wi
 
 Based on the score, the platform automatically logs, blocks, sends alerts, or deploys a honeypot — returning a convincing fake admin panel to trap the attacker while silently recording everything they do.
 
-
 ✨ Key Features
 
 🔍 Real-time threat detection — SQLi, XSS, brute force, path traversal, and scanner detection
