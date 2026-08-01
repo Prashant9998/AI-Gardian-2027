@@ -1,0 +1,14 @@
+{
+  "R1_weight": 8.0,
+  "R2_weight": 7.0,
+  "R3_weight": 6.0,
+  "R4_weight": 5.0,
+  "R5_weight": 4.0,
+  "R6_weight": 2.0,
+  "R4_window_seconds": 120,
+  "R4_attempt_threshold": 20,
+  "R6_max_query_len": 2048,
+  "threshold_medium": 5.0,
+  "threshold_high": 10.0,
+  "threshold_critical": 15.0
+}
