@@ -1,0 +1,153 @@
+flowchart TD
+    %% Define Styles
+    classDef client fill:#f9f9f9,stroke:#333,stroke-width:2px;
+    classDef customer fill:#e1f5fe,stroke:#0288d1,stroke-width:2px;
+    classDef guardian fill:#e8f5e9,stroke:#388e3c,stroke-width:2px;
+    classDef ml fill:#fff3e0,stroke:#f57c00,stroke-width:2px;
+    classDef action fill:#ffebee,stroke:#d32f2f,stroke-width:2px;
+    classDef data fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px;
+    classDef external fill:#eceff1,stroke:#607d8b,stroke-width:2px;
+    classDef admin fill:#fce4ec,stroke:#c2185b,stroke-width:2px;
+
+    %% Client and Edges
+    subgraph Internet ["Public Internet"]
+        direction TB
+        LegitUser((Legitimate Users)):::client
+        Attacker((Threat Actor)):::client
+    end
+
+    subgraph CustomerEnv ["Customer Environment (Data Plane)"]
+        direction TB
+        WAF["Existing WAF / CDN"]:::customer
+        AppEdge["Web App Edge / API Gateway"]:::customer
+        SDK["Guardian SDK / REST Client"]:::customer
+        Backend["Backend Services / DB"]:::customer
+        
+        LegitUser & Attacker --> WAF --> AppEdge
+        AppEdge -->|Extract Metadata| SDK
+    end
+
+    %% Management Plane
+    subgraph ManagementPlane ["Identity & Management Plane"]
+        direction TB
+        IdP["Customer IdP SAML/OIDC"]:::external
+        SSO["SSO & SCIM 2.0"]:::admin
+        RBAC["RBAC / ABAC Engine"]:::admin
+        KeyMgr["API Key & Quota Manager"]:::admin
+        AdminConsole["Customer Dashboard"]:::admin
+        
+        IdP -.-> SSO --> RBAC
+        AdminConsole --> RBAC
+        KeyMgr --> RBAC
+    end
+
+    %% API Gateway
+    API_GW["Control Plane API Gateway TLS 1.3"]:::guardian
+    SDK -->|Async Metadata over TLS| API_GW
+    API_GW --> KeyMgr
+
+    %% Core Processing
+    subgraph GuardianControlPlane ["Guardian Control Plane (Decision Plane)"]
+        direction TB
+        
+        %% Stage 1
+        subgraph Stage1 ["Stage 1: Distributed Ingress Filter"]
+            direction TB
+            subgraph RateLimits ["Rate Limiting Redis"]
+                RL1["Short Burst gt 100 req/s"]:::guardian
+                RL2["Sustained Burst gt 500 req/s"]:::guardian
+                RL3["Login Brute Force"]:::guardian
+            end
+            AllowBlock["Tenant Allow/Block CIDRs"]:::guardian
+            ThreatFeed["Global Threat Intel Blocklist"]:::guardian
+            Scanners["Scanner Signatures sqlmap, nikto"]:::guardian
+            
+            RateLimits --> AllowBlock --> ThreatFeed --> Scanners
+        end
+        
+        API_GW --> Stage1
+        Scanners -- "If Hard Match" --> DecisionEngine
+        Scanners -- "Pass" --> Stage2
+
+        %% Stage 2
+        subgraph Stage2 ["Stage 2: Deep Analysis"]
+            direction TB
+            FeatureExtract["Feature Extractor Length, Entropy, Chars"]:::guardian
+            
+            subgraph RulesEngine ["Deterministic Rule Engine"]
+                R_SQL["R1: SQL Injection"]:::guardian
+                R_XSS["R2: XSS"]:::guardian
+                R_LFI["R5: Path Traversal"]:::guardian
+            end
+            
+            subgraph ML ["Machine Learning MLOps"]
+                direction LR
+                IF["Isolation Forest Unsupervised Anomaly"]:::ml
+                RF["Random Forest Supervised Classifier"]:::ml
+            end
+            
+            FeatureExtract --> RulesEngine
+            FeatureExtract --> IF & RF
+        end
+
+        %% Scoring
+        subgraph Scoring ["Autonomous Defence Engine"]
+            direction TB
+            Fusion["Threat Score Fusion 0-100"]:::ml
+            RulesEngine --> Fusion
+            IF & RF --> Fusion
+            
+            Classify{"Classification Tier"}:::action
+            Fusion --> Classify
+            
+            ActLow["LOW 0-29 Allow + Log"]:::action
+            ActMed["MEDIUM 30-59 Monitor + Alert"]:::action
+            ActHigh["HIGH 60-84 Block IP + Lock Acct"]:::action
+            ActCrit["CRITICAL 85-100 Lockdown + Honeypot"]:::action
+            
+            Classify --> ActLow & ActMed & ActHigh & ActCrit
+        end
+        
+        %% Decision output
+        DecisionEngine{"Enforcement Decision"}:::action
+        ActLow -->|ALLOW| DecisionEngine
+        ActMed -->|ALLOW| DecisionEngine
+        ActHigh -->|BLOCK| DecisionEngine
+        ActCrit -->|HONEYPOT| DecisionEngine
+    end
+
+    %% Return to Data plane
+    DecisionEngine -->|Decision Payload lt 500ms| SDK
+    
+    %% Enforcement execution
+    SDK -->|ALLOW| Backend
+    SDK -->|BLOCK| Drop["Drop Request 403"]:::customer
+    SDK -->|HONEYPOT| Deception["Serve Fake Content 200 OK Zero DB Access"]:::customer
+
+    %% Data & Storage Layer
+    subgraph DataLayer ["State & Persistence"]
+        direction LR
+        Redis[("Redis Cluster Session & Rate State")]:::data
+        PG[("PostgreSQL 15 Config, Tenant Data, Keys")]:::data
+        Audit[("Append-Only Audit Log Tamper Evident")]:::data
+        S3[("Object Storage Evidence & Exports")]:::data
+        HoneypotDB[("Honeypot Intel DB Fully Isolated")]:::data
+    end
+
+    %% Async Data Flows
+    KeyMgr -.-> PG
+    RateLimits -.-> Redis
+    ActCrit -.-> HoneypotDB
+    DecisionEngine -.-> Audit
+    Scoring -.-> Analytics["Real-time Analytics Pipeline"]:::guardian
+
+    %% Integrations
+    subgraph EnterpriseInt ["Enterprise Integrations"]
+        direction TB
+        Webhook["Outbound Webhooks HMAC"]:::external
+        SIEM["SIEM Stream CEF/LEEF/JSON"]:::external
+        SOAR["SOAR ServiceNow/Jira"]:::external
+        ChatOps["ChatOps Slack/Teams"]:::external
+    end
+    
+    Analytics -.-> Webhook & SIEM & SOAR & ChatOps

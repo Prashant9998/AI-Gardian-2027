@@ -1,0 +1,106 @@
+flowchart TD
+    %% Define Styles
+    classDef client fill:#f9f9f9,stroke:#333,stroke-width:2px;
+    classDef customer fill:#e1f5fe,stroke:#0288d1,stroke-width:2px;
+    classDef guardian fill:#e8f5e9,stroke:#388e3c,stroke-width:2px;
+    classDef ml fill:#fff3e0,stroke:#f57c00,stroke-width:2px;
+    classDef action fill:#ffebee,stroke:#d32f2f,stroke-width:2px;
+    classDef data fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px;
+    classDef external fill:#eceff1,stroke:#607d8b,stroke-width:2px;
+
+    %% 1. Client / Edge
+    User((Client / Attacker)):::client -->|HTTP/HTTPS Request| AppEdge
+
+    subgraph CustomerEnv ["Customer Environment (Data Plane)"]
+        direction TB
+        AppEdge["Web Application Edge / Gateway"]:::customer
+        SDK["Guardian Client SDK (Node.js/Python/REST)"]:::customer
+        Backend["Customer Backend / Database"]:::customer
+
+        AppEdge -->|Extracts Request| SDK
+    end
+
+    %% 2. Control Plane Ingress
+    SDK -->|Sends Request Metadata Over TLS| API_GW
+    
+    subgraph GuardianControlPlane ["AI Cyber Guardian Control Plane"]
+        direction TB
+        API_GW["API Gateway & Auth (Site Key)"]:::guardian
+
+        %% Stage 1
+        subgraph Stage1 ["Stage 1: Ingress Filter"]
+            direction TB
+            RateLimit["Distributed Rate Limiter (Redis)"]:::guardian
+            AllowBlockLists["Tenant Allow/Block Lists"]:::guardian
+            ScannerDetect["Known-Scanner Detection"]:::guardian
+            
+            RateLimit --> AllowBlockLists --> ScannerDetect
+        end
+
+        API_GW --> Stage1
+
+        %% Early Block Bypass
+        ScannerDetect -- "If Hard Blocked (e.g. IP Blocklist)" --> DecisionEngine
+
+        %% Stage 2
+        subgraph Stage2 ["Stage 2: Deep Analysis"]
+            direction TB
+            FeatureExtract["Deterministic Feature Extraction"]:::guardian
+            Rules["Deterministic Rules Engine (OWASP Core)"]:::guardian
+            
+            subgraph ML ["Machine Learning Pipeline"]
+                direction LR
+                IF["Isolation Forest (Anomaly)"]:::ml
+                RF["Random Forest (Classifier)"]:::ml
+            end
+            
+            FeatureExtract --> Rules
+            FeatureExtract --> IF & RF
+        end
+
+        ScannerDetect -- "If Pass" --> Stage2
+
+        %% Threat Scoring
+        subgraph Scoring ["Threat Scoring & Autonomous Defence"]
+            direction TB
+            ScoreEngine["Combined Threat Score Engine (0-100)"]:::ml
+            Rules --> ScoreEngine
+            IF & RF --> ScoreEngine
+            
+            DecisionEngine{"Decision & Action"}:::action
+            ScoreEngine --> DecisionEngine
+            
+            ActLow["LOW (0-29)<br/>Log Only"]:::action
+            ActMed["MEDIUM (30-59)<br/>Monitor + Alert"]:::action
+            ActHigh["HIGH (60-84)<br/>Block IP + Lock Account"]:::action
+            ActCrit["CRITICAL (85-100)<br/>Lockdown + Honeypot (200 OK)"]:::action
+            
+            DecisionEngine -.-> ActLow & ActMed & ActHigh & ActCrit
+        end
+        
+        %% Integrations & Storage
+        subgraph DataIntegrations ["Data & Integrations"]
+            direction LR
+            AuditLog[("Immutable Audit Log")]:::data
+            DB[("PostgreSQL (Config & Data)")]:::data
+            Redis[("Redis (State & Cache)")]:::data
+            Analytics["Real-time Analytics Engine"]:::guardian
+            HoneypotData[("Honeypot Intelligence (Isolated)")]:::data
+        end
+        
+        Scoring -.-> Analytics & AuditLog
+        ActCrit -.-> HoneypotData
+    end
+
+    %% 3. Returning Decision to SDK
+    DecisionEngine -->|Returns Decision Payload ALLOW/BLOCK/HONEYPOT| SDK
+
+    %% 4. Enforcement at SDK
+    SDK -->|If ALLOW| Backend
+    SDK -->|If BLOCK| Drop["Drop / 403 Forbidden"]:::customer
+    SDK -->|If HONEYPOT| Deception["Serve Deception Content (200 OK)"]:::customer
+
+    %% 5. Outbound integrations
+    Analytics -.-> Webhooks["Outbound Webhooks"]:::external
+    Analytics -.-> SIEM["SIEM Streaming (CEF/LEEF)"]:::external
+    Analytics -.-> SOAR["SOAR / Ticketing"]:::external

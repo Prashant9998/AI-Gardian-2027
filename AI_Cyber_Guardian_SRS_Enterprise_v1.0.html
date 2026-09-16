@@ -1,0 +1,1021 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Cyber Guardian — Enterprise Software Requirements Specification v1.0</title>
+<style>
+  :root{
+    --ink:#0D1117; --body:#1c2530; --muted:#5b6b7c; --line:#d5dde5;
+    --accent:#0b5cad; --accent2:#083f78; --soft:#f4f7fb; --soft2:#eaf1f9;
+    --crit:#b3261e; --high:#c25a00; --med:#8a6d00; --low:#1a7f37;
+  }
+  *{box-sizing:border-box;}
+  html{-webkit-print-color-adjust:exact; print-color-adjust:exact;}
+  body{
+    font-family:"Segoe UI","Calibri","Helvetica Neue",Arial,sans-serif;
+    color:var(--body); line-height:1.5; margin:0; background:#fff;
+    font-size:10.6pt;
+  }
+  .page{max-width:1000px; margin:0 auto; padding:48px 64px;}
+  h1,h2,h3,h4{color:var(--ink); font-weight:600; line-height:1.25;}
+  h1{font-size:22pt; margin:0 0 4px;}
+  h2{font-size:15pt; margin:34px 0 10px; padding-bottom:6px; border-bottom:2px solid var(--accent); }
+  h3{font-size:12.2pt; margin:22px 0 8px; color:var(--accent2);}
+  h4{font-size:10.8pt; margin:16px 0 6px; color:var(--accent2);}
+  p{margin:8px 0;}
+  a{color:var(--accent); text-decoration:none;}
+  table{border-collapse:collapse; width:100%; margin:12px 0; font-size:9.4pt;}
+  th,td{border:1px solid var(--line); padding:6px 9px; text-align:left; vertical-align:top;}
+  th{background:var(--soft2); color:var(--accent2); font-weight:600;}
+  tbody tr:nth-child(even){background:var(--soft);}
+  code{background:#eef2f6; padding:1px 5px; border-radius:3px; font-family:"Cascadia Code","Consolas",monospace; font-size:9pt;}
+  pre{background:#0d1117; color:#e6edf3; padding:14px 16px; border-radius:6px; overflow:auto; font-size:8.8pt; line-height:1.45;}
+  pre code{background:none; color:inherit; padding:0;}
+  .cover{text-align:center; padding:60px 0 30px; border-bottom:3px solid var(--accent);}
+  .cover .kicker{letter-spacing:3px; text-transform:uppercase; color:var(--accent); font-weight:600; font-size:10pt;}
+  .cover h1{font-size:30pt; margin:14px 0 6px;}
+  .cover .sub{font-size:13pt; color:var(--muted); font-weight:400;}
+  .cover .meta{margin-top:24px; font-size:10pt; color:var(--muted);}
+  .classification{display:inline-block; margin-top:18px; padding:4px 14px; border:1px solid var(--crit); color:var(--crit); font-weight:600; letter-spacing:1px; font-size:9pt; border-radius:3px;}
+  .lead{font-size:11pt; color:var(--body);}
+  .callout{background:var(--soft); border-left:4px solid var(--accent); padding:10px 16px; margin:14px 0; border-radius:0 4px 4px 0;}
+  .callout.warn{border-left-color:var(--high); background:#fff7ef;}
+  .callout.crit{border-left-color:var(--crit); background:#fdf1f0;}
+  .pill{display:inline-block; padding:1px 8px; border-radius:10px; font-size:8pt; font-weight:600; color:#fff;}
+  .p0{background:var(--crit);} .p1{background:var(--high);} .p2{background:var(--med);} .p3{background:var(--muted);}
+  .sev-crit{color:var(--crit); font-weight:600;} .sev-high{color:var(--high); font-weight:600;}
+  .sev-med{color:var(--med); font-weight:600;} .sev-low{color:var(--low); font-weight:600;}
+  .toc ol{list-style:none; counter-reset:sec; padding-left:0;}
+  .toc > ol > li{counter-increment:sec; margin:4px 0; font-weight:600;}
+  .toc > ol > li::before{content:counter(sec) ". "; color:var(--accent);}
+  .toc ol ol{counter-reset:sub; padding-left:22px; font-weight:400; margin:2px 0;}
+  .toc ol ol li{counter-increment:sub; margin:1px 0;}
+  .toc ol ol li::before{content:counter(sec) "." counter(sub) " "; color:var(--muted);}
+  .small{font-size:8.6pt; color:var(--muted);}
+  .nowrap{white-space:nowrap;}
+  hr{border:none; border-top:1px solid var(--line); margin:26px 0;}
+  @media print{
+    .page{max-width:none; padding:0 8mm;}
+    h2{page-break-after:avoid;} h3,h4{page-break-after:avoid;}
+    table,pre,.callout{page-break-inside:avoid;}
+    .cover{page-break-after:always;}
+    .toc{page-break-after:always;}
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+<!-- ============================= COVER ============================= -->
+<div class="cover">
+  <div class="kicker">Software Requirements Specification</div>
+  <h1>AI Cyber Guardian</h1>
+  <div class="sub">Autonomous Web-Application Security &amp; Threat-Intelligence Platform (SaaS)</div>
+  <div class="meta">
+    <strong>Enterprise Edition &middot; Version 1.0</strong><br>
+    Conformant to ISO/IEC/IEEE 29148:2018 &amp; IEEE Std 830-1998<br>
+    Effective Date: 04 July 2026 &nbsp;|&nbsp; Document ID: ACG-SRS-ENT-001
+  </div>
+  <div class="classification">CONFIDENTIAL — INTERNAL &amp; AUTHORISED PARTNERS</div>
+</div>
+
+<!-- ============================= DOC CONTROL ============================= -->
+<h2 id="control">Document Control</h2>
+
+<h3>Revision History</h3>
+<table>
+<thead><tr><th>Version</th><th>Date</th><th>Author / Role</th><th>Summary of Change</th><th>Status</th></tr></thead>
+<tbody>
+<tr><td>0.1</td><td>2026-04-02</td><td>Product Owner</td><td>Initial academic SRS derived from PRD v3.0.</td><td>Superseded</td></tr>
+<tr><td>0.9</td><td>2026-06-18</td><td>Systems Architect</td><td>Draft enterprise uplift: compliance, HA/DR, RBAC, observability.</td><td>Superseded</td></tr>
+<tr><td><strong>1.0</strong></td><td><strong>2026-07-04</strong></td><td><strong>Systems Architect / CISO</strong></td><td><strong>Enterprise-ready baseline. Adds SLA/SLO/SLI, multi-tenancy isolation model, SSO/SCIM, data governance, DevSecOps, RTM, and formal acceptance criteria. Approved for engineering.</strong></td><td><strong>Baselined</strong></td></tr>
+</tbody>
+</table>
+
+<h3>Approvals &amp; Sign-off</h3>
+<table>
+<thead><tr><th>Role</th><th>Responsibility</th><th>Name</th><th>Signature / Date</th></tr></thead>
+<tbody>
+<tr><td>Product Owner</td><td>Business intent &amp; scope authority</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+<tr><td>Chief Information Security Officer (CISO)</td><td>Security &amp; compliance sign-off</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+<tr><td>Systems / Solution Architect</td><td>Technical feasibility &amp; design authority</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+<tr><td>Engineering Lead</td><td>Delivery &amp; implementation ownership</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+<tr><td>QA / Test Lead</td><td>Verification &amp; validation ownership</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+<tr><td>Data Protection Officer (DPO)</td><td>Privacy &amp; data-governance sign-off</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+</tbody>
+</table>
+
+<h3>Distribution List &amp; Classification</h3>
+<table>
+<thead><tr><th>Attribute</th><th>Value</th></tr></thead>
+<tbody>
+<tr><td>Classification</td><td>Confidential — Internal &amp; Authorised Partners</td></tr>
+<tr><td>Distribution</td><td>Engineering, Security, Product, QA, Compliance, Executive Sponsors</td></tr>
+<tr><td>Document Owner</td><td>Office of the CISO / Product Management</td></tr>
+<tr><td>Review Cadence</td><td>Quarterly, or upon any P0/P1 scope change (change-controlled)</td></tr>
+<tr><td>Retention</td><td>Life of product + 7 years (regulatory record)</td></tr>
+<tr><td>Related Artefacts</td><td>PRD v3.0, Detailed Design Document (DDD) v1.0, Technical Specification (TSD) v1.0, Threat Model, DPIA, RTM</td></tr>
+</tbody>
+</table>
+
+<!-- ============================= TOC ============================= -->
+<h2 id="toc" class="toc">Table of Contents</h2>
+<div class="toc">
+<ol>
+  <li><a href="#s1">Introduction</a>
+    <ol><li>Purpose</li><li>Scope</li><li>Business Context &amp; Objectives</li><li>Definitions, Acronyms &amp; Abbreviations</li><li>References &amp; Standards</li><li>Document Conventions</li></ol></li>
+  <li><a href="#s2">Overall Description</a>
+    <ol><li>Product Perspective</li><li>Product Functions Summary</li><li>Stakeholders, User Classes &amp; RACI</li><li>Operating &amp; Deployment Environment</li><li>Design &amp; Implementation Constraints</li><li>Assumptions &amp; Dependencies</li><li>Multi-Tenancy &amp; Isolation Model</li></ol></li>
+  <li><a href="#s3">Functional Requirements</a>
+    <ol><li>Identity, Tenancy &amp; API-Key Management</li><li>Access Control (RBAC/ABAC), SSO &amp; SCIM</li><li>Two-Stage Ingress Filter</li><li>Real-Time Threat Detection Engine</li><li>Autonomous Defence Engine</li><li>Honeypot &amp; Attacker Intelligence</li><li>Analytics, Dashboard &amp; Reporting</li><li>Client SDK &amp; REST Integration</li><li>Enterprise Integrations (SIEM/SOAR/Webhooks)</li><li>Audit Logging &amp; Tamper-Evidence</li><li>Notifications &amp; Alerting</li><li>Administration &amp; Platform Operations</li></ol></li>
+  <li><a href="#s4">Non-Functional Requirements</a>
+    <ol><li>Service-Level Objectives (SLA/SLO/SLI)</li><li>Performance &amp; Capacity</li><li>Accuracy &amp; Model Quality</li><li>Security &amp; Privacy Controls</li><li>Reliability, HA &amp; Fault Tolerance</li><li>Disaster Recovery &amp; Business Continuity</li><li>Scalability &amp; Elasticity</li><li>Observability &amp; Operability</li><li>Usability &amp; Accessibility</li><li>Portability, i18n &amp; Compatibility</li><li>Maintainability</li></ol></li>
+  <li><a href="#s5">External Interface Requirements</a></li>
+  <li><a href="#s6">System Architecture</a></li>
+  <li><a href="#s7">Data Model &amp; Data Governance</a></li>
+  <li><a href="#s8">API Contract</a></li>
+  <li><a href="#s9">Machine-Learning Model Specification &amp; MLOps</a></li>
+  <li><a href="#s10">Compliance, Regulatory &amp; Legal Requirements</a></li>
+  <li><a href="#s11">DevSecOps, Environments &amp; Release Management</a></li>
+  <li><a href="#s12">Verification &amp; Validation (Test Strategy)</a></li>
+  <li><a href="#s13">Risk Register &amp; Mitigations</a></li>
+  <li><a href="#s14">Requirements Traceability Matrix</a></li>
+  <li><a href="#s15">Acceptance Criteria &amp; Definition of Done</a></li>
+  <li><a href="#s16">Appendices</a></li>
+</ol>
+</div>
+
+<!-- ============================= 1. INTRODUCTION ============================= -->
+<h2 id="s1">1. Introduction</h2>
+
+<h3>1.1 Purpose</h3>
+<p class="lead">This Software Requirements Specification (SRS) defines, in engineering-grade and audit-ready detail, the complete functional and non-functional requirements for <strong>AI Cyber Guardian</strong> — an autonomous, multi-tenant SaaS platform that detects, classifies, and neutralises web-application cyber-attacks in real time. It is the authoritative, change-controlled contract between business stakeholders and the delivery organisation, and the basis for design, implementation, verification, deployment, and compliance attestation.</p>
+<p>This document is written to be conformant with <strong>ISO/IEC/IEEE 29148:2018</strong> (Requirements Engineering) and <strong>IEEE Std 830-1998</strong>. Every requirement is uniquely identified, prioritised, verifiable, and traceable (see §14). The intended audiences are: the engineering and QA organisation, security and compliance functions, platform operations (SRE), product management, procurement/security reviewers of prospective enterprise customers, and future maintainers.</p>
+
+<h3>1.2 Scope</h3>
+<p>AI Cyber Guardian is a cloud-native, API-first security service that operates as a <strong>decision plane</strong> alongside a customer's web infrastructure. A lightweight backend SDK (or a direct REST call) forwards <em>request metadata only</em> to the Guardian control plane, which returns an enforcement decision — <code>ALLOW</code>, <code>BLOCK</code>, or <code>HONEYPOT</code> — within the contracted latency budget. Live customer traffic is never proxied through Guardian; the platform augments, and never replaces, existing infrastructure.</p>
+<p><strong>In scope</strong> for this release baseline:</p>
+<ul>
+<li>Two-stage ingress filter: stateless rate limiting / list enforcement, followed by rule-engine + ML deep analysis.</li>
+<li>Supervised and unsupervised ML threat models (Random Forest classifier, Isolation Forest anomaly detector) with a governed MLOps lifecycle.</li>
+<li>A deterministic rule engine covering the core OWASP attack categories.</li>
+<li>An autonomous defence engine (IP block, account lock, session termination, honeypot activation) with full reversibility and audit.</li>
+<li>A transparent honeypot returning <code>200 OK</code> deception content and building persistent attacker intelligence.</li>
+<li>Multi-tenant management plane with RBAC/ABAC, enterprise SSO (SAML 2.0 / OIDC), SCIM 2.0 user provisioning, and org/site hierarchy.</li>
+<li>Real-time dashboards, scheduled reporting, and exportable evidence (PDF/CSV/JSON).</li>
+<li>Enterprise integrations: outbound webhooks, SIEM streaming (CEF/LEEF/JSON), SOAR/ticketing, and ChatOps.</li>
+<li>Tamper-evident audit logging, data-governance controls, and compliance evidence generation.</li>
+</ul>
+<p><strong>Out of scope</strong> (this baseline): full inline reverse-proxy/CDN data-plane enforcement; on-device agent for non-HTTP protocols; managed SOC / human-in-the-loop response service; DDoS scrubbing at the network layer (L3/L4). These are candidate roadmap items and are explicitly excluded from acceptance.</p>
+
+<h3>1.3 Business Context &amp; Objectives</h3>
+<table>
+<thead><tr><th>ID</th><th>Business Objective</th><th>Key Result / KPI</th></tr></thead>
+<tbody>
+<tr><td>BO-1</td><td>Reduce the mean time to detect and contain web attacks for customers.</td><td>Autonomous containment (MTTC) &lt; 3 s p95; zero human action required for P0 responses.</td></tr>
+<tr><td>BO-2</td><td>Deliver trustworthy, low-noise detection suitable for production adoption.</td><td>Detection rate &ge; 90% and false-positive rate &le; 2% on the certification corpus.</td></tr>
+<tr><td>BO-3</td><td>Meet enterprise procurement bars for security and reliability.</td><td>SOC 2 Type II readiness; 99.9% control-plane availability SLA.</td></tr>
+<tr><td>BO-4</td><td>Minimise integration friction and time-to-value.</td><td>New site protected in &lt; 15 minutes; first decision within &lt; 10 minutes of SDK install.</td></tr>
+<tr><td>BO-5</td><td>Provide auditable evidence and defensible data handling.</td><td>Immutable audit trail; DSAR fulfilment within regulatory windows; documented data residency.</td></tr>
+</tbody>
+</table>
+
+<h3>1.4 Definitions, Acronyms &amp; Abbreviations</h3>
+<table>
+<thead><tr><th>Term</th><th>Definition</th></tr></thead>
+<tbody>
+<tr><td>Control Plane</td><td>Guardian-operated services that receive metadata and return decisions; excludes customer traffic path.</td></tr>
+<tr><td>Data Plane</td><td>The customer's own request path where enforcement is applied by the SDK.</td></tr>
+<tr><td>Tenant / Org</td><td>An isolated customer account; the top of the org &rarr; site &rarr; key hierarchy.</td></tr>
+<tr><td>RBAC / ABAC</td><td>Role- / Attribute-Based Access Control.</td></tr>
+<tr><td>SSO / SAML / OIDC</td><td>Single Sign-On via SAML 2.0 or OpenID Connect.</td></tr>
+<tr><td>SCIM</td><td>System for Cross-domain Identity Management (2.0) — automated user provisioning/de-provisioning.</td></tr>
+<tr><td>SLA / SLO / SLI</td><td>Service-Level Agreement / Objective / Indicator.</td></tr>
+<tr><td>RTO / RPO</td><td>Recovery Time Objective / Recovery Point Objective.</td></tr>
+<tr><td>SIEM / SOAR</td><td>Security Information &amp; Event Management / Security Orchestration, Automation &amp; Response.</td></tr>
+<tr><td>DSAR / DPIA</td><td>Data Subject Access Request / Data Protection Impact Assessment.</td></tr>
+<tr><td>IF / RF</td><td>Isolation Forest (anomaly) / Random Forest (classifier).</td></tr>
+<tr><td>CSIC 2010</td><td>Reference HTTP request corpus used for model training and certification.</td></tr>
+<tr><td>OWASP ASVS</td><td>OWASP Application Security Verification Standard.</td></tr>
+<tr><td>NIST CSF</td><td>NIST Cybersecurity Framework.</td></tr>
+<tr><td>FR / NFR</td><td>Functional / Non-Functional Requirement.</td></tr>
+<tr><td>P0–P3</td><td>Priority: P0 Must-have, P1 Important, P2 Nice-to-have, P3 Stretch/roadmap.</td></tr>
+<tr><td>KMS / HSM</td><td>Key Management Service / Hardware Security Module.</td></tr>
+<tr><td>mTLS</td><td>Mutual TLS authentication.</td></tr>
+</tbody>
+</table>
+
+<h3>1.5 References &amp; Standards</h3>
+<ul>
+<li>ISO/IEC/IEEE 29148:2018 — Systems and software engineering — Requirements engineering.</li>
+<li>IEEE Std 830-1998 — Recommended Practice for Software Requirements Specifications.</li>
+<li>OWASP Top 10 (2021), OWASP ASVS 4.0, OWASP API Security Top 10.</li>
+<li>NIST Cybersecurity Framework 2.0; NIST SP 800-53 Rev. 5 (control catalogue).</li>
+<li>SOC 2 (AICPA Trust Services Criteria); ISO/IEC 27001:2022; ISO/IEC 27017 / 27018 (cloud &amp; PII).</li>
+<li>EU GDPR (2016/679); CCPA/CPRA; where applicable, PCI-DSS v4.0.</li>
+<li>WCAG 2.1 Level AA (accessibility).</li>
+<li>AI Cyber Guardian PRD v3.0; DDD v1.0; TSD v1.0 (internal).</li>
+<li>CSIC 2010 HTTP Dataset; FastAPI, scikit-learn, PostgreSQL, Redis official documentation.</li>
+</ul>
+
+<h3>1.6 Document Conventions</h3>
+<p>Requirement keywords <strong>SHALL</strong> (mandatory), <strong>SHOULD</strong> (recommended), and <strong>MAY</strong> (optional) are used per RFC 2119. Each requirement carries a unique ID (<code>FR-nn</code>, <code>NFR-nn</code>), a priority pill (<span class="pill p0">P0</span> <span class="pill p1">P1</span> <span class="pill p2">P2</span> <span class="pill p3">P3</span>), and a verification method (Test / Demonstration / Inspection / Analysis) recorded in the RTM (§14).</p>
+
+<!-- ============================= 2. OVERALL DESCRIPTION ============================= -->
+<h2 id="s2">2. Overall Description</h2>
+
+<h3>2.1 Product Perspective</h3>
+<p>AI Cyber Guardian is a standalone, cloud-native SaaS that acts as an out-of-band security <em>decision service</em>. It sits logically between a site's visitors and the customer's backend, invoked by the client-side SDK. Only request metadata (IP, headers, path, method, body sample, cookies, query parameters) is transmitted to the control plane; the live request/response never traverses Guardian infrastructure. Enforcement is executed by the SDK at the customer edge based on the returned decision. This out-of-band model bounds Guardian's blast radius, eliminates it as a single point of failure for customer availability (fail-open by policy), and simplifies the customer's data-flow and compliance posture.</p>
+
+<h3>2.2 Product Functions — Summary</h3>
+<table>
+<thead><tr><th>Capability</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td>Tenant &amp; Identity Management</td><td>Org/site hierarchy, API-key lifecycle, SSO, SCIM provisioning, RBAC/ABAC.</td></tr>
+<tr><td>Two-Stage Ingress Filtering</td><td>Stage 1: stateless rate limiting + allow/block lists + scanner detection. Stage 2: rule engine + ML pipeline.</td></tr>
+<tr><td>Real-Time Threat Detection</td><td>Deterministic rules (core attack classes) fused with IF + RF ML scoring into a unified threat level.</td></tr>
+<tr><td>Autonomous Defence</td><td>Reversible IP block, account lock, session termination, honeypot activation — no human in the loop for P0.</td></tr>
+<tr><td>Transparent Honeypot</td><td>Deception content served as <code>200 OK</code>; attacker silently profiled and isolated from real data.</td></tr>
+<tr><td>Attacker Intelligence</td><td>Geolocation, device/tool fingerprinting, payloads, and cross-session attacker profiles.</td></tr>
+<tr><td>Analytics &amp; Reporting</td><td>Real-time dashboards, scheduled/exportable reports, executive summaries, evidence packs.</td></tr>
+<tr><td>Enterprise Integration</td><td>Outbound webhooks, SIEM streaming, SOAR/ticketing, ChatOps, and a documented public API.</td></tr>
+<tr><td>Audit &amp; Compliance</td><td>Tamper-evident audit log, data-governance controls, compliance evidence generation.</td></tr>
+</tbody>
+</table>
+
+<h3>2.3 Stakeholders, User Classes &amp; RACI</h3>
+<table>
+<thead><tr><th>User Class</th><th>Description</th><th>Technical Level</th><th>Primary Interface</th></tr></thead>
+<tbody>
+<tr><td>Org Owner / Billing Admin</td><td>Owns the tenant, manages subscription, entitlements, and top-level users.</td><td>Low–Medium</td><td>Management console</td></tr>
+<tr><td>Security Analyst</td><td>Monitors threats, triages events, manages blocklists, investigates attackers.</td><td>Medium–High</td><td>Dashboard, API, SIEM</td></tr>
+<tr><td>Platform / Backend Engineer (customer)</td><td>Integrates the SDK/REST API, configures per-route policy.</td><td>High</td><td>SDK / REST API</td></tr>
+<tr><td>Auditor / Compliance (customer)</td><td>Reads audit logs and evidence; read-only.</td><td>Medium</td><td>Audit console, exports</td></tr>
+<tr><td>Guardian Platform Administrator</td><td>Operates the multi-tenant platform, global lists, health.</td><td>High</td><td>Internal admin plane</td></tr>
+<tr><td>Guardian SRE / On-call</td><td>Reliability, incident response, capacity.</td><td>High</td><td>Observability, runbooks</td></tr>
+<tr><td>Adversary (external)</td><td>Sends malicious traffic; passive subject of honeypot collection.</td><td>Variable</td><td>Honeypot (passive)</td></tr>
+</tbody>
+</table>
+<p class="small">RACI (Responsible / Accountable / Consulted / Informed) for delivery: Engineering Lead is <em>Accountable</em> for implementation; CISO is <em>Accountable</em> for security controls (§4.4, §10); QA Lead is <em>Responsible</em> for V&amp;V (§12); Product Owner is <em>Accountable</em> for scope; DPO is <em>Consulted</em> on all data-governance requirements (§7).</p>
+
+<h3>2.4 Operating &amp; Deployment Environment</h3>
+<table>
+<thead><tr><th>Layer</th><th>Specification</th></tr></thead>
+<tbody>
+<tr><td>Cloud</td><td>Cloud-native on a major IaaS (AWS/Azure/GCP-equivalent) across a minimum of 3 Availability Zones in the primary region; a warm secondary region for DR.</td></tr>
+<tr><td>Orchestration</td><td>Containerised (OCI images) on Kubernetes; Infrastructure-as-Code (Terraform); GitOps deployment.</td></tr>
+<tr><td>Runtime</td><td>Python 3.11 (FastAPI control-plane services); Node.js 18+ (frontend build).</td></tr>
+<tr><td>Data Stores</td><td>PostgreSQL 15 (primary + read replicas, PITR); Redis 7 (clustered) for rate limiting, cache, sessions; object storage for evidence/exports; append-only store for audit.</td></tr>
+<tr><td>Edge / TLS</td><td>Managed ingress/load balancer with TLS 1.2+ (TLS 1.3 preferred); WAF in front of the management console.</td></tr>
+<tr><td>Client SDK Runtime</td><td>Python 3.8+ and Node.js 16+ backends; zero mandatory heavyweight dependencies.</td></tr>
+<tr><td>Console Browsers</td><td>Evergreen Chrome, Edge, Firefox, Safari (latest 2 major versions).</td></tr>
+</tbody>
+</table>
+
+<h3>2.5 Design &amp; Implementation Constraints</h3>
+<ul>
+<li><strong>Out-of-band only:</strong> the platform MUST NOT proxy live customer traffic — metadata only.</li>
+<li><strong>Fail-open by policy:</strong> if the control plane is unreachable, the SDK MUST default to <code>ALLOW</code> (configurable to fail-closed per route) so Guardian never causes a customer outage.</li>
+<li><strong>Honeypot fidelity:</strong> deception content MUST be returned as <code>200 OK</code>; a <code>301/302</code> redirect is strictly prohibited.</li>
+<li><strong>Latency budget:</strong> synchronous decision path MUST complete within the SLO (§4.1); ML inference MUST run on CPU (no GPU dependency) within its budget.</li>
+<li><strong>Licensing hygiene:</strong> only permissive licences (MIT/BSD/Apache-2.0). No copyleft (GPL/AGPL) in distributed artefacts. An SBOM (SPDX/CycloneDX) MUST be produced per release.</li>
+<li><strong>Data minimisation:</strong> raw request bodies retained &le; 24 h by default (tenant-configurable within policy bounds), then hashed or deleted; no plaintext secrets/PII persisted.</li>
+<li><strong>Statelessness:</strong> decision services MUST be horizontally scalable and stateless; all shared state lives in Redis/PostgreSQL.</li>
+</ul>
+
+<h3>2.6 Assumptions &amp; Dependencies</h3>
+<ul>
+<li>Customers can install a backend SDK or invoke the REST API from their server tier.</li>
+<li>A geolocation provider is available; results are cached (24 h TTL) to respect provider limits and reduce cost.</li>
+<li>The certification training corpus (CSIC 2010 + governed supplemental data) is licensed for the intended use.</li>
+<li>Enterprise customers can federate identity via SAML/OIDC and (optionally) SCIM.</li>
+<li>Managed cloud primitives (KMS, object storage, managed Postgres/Redis, load balancers) are available in target regions.</li>
+</ul>
+
+<h3>2.7 Multi-Tenancy &amp; Isolation Model</h3>
+<p>The platform is a <strong>logically-isolated, pooled multi-tenant</strong> system with an optional siloed tier for regulated customers:</p>
+<table>
+<thead><tr><th>Layer</th><th>Isolation Mechanism</th></tr></thead>
+<tbody>
+<tr><td>Identity</td><td>Every principal, key, and record is scoped to a <code>tenant_id</code>; all queries are tenant-filtered and enforced at the API/authorization layer (defence-in-depth with row-level security in PostgreSQL).</td></tr>
+<tr><td>Data</td><td>Pooled schema with mandatory tenant predicate; honeypot data resides in a separate schema with no foreign keys to real tenant data. Enterprise/regulated tier MAY use a dedicated database/schema.</td></tr>
+<tr><td>Compute</td><td>Shared stateless workers; per-tenant rate limits and quotas prevent noisy-neighbour effects. Enterprise tier MAY use dedicated node pools.</td></tr>
+<tr><td>Encryption</td><td>Per-tenant data-encryption keys wrapped by a KMS master key (envelope encryption); optional customer-managed keys (BYOK) for the enterprise tier.</td></tr>
+<tr><td>Residency</td><td>Tenant data pinned to a chosen region; cross-region movement only for DR to a same-jurisdiction secondary.</td></tr>
+</tbody>
+</table>
+
+<!-- ============================= 3. FUNCTIONAL REQUIREMENTS ============================= -->
+<h2 id="s3">3. Functional Requirements</h2>
+<p class="small">Priorities: <span class="pill p0">P0</span> Must-have &middot; <span class="pill p1">P1</span> Important &middot; <span class="pill p2">P2</span> Nice-to-have &middot; <span class="pill p3">P3</span> Roadmap. All FRs are verifiable and traced in §14.</p>
+
+<h3>3.1 Module 1 — Identity, Tenancy &amp; API-Key Management</h3>
+<table>
+<thead><tr><th>ID</th><th>Requirement</th><th>Pri</th></tr></thead>
+<tbody>
+<tr><td>FR-01</td><td>The system SHALL support self-service and invited registration of an <strong>organisation (tenant)</strong>, with a verified unique primary email and a password policy of &ge; 12 chars incl. upper, lower, digit, and symbol (or delegated to the IdP when SSO is enabled).</td><td><span class="pill p0">P0</span></td></tr>
+<tr><td>FR-02</td><td>Upon registering a website, the system SHALL generate a unique, non-guessable <code>site_key</code> (UUID v4) and a paired secret; the secret SHALL be shown once and stored only as a hash.</td><td><span class="pill p0">P0</span></td></tr>
+<tr><td>FR-03</td><td>A tenant SHALL support many websites under an <strong>org &rarr; site</strong> hierarchy, each with independent keys, policy, and analytics scope.</td><td><span class="pill p0">P0</span></td></tr>
+<tr><td>FR-04</td><td>The system SHALL provide an interactive, copy-paste integration guide (SDK &amp; REST) accessible after login, with per-language snippets.</td><td><span class="pill p0">P0</span></td></tr>
+<tr><td>FR-05</td><td>The system SHALL verify integration by confirming at least one authenticated decision call from the site's key and surface an "Integration Healthy" status.</td><td><span class="pill p1">P1</span></td></tr>
+<tr><td>FR-06</td><td>The console SHALL list all sites with health status (Active / Inactive / Degraded / Blocked) and last-seen timestamp.</td><td><span class="pill p0">P0</span></td></tr>
+<tr><td>FR-07</td><td>The system SHALL support API-key <strong>rotation</strong> with an overlap/grace window, immediate <strong>revocation</strong>, and full lifecycle audit; multiple active keys per site SHALL be supported for zero-downtime rotation.</td><td><span class="pill p0">P0</span></td></tr>
+<tr><td>FR-08</td><td>The system SHALL enforce per-tenant and per-key <strong>quotas and rate plans</strong> (entitlements) aligned to the subscription tier, returning <code>429</code> with retry metadata on breach.</td><td><span class="pill p1">P1</span></td></tr>
+</tbody>
+</table>
+
+<h3>3.2 Module 2 — Access Control (RBAC/ABAC), SSO &amp; SCIM</h3>
+<table>
+<thead><tr><th>ID</th><th>Requirement</th><th>Pri</th></tr></thead>
+<tbody>
+<tr><td>FR-09</td><td>The system SHALL implement <strong>RBAC</strong> with at least the roles: Org Owner, Admin, Security Analyst, Read-Only/Auditor, and Billing Admin; permissions SHALL be least-privilege and enforced server-side on every request.</td><td><span class="pill p0">P0</span></td></tr>
+<tr><td>FR-10</td><td>The system SHALL support <strong>ABAC</strong> scoping so a role's authority can be constrained to specific sites or environments within a tenant.</td><td><span class="pill p1">P1</span></td></tr>
+<tr><td>FR-11</td><td>The system SHALL support enterprise <strong>SSO via SAML 2.0 and OIDC</strong>, including IdP-initiated and SP-initiated flows and configurable attribute/role mapping.</td><td><span class="pill p0">P0</span></td></tr>
+<tr><td>FR-12</td><td>The system SHALL support <strong>SCIM 2.0</strong> for automated user/group provisioning and de-provisioning from the customer IdP.</td><td><span class="pill p1">P1</span></td></tr>
+<tr><td>FR-13</td><td>The system SHALL support <strong>MFA/TOTP</strong> for local accounts and honour MFA asserted by the IdP for federated accounts.</td><td><span class="pill p0">P0</span></td></tr>
+<tr><td>FR-14</td><td>The system SHALL enforce configurable <strong>session policy</strong> (idle and absolute timeout, concurrent-session limits) and provide administrator-forced session revocation.</td><td><span class="pill p1">P1</span></td></tr>
+</tbody>
+</table>
+
+<h3>3.3 Module 3 — Two-Stage Ingress Filter</h3>
+<h4>3.3.1 Stage 1A — Distributed Rate Limiter</h4>
+<p class="small">Redis sliding-window / token-bucket counters executed before any rule or ML evaluation. Target latency &lt; 1 ms. Thresholds are policy-configurable per tenant/route; the values below are safe defaults.</p>
+<table>
+<thead><tr><th>ID</th><th>Rule</th><th>Default Threshold</th><th>Action</th><th>Pri</th></tr></thead>
+<tbody>
+<tr><td>FR-15</td><td>Single-IP short burst</td><td>&gt; 100 req/s per IP</td><td>BLOCK 60 s</td><td><span class="pill p0">P0</span></td></tr>
+<tr><td>FR-16</td><td>Single-IP sustained burst</td><td>&gt; 500 req/s per IP</td><td>BLOCK 300 s</td><td><span class="pill p0">P0</span></td></tr>
+<tr><td>FR-17</td><td>Login brute force (endpoint)</td><td>&gt; 5 <code>POST /login</code> / 60 s per IP</td><td>BLOCK 120 s</td><td><span class="pill p0">P0</span></td></tr>
+<tr><td>FR-18</td><td>Platform-wide surge protection</td><td>&gt; 10,000 req/s aggregate</td><td>Adaptive rate-limit non-allowlisted IPs</td><td><span class="pill p0">P0</span></td></tr>
+</tbody>
+</table>
+<h4>3.3.2 Stage 1B — Allow / Block Lists</h4>
+<table>
+<thead><tr><th>ID</th><th>List</th><th>Purpose</th><th>Managed By</th><th>Pri</th></tr></thead>
+<tbody>
+<tr><td>FR-19</td><td>Global blocklist</td><td>Known-malicious IPs, Tor exit nodes, threat-intel feeds</td><td>Platform (auto + curated)</td><td><span class="pill p0">P0</span></td></tr>
+<tr><td>FR-20</td><td>Tenant allowlist</td><td>Trusted IPs/CIDRs (office, upstream services, scanners under contract)</td><td>Customer console/API</td><td><span class="pill p0">P0</span></td></tr>
+<tr><td>FR-21</td><td>Tenant blocklist</td><td>Customer-defined IP/CIDR blocks with optional expiry</td><td>Customer console/API</td><td><span class="pill p0">P0</span></td></tr>
+</tbody>
+</table>
+<h4>3.3.3 Stage 1C — Known-Scanner Detection</h4>
+<table>
+<thead><tr><th>ID</th><th>Signature</th><th>Severity</th><th>Action</th><th>Pri</th></tr></thead>
+<tbody>
+<tr><td>FR-22</td><td>sqlmap, nikto, nmap, hydra</td><td><span class="sev-med">MEDIUM</span></td><td>Flag + Log</td><td><span class="pill p0">P0</span></td></tr>
+<tr><td>FR-23</td><td>metasploit, masscan, zmap</td><td><span class="sev-med">MEDIUM</span></td><td>Flag + Log</td><td><span class="pill p0">P0</span></td></tr>
+<tr><td>FR-24</td><td>Burp Suite / OWASP ZAP indicators</td><td><span class="sev-med">MEDIUM</span></td><td>Flag + Log</td><td><span class="pill p0">P0</span></td></tr>
+</tbody>
+</table>
+
+<h3>3.4 Module 4 — Real-Time Threat Detection Engine (Stage 2)</h3>
+<h4>3.4.1 Rule Engine — Core Attack Rules</h4>
+<table>
+<thead><tr><th>ID</th><th>#</th><th>Attack Type</th><th>Detection Logic (indicative)</th><th>Severity</th><th>Pri</th></tr></thead>
+<tbody>
+<tr><td>FR-25</td><td>R1</td><td>SQL Injection</td><td>SQL tokens/patterns in input: <code>UNION</code>, <code>DROP</code>, <code>OR 1=1</code>, <code>--</code>, <code>;</code>, tautologies</td><td><span class="sev-crit">CRITICAL</span></td><td><span class="pill p0">P0</span></td></tr>
+<tr><td>FR-26</td><td>R2</td><td>Cross-Site Scripting</td><td><code>&lt;script&gt;</code>, <code>onerror</code>, <code>onload</code>, <code>javascript:</code>, <code>&lt;iframe&gt;</code></td><td><span class="sev-high">HIGH</span></td><td><span class="pill p0">P0</span></td></tr>
+<tr><td>FR-27</td><td>R3</td><td>Brute Force (user)</td><td>&gt; 5 <code>POST</code> logins to same endpoint from same IP in 2 min</td><td><span class="sev-high">HIGH</span></td><td><span class="pill p0">P0</span></td></tr>
+<tr><td>FR-28</td><td>R4</td><td>Brute Force (platform)</td><td>&gt; 20 <code>POST</code> logins from same IP in 2 min</td><td><span class="sev-crit">CRITICAL</span></td><td><span class="pill p0">P0</span></td></tr>
+<tr><td>FR-29</td><td>R5</td><td>Path Traversal / LFI</td><td><code>../</code>, <code>..\</code>, <code>%2e%2e/</code>, <code>etc/passwd</code>, <code>windows/win.ini</code></td><td><span class="sev-high">HIGH</span></td><td><span class="pill p0">P0</span></td></tr>
+<tr><td>FR-30</td><td>R6</td><td>Scanner / Recon</td><td>User-Agent or request pattern matches known tooling</td><td><span class="sev-med">MEDIUM</span></td><td><span class="pill p0">P0</span></td></tr>
+<tr><td>FR-31</td><td>—</td><td>Extensible rule packs</td><td>Rules SHALL be data-driven and hot-updatable without redeploy; the engine SHALL support versioned, tenant-scoped custom rules.</td><td>—</td><td><span class="pill p1">P1</span></td></tr>
+</tbody>
+</table>
+<h4>3.4.2 ML Feature Extraction</h4>
+<p>The following features SHALL be deterministically extracted from every request passing Stage 1 and fed to both models:</p>
+<table>
+<thead><tr><th>Feature</th><th>Description</th><th>Type</th></tr></thead>
+<tbody>
+<tr><td>request_length</td><td>Total length of request line + headers + body</td><td>Numeric</td></tr>
+<tr><td>args_length / args_count</td><td>Total length and count of query-string arguments</td><td>Numeric</td></tr>
+<tr><td>path_length / path_depth</td><td>Length and <code>/</code>-segment depth of URL path</td><td>Numeric</td></tr>
+<tr><td>digit_count_args / letter_count_args</td><td>Digit and alphabetic character counts in argument values</td><td>Numeric</td></tr>
+<tr><td>special_char_count_args / _path</td><td>Count of special chars (<code>' " ; -- &lt; &gt; ( )</code>) in args and path</td><td>Numeric</td></tr>
+<tr><td>max_byte_value / body_entropy</td><td>Max byte value and Shannon entropy of the raw request/body</td><td>Numeric</td></tr>
+<tr><td>has_body / body_length</td><td>Presence and length of POST body</td><td>Boolean / Numeric</td></tr>
+<tr><td>method</td><td>HTTP method (one-hot encoded)</td><td>Categorical</td></tr>
+</tbody>
+</table>
+<h4>3.4.3 Combined Threat Scoring</h4>
+<p>The engine SHALL fuse deterministic rule scores and ML scores into a unified 0–100 threat score via a governed weighted model, and classify each request into a band with an associated automated action:</p>
+<table>
+<thead><tr><th>Score</th><th>Level</th><th>Meaning</th><th>Automated Action</th></tr></thead>
+<tbody>
+<tr><td>0–29</td><td><span class="sev-low">LOW</span></td><td>Normal / low suspicion</td><td>Log only</td></tr>
+<tr><td>30–59</td><td><span class="sev-med">MEDIUM</span></td><td>Suspicious — monitor</td><td>Alert + flag principal</td></tr>
+<tr><td>60–84</td><td><span class="sev-high">HIGH</span></td><td>Confirmed threat behaviour</td><td>Block IP + lock account</td></tr>
+<tr><td>85–100</td><td><span class="sev-crit">CRITICAL</span></td><td>Active serious attack</td><td>Lockdown + honeypot (<code>200 OK</code>)</td></tr>
+</tbody>
+</table>
+<table>
+<thead><tr><th>ID</th><th>Requirement</th><th>Pri</th></tr></thead>
+<tbody>
+<tr><td>FR-32</td><td>The system SHALL compute a combined score (0–100) for every request passing Stage 1 and classify it into one of four levels.</td><td><span class="pill p0">P0</span></td></tr>
+<tr><td>FR-33</td><td>Scoring weights and band thresholds SHALL be configurable per tenant and versioned; changes SHALL be audit-logged.</td><td><span class="pill p1">P1</span></td></tr>
+<tr><td>FR-34</td><td>The system SHALL attach an <strong>explainability payload</strong> (triggered rules, top ML feature contributors, model version) to every non-LOW decision.</td><td><span class="pill p1">P1</span></td></tr>
+<tr><td>FR-35</td><td>Full Stage 2 analysis SHALL complete within the latency SLO of §4.1 (p95 &le; 500 ms).</td><td><span class="pill p0">P0</span></td></tr>
+</tbody>
+</table>
+
+<h3>3.5 Module 5 — Autonomous Defence Engine</h3>
+<table>
+<thead><tr><th>ID</th><th>Trigger</th><th>Actions</th><th>Pri</th></tr></thead>
+<tbody>
+<tr><td>FR-36</td><td>LOW (0–29)</td><td>Log event</td><td><span class="pill p0">P0</span></td></tr>
+<tr><td>FR-37</td><td>MEDIUM (30–59)</td><td>Log + email/webhook alert + flag principal</td><td><span class="pill p0">P0</span></td></tr>
+<tr><td>FR-38</td><td>HIGH (60–84)</td><td>Log + block IP + lock account + multi-channel alert</td><td><span class="pill p0">P0</span></td></tr>
+<tr><td>FR-39</td><td>CRITICAL (85–100)</td><td>Block IP + lock account + terminate active sessions + return honeypot <code>200 OK</code></td><td><span class="pill p0">P0</span></td></tr>
+</tbody>
+</table>
+<table>
+<thead><tr><th>ID</th><th>Requirement</th><th>Pri</th></tr></thead>
+<tbody>
+<tr><td>FR-40</td><td>All defence actions SHALL be enforced within the end-to-end SLO (p95 &le; 3 s) measured at the SDK.</td><td><span class="pill p0">P0</span></td></tr>
+<tr><td>FR-41</td><td>Every action SHALL be <strong>reversible</strong> — an authorised user SHALL be able to unblock any IP or unlock any account from console/API at any time, with reason capture and audit.</td><td><span class="pill p0">P0</span></td></tr>
+<tr><td>FR-42</td><td>No P0 defence action SHALL require human intervention.</td><td><span class="pill p0">P0</span></td></tr>
+<tr><td>FR-43</td><td>The engine SHALL support a per-tenant <strong>enforcement mode</strong>: Monitor-only (log/alert, no blocking), Standard, or Strict; and a global <strong>safe-mode kill-switch</strong>.</td><td><span class="pill p1">P1</span></td></tr>
+</tbody>
+</table>
+
+<h3>3.6 Module 6 — Honeypot &amp; Attacker Intelligence</h3>
+<table>
+<thead><tr><th>ID</th><th>Requirement</th><th>Pri</th></tr></thead>
+<tbody>
+<tr><td>FR-44</td><td>Honeypot responses SHALL always be HTTP <code>200 OK</code>; a <code>301/302</code> redirect is strictly prohibited.</td><td><span class="pill p0">P0</span></td></tr>
+<tr><td>FR-45</td><td>Deception content SHALL convincingly resemble the customer's site via a pre-configured, per-tenant template.</td><td><span class="pill p0">P0</span></td></tr>
+<tr><td>FR-46</td><td>The honeypot SHALL log every attacker action: endpoint, method, payload, timestamp, and tool fingerprint.</td><td><span class="pill p0">P0</span></td></tr>
+<tr><td>FR-47</td><td>The honeypot SHALL be fully isolated from real data — separate schema, zero shared resources, no FK references to tenant data.</td><td><span class="pill p0">P0</span></td></tr>
+<tr><td>FR-48</td><td>Geolocation lookups SHALL be cached (24 h TTL) to respect provider limits and control cost.</td><td><span class="pill p0">P0</span></td></tr>
+<tr><td>FR-49</td><td>The system SHALL build a persistent, cross-session <strong>attacker profile</strong> per source identity (IP + fingerprint).</td><td><span class="pill p0">P0</span></td></tr>
+<tr><td>FR-50</td><td>Collected intelligence SHALL include: geolocation (country/city/ISP/coords), device (browser/OS/resolution/timezone/language), tool fingerprint, full attack behaviour (endpoints, payloads, sequence, timing), session data, and credentials tried against fake accounts.</td><td><span class="pill p0">P0</span></td></tr>
+</tbody>
+</table>
+
+<h3>3.7 Module 7 — Analytics, Dashboard &amp; Reporting</h3>
+<table>
+<thead><tr><th>ID</th><th>Panel / Feature</th><th>Content</th><th>Refresh</th><th>Pri</th></tr></thead>
+<tbody>
+<tr><td>FR-51</td><td>Site Health Score</td><td>0–100 security posture per site</td><td>Real-time (WebSocket)</td><td><span class="pill p0">P0</span></td></tr>
+<tr><td>FR-52</td><td>Live Threat Feed</td><td>Each detection with severity, type, action, explainability</td><td>Real-time</td><td><span class="pill p0">P0</span></td></tr>
+<tr><td>FR-53</td><td>Attack-type &amp; severity breakdown</td><td>Distribution charts for the selected window</td><td>&le; 30 s</td><td><span class="pill p0">P0</span></td></tr>
+<tr><td>FR-54</td><td>Time-series volume</td><td>Attack volume per interval over selectable ranges</td><td>&le; 1 min</td><td><span class="pill p0">P0</span></td></tr>
+<tr><td>FR-55</td><td>Attacker Profiles</td><td>Cards per attacker: IP, location, tools, payloads, session history</td><td>Real-time</td><td><span class="pill p0">P0</span></td></tr>
+<tr><td>FR-56</td><td>Honeypot Activity</td><td>Live feed of attacker actions inside the honeypot</td><td>Real-time</td><td><span class="pill p0">P0</span></td></tr>
+<tr><td>FR-57</td><td>Blocked-IP management</td><td>List with reason, block time, expiry, one-click unblock</td><td>Real-time</td><td><span class="pill p0">P0</span></td></tr>
+<tr><td>FR-58</td><td>Reports &amp; exports</td><td>On-demand and <strong>scheduled</strong> reports; export PDF/CSV/JSON; server-side generation for large ranges</td><td>On demand / scheduled</td><td><span class="pill p1">P1</span></td></tr>
+<tr><td>FR-59</td><td>Saved views &amp; filters</td><td>Persist per-user dashboards, filters, and time ranges</td><td>—</td><td><span class="pill p2">P2</span></td></tr>
+<tr><td>FR-60</td><td>Traffic-anomaly pre-alert</td><td>Rolling z-score volume anomaly with confidence %</td><td>&le; 5 min</td><td><span class="pill p3">P3</span></td></tr>
+</tbody>
+</table>
+
+<h3>3.8 Module 8 — Client SDK &amp; REST Integration</h3>
+<table>
+<thead><tr><th>ID</th><th>Requirement</th><th>Pri</th></tr></thead>
+<tbody>
+<tr><td>FR-61</td><td>The system SHALL provide official backend SDKs (<strong>Python</strong> and <strong>Node.js</strong>) installable via standard package managers, plus a documented REST path for other stacks.</td><td><span class="pill p0">P0</span></td></tr>
+<tr><td>FR-62</td><td>The SDK SHALL intercept incoming requests and extract IP, method, path, headers, body sample, cookies, and query parameters.</td><td><span class="pill p0">P0</span></td></tr>
+<tr><td>FR-63</td><td>The SDK SHALL call the decision API and enforce the result: pass for ALLOW, drop/deny for BLOCK, return honeypot HTML for HONEYPOT.</td><td><span class="pill p0">P0</span></td></tr>
+<tr><td>FR-64</td><td>The SDK SHALL add &le; 5 ms overhead (async, non-blocking) and SHALL implement a bounded timeout with a configurable <strong>fail-open/fail-closed</strong> policy.</td><td><span class="pill p0">P0</span></td></tr>
+<tr><td>FR-65</td><td>The SDK SHALL support local caching of block/allow decisions and offline degradation, with a circuit breaker on repeated control-plane errors.</td><td><span class="pill p1">P1</span></td></tr>
+<tr><td>FR-66</td><td>The SDK SHALL authenticate to the API using the site key/secret over TLS and SHALL support key rotation without redeploy.</td><td><span class="pill p0">P0</span></td></tr>
+</tbody>
+</table>
+
+<h3>3.9 Module 9 — Enterprise Integrations</h3>
+<table>
+<thead><tr><th>ID</th><th>Requirement</th><th>Pri</th></tr></thead>
+<tbody>
+<tr><td>FR-67</td><td>The system SHALL emit <strong>outbound webhooks</strong> for threat and lifecycle events, with HMAC-signed payloads, configurable event filters, retries with backoff, and a dead-letter view.</td><td><span class="pill p0">P0</span></td></tr>
+<tr><td>FR-68</td><td>The system SHALL stream security events to <strong>SIEM</strong> platforms in CEF, LEEF, and JSON (e.g. Splunk HEC, Microsoft Sentinel, Elastic).</td><td><span class="pill p1">P1</span></td></tr>
+<tr><td>FR-69</td><td>The system SHALL integrate with <strong>SOAR/ticketing</strong> (e.g. ServiceNow, Jira, PagerDuty/Opsgenie) to open/annotate incidents on HIGH/CRITICAL events.</td><td><span class="pill p1">P1</span></td></tr>
+<tr><td>FR-70</td><td>The system SHALL provide <strong>ChatOps</strong> notifications (Slack, Microsoft Teams) with actionable summaries.</td><td><span class="pill p2">P2</span></td></tr>
+<tr><td>FR-71</td><td>The system SHALL expose a versioned, documented <strong>public REST API</strong> (OpenAPI 3.x) for all tenant-facing operations, secured by scoped API tokens.</td><td><span class="pill p0">P0</span></td></tr>
+</tbody>
+</table>
+
+<h3>3.10 Module 10 — Audit Logging &amp; Tamper-Evidence</h3>
+<table>
+<thead><tr><th>ID</th><th>Requirement</th><th>Pri</th></tr></thead>
+<tbody>
+<tr><td>FR-72</td><td>The system SHALL record an <strong>immutable, append-only audit log</strong> of all security-relevant events: authentication, authorisation changes, key lifecycle, policy/threshold changes, defence actions, unblocks/unlocks, and data exports.</td><td><span class="pill p0">P0</span></td></tr>
+<tr><td>FR-73</td><td>Each audit entry SHALL capture actor, tenant, action, target, before/after where applicable, source IP, timestamp (UTC), and correlation/request ID.</td><td><span class="pill p0">P0</span></td></tr>
+<tr><td>FR-74</td><td>Audit records SHALL be <strong>tamper-evident</strong> (hash-chained or WORM storage) and independently exportable for compliance.</td><td><span class="pill p0">P0</span></td></tr>
+<tr><td>FR-75</td><td>Audit logs SHALL be retained per policy (default 1 year hot, 7 years cold) and queryable/filterable in the console.</td><td><span class="pill p1">P1</span></td></tr>
+</tbody>
+</table>
+
+<h3>3.11 Module 11 — Notifications &amp; Alerting</h3>
+<table>
+<thead><tr><th>ID</th><th>Requirement</th><th>Pri</th></tr></thead>
+<tbody>
+<tr><td>FR-76</td><td>The system SHALL deliver alerts over email, webhook, SMS, and ChatOps, with per-tenant routing rules by severity and event type.</td><td><span class="pill p0">P0</span></td></tr>
+<tr><td>FR-77</td><td>The system SHALL support alert <strong>deduplication, throttling, and digest</strong> modes to prevent alert fatigue.</td><td><span class="pill p1">P1</span></td></tr>
+<tr><td>FR-78</td><td>The system SHALL allow users to acknowledge, snooze, and annotate alerts, with state reflected across channels.</td><td><span class="pill p2">P2</span></td></tr>
+</tbody>
+</table>
+
+<h3>3.12 Module 12 — Administration &amp; Platform Operations</h3>
+<table>
+<thead><tr><th>ID</th><th>Requirement</th><th>Pri</th></tr></thead>
+<tbody>
+<tr><td>FR-79</td><td>The platform SHALL provide an internal admin plane to manage tenants, global block/allow lists, threat-intel feeds, feature flags, and entitlements — all actions audited.</td><td><span class="pill p0">P0</span></td></tr>
+<tr><td>FR-80</td><td>The platform SHALL support <strong>feature flags</strong> and staged rollout (per-tenant, per-cohort) for risk-controlled releases.</td><td><span class="pill p1">P1</span></td></tr>
+<tr><td>FR-81</td><td>The platform SHALL expose health/readiness endpoints and internal service dashboards (see §4.8).</td><td><span class="pill p0">P0</span></td></tr>
+<tr><td>FR-82</td><td>The platform SHALL support tenant data <strong>export and deletion</strong> workflows to satisfy offboarding and privacy rights (§7, §10).</td><td><span class="pill p0">P0</span></td></tr>
+</tbody>
+</table>
+
+<!-- ============================= 4. NFRs ============================= -->
+<h2 id="s4">4. Non-Functional Requirements</h2>
+
+<h3>4.1 Service-Level Objectives (SLA / SLO / SLI)</h3>
+<p>The following are contractual for the <strong>control-plane decision service</strong> and management console. Error budgets derive from these SLOs and govern release velocity.</p>
+<table>
+<thead><tr><th>ID</th><th>Service-Level Indicator (SLI)</th><th>SLO / Target</th><th>SLA (contractual)</th></tr></thead>
+<tbody>
+<tr><td>NFR-01</td><td>Decision API availability (monthly)</td><td>99.95%</td><td>99.9%</td></tr>
+<tr><td>NFR-02</td><td>Management console availability (monthly)</td><td>99.9%</td><td>99.5%</td></tr>
+<tr><td>NFR-03</td><td>End-to-end detection + defence latency (measured at SDK)</td><td>p95 &le; 3 s, p99 &le; 5 s</td><td>p95 &le; 3 s</td></tr>
+<tr><td>NFR-04</td><td>Stage 1 ingress-filter latency</td><td>p95 &lt; 1 ms</td><td>—</td></tr>
+<tr><td>NFR-05</td><td>Stage 2 full-analysis latency (rules + ML)</td><td>p95 &le; 500 ms</td><td>—</td></tr>
+<tr><td>NFR-06</td><td>ML inference latency per request (CPU)</td><td>p95 &le; 200 ms</td><td>—</td></tr>
+<tr><td>NFR-07</td><td>Decision correctness of API contract (5xx rate)</td><td>&lt; 0.1%</td><td>&lt; 0.5%</td></tr>
+<tr><td>NFR-08</td><td>Dashboard event propagation (event &rarr; UI)</td><td>&lt; 2 s (WebSocket)</td><td>&lt; 5 s (REST fallback)</td></tr>
+</tbody>
+</table>
+
+<h3>4.2 Performance &amp; Capacity</h3>
+<table>
+<thead><tr><th>ID</th><th>Requirement</th><th>Target</th><th>Method</th></tr></thead>
+<tbody>
+<tr><td>NFR-09</td><td>Ingress-filter throughput (stateless)</td><td>&ge; 50,000 req/s per region (horizontally scalable)</td><td>Load test (k6/Locust/wrk)</td></tr>
+<tr><td>NFR-10</td><td>Post-ingress event throughput (with ML)</td><td>&ge; 5,000 decisions/s per region</td><td>Load test</td></tr>
+<tr><td>NFR-11</td><td>SDK overhead per request (async)</td><td>&lt; 5 ms</td><td>Client-side timing</td></tr>
+<tr><td>NFR-12</td><td>Honeypot response overhead</td><td>&lt; 50 ms</td><td>Timing harness</td></tr>
+<tr><td>NFR-13</td><td>Concurrent WebSocket dashboard connections</td><td>&ge; 10,000 per region</td><td>ws-benchmark</td></tr>
+<tr><td>NFR-14</td><td>Capacity headroom under peak</td><td>&ge; 40% at forecast peak; autoscale to 3&times;</td><td>Capacity model + soak test</td></tr>
+</tbody>
+</table>
+
+<h3>4.3 Accuracy &amp; Model Quality</h3>
+<table>
+<thead><tr><th>ID</th><th>Requirement</th><th>Target</th></tr></thead>
+<tbody>
+<tr><td>NFR-15</td><td>Detection accuracy on the certification test set (stratified 80/20)</td><td>&ge; 90% (F1 &ge; 0.90)</td></tr>
+<tr><td>NFR-16</td><td>False-positive rate on clean production-like traffic</td><td>&le; 2% (hard ceiling 5%)</td></tr>
+<tr><td>NFR-17</td><td>Detection rate against live tooling (sqlmap, XSStrike, nikto, hydra, ZAP)</td><td>&ge; 85% (floor 70%)</td></tr>
+<tr><td>NFR-18</td><td>Honeypot isolation from real data</td><td>100% — zero data leakage</td></tr>
+<tr><td>NFR-19</td><td>Model drift alarm on precision/recall regression</td><td>Alert if &ge; 3% degradation vs. baseline</td></tr>
+</tbody>
+</table>
+
+<h3>4.4 Security &amp; Privacy Controls</h3>
+<table>
+<thead><tr><th>ID</th><th>Requirement</th><th>Detail</th></tr></thead>
+<tbody>
+<tr><td>NFR-20</td><td>Tenant data isolation</td><td>Enforced at authorization layer plus DB row-level security; verified by automated multi-tenant isolation tests each release.</td></tr>
+<tr><td>NFR-21</td><td>Authentication &amp; tokens</td><td>All non-public endpoints require valid credentials; short-lived JWT access tokens (asymmetric RS256/ES256 preferred) with refresh rotation; scoped API tokens for machine access.</td></tr>
+<tr><td>NFR-22</td><td>Encryption in transit</td><td>TLS 1.2+ everywhere (TLS 1.3 preferred); mTLS for internal service-to-service traffic.</td></tr>
+<tr><td>NFR-23</td><td>Encryption at rest</td><td>AES-256 for all datastores, backups, and object storage; envelope encryption via KMS; optional BYOK (enterprise tier).</td></tr>
+<tr><td>NFR-24</td><td>Secret management</td><td>No secrets in code/logs/URLs; centralised secrets manager with rotation; passwords hashed with bcrypt/argon2 (cost &ge; 12).</td></tr>
+<tr><td>NFR-25</td><td>Data minimisation &amp; retention</td><td>Raw bodies &le; 24 h then hashed/deleted; no plaintext PII or credentials persisted; field-level redaction of sensitive tokens.</td></tr>
+<tr><td>NFR-26</td><td>Vulnerability management</td><td>SAST, DAST, dependency &amp; container scanning in CI; critical vulns remediated within defined SLAs; annual third-party pen-test.</td></tr>
+<tr><td>NFR-27</td><td>Threat model &amp; secure SDLC</td><td>Maintained STRIDE threat model; security review gate on P0/P1 features; OWASP ASVS L2 conformance target.</td></tr>
+<tr><td>NFR-28</td><td>Least privilege &amp; segregation</td><td>Production access via just-in-time, MFA-gated, audited elevation; separation of duties for deploy vs. approve.</td></tr>
+</tbody>
+</table>
+
+<h3>4.5 Reliability, HA &amp; Fault Tolerance</h3>
+<table>
+<thead><tr><th>ID</th><th>Requirement</th><th>Target / Behaviour</th></tr></thead>
+<tbody>
+<tr><td>NFR-29</td><td>High availability</td><td>No single point of failure; services span &ge; 3 AZs; N+1 redundancy; rolling, zero-downtime deploys.</td></tr>
+<tr><td>NFR-30</td><td>Graceful ML degradation</td><td>If a model is unavailable, fall back to rule-engine-only scoring; log and alarm; never crash the decision path.</td></tr>
+<tr><td>NFR-31</td><td>Cache/store degradation</td><td>If Redis is unavailable, rate limiting degrades to a safe local limiter with alarm; if analytics store is degraded, decisions continue and events buffer for async write.</td></tr>
+<tr><td>NFR-32</td><td>Fail-open safety</td><td>Control-plane unreachability MUST NOT break customer traffic; SDK fails open by default (configurable).</td></tr>
+<tr><td>NFR-33</td><td>Backpressure &amp; isolation</td><td>Bulkheads, circuit breakers, and per-tenant quotas prevent cascading failure and noisy-neighbour impact.</td></tr>
+<tr><td>NFR-34</td><td>Data durability</td><td>Managed Postgres with synchronous replica + PITR; object storage &ge; 11 nines durability.</td></tr>
+</tbody>
+</table>
+
+<h3>4.6 Disaster Recovery &amp; Business Continuity</h3>
+<table>
+<thead><tr><th>ID</th><th>Requirement</th><th>Target</th></tr></thead>
+<tbody>
+<tr><td>NFR-35</td><td>Recovery Point Objective (RPO)</td><td>&le; 5 minutes (continuous replication + PITR)</td></tr>
+<tr><td>NFR-36</td><td>Recovery Time Objective (RTO)</td><td>&le; 1 hour to a warm secondary region</td></tr>
+<tr><td>NFR-37</td><td>Backups</td><td>Automated, encrypted, cross-region; restore rehearsed &ge; quarterly with documented results.</td></tr>
+<tr><td>NFR-38</td><td>DR exercise</td><td>Full region-failover game-day &ge; annually; runbooks kept current.</td></tr>
+<tr><td>NFR-39</td><td>Business continuity</td><td>Documented BCP with communication plan, status page, and customer notification SLAs for Sev-1 incidents.</td></tr>
+</tbody>
+</table>
+
+<h3>4.7 Scalability &amp; Elasticity</h3>
+<table>
+<thead><tr><th>ID</th><th>Requirement</th><th>Target</th></tr></thead>
+<tbody>
+<tr><td>NFR-40</td><td>Horizontal scale</td><td>Stateless decision services autoscale on CPU/RPS/latency signals; scale-out is linear to region capacity.</td></tr>
+<tr><td>NFR-41</td><td>Multi-region</td><td>Active-active decision plane across regions with region-local data residency; global config replicated.</td></tr>
+<tr><td>NFR-42</td><td>Tenant density</td><td>&ge; 10,000 tenants and &ge; 100,000 protected sites without architectural change.</td></tr>
+<tr><td>NFR-43</td><td>Data growth</td><td>Time-partitioned event tables with automated archival/rollup to control hot-storage growth.</td></tr>
+</tbody>
+</table>
+
+<h3>4.8 Observability &amp; Operability</h3>
+<table>
+<thead><tr><th>ID</th><th>Requirement</th><th>Detail</th></tr></thead>
+<tbody>
+<tr><td>NFR-44</td><td>Structured logging</td><td>JSON logs with correlation IDs across the decision path; centralised, searchable, PII-redacted.</td></tr>
+<tr><td>NFR-45</td><td>Metrics</td><td>RED/USE metrics per service; SLO dashboards and error-budget burn alerts (Prometheus/OpenMetrics + Grafana or equivalent).</td></tr>
+<tr><td>NFR-46</td><td>Distributed tracing</td><td>OpenTelemetry traces spanning SDK &rarr; API &rarr; models &rarr; datastore.</td></tr>
+<tr><td>NFR-47</td><td>Alerting &amp; on-call</td><td>Actionable alerts tied to SLOs; paging via PagerDuty/Opsgenie; documented runbooks per alert.</td></tr>
+<tr><td>NFR-48</td><td>Health &amp; readiness</td><td>Liveness/readiness probes; synthetic canaries exercising the decision path continuously.</td></tr>
+<tr><td>NFR-49</td><td>Status &amp; transparency</td><td>Public status page; per-tenant incident notifications.</td></tr>
+</tbody>
+</table>
+
+<h3>4.9 Usability &amp; Accessibility</h3>
+<table>
+<thead><tr><th>ID</th><th>Requirement</th><th>Target</th></tr></thead>
+<tbody>
+<tr><td>NFR-50</td><td>Time-to-value</td><td>New site protected in &lt; 15 min following the guide; first decision &lt; 10 min after SDK install.</td></tr>
+<tr><td>NFR-51</td><td>Comprehension</td><td>A non-technical owner understands threat status within 30 s of opening the dashboard.</td></tr>
+<tr><td>NFR-52</td><td>Accessibility</td><td>Console conforms to <strong>WCAG 2.1 Level AA</strong>; keyboard navigable; screen-reader labelled.</td></tr>
+<tr><td>NFR-53</td><td>Documentation</td><td>Complete developer docs, API reference (OpenAPI), and copy-paste snippets kept in sync with releases.</td></tr>
+</tbody>
+</table>
+
+<h3>4.10 Portability, Internationalisation &amp; Compatibility</h3>
+<table>
+<thead><tr><th>ID</th><th>Requirement</th><th>Target</th></tr></thead>
+<tbody>
+<tr><td>NFR-54</td><td>Containerisation</td><td>All services ship as OCI images; deployable via Helm/Kustomize on any conformant Kubernetes; IaC-provisioned.</td></tr>
+<tr><td>NFR-55</td><td>SDK compatibility</td><td>Python 3.8+ and Node.js 16+ with minimal mandatory dependencies; semantic versioning.</td></tr>
+<tr><td>NFR-56</td><td>Browser support</td><td>Latest 2 major versions of Chrome, Edge, Firefox, Safari.</td></tr>
+<tr><td>NFR-57</td><td>Internationalisation</td><td>UTF-8 throughout; UI string externalisation and locale/timezone-aware rendering; timestamps stored UTC.</td></tr>
+</tbody>
+</table>
+
+<h3>4.11 Maintainability</h3>
+<table>
+<thead><tr><th>ID</th><th>Requirement</th><th>Target</th></tr></thead>
+<tbody>
+<tr><td>NFR-58</td><td>Test coverage</td><td>&ge; 80% line coverage on core decision, rules, and defence modules; mutation testing on scoring logic.</td></tr>
+<tr><td>NFR-59</td><td>Code quality gates</td><td>Linting, type-checking, and static analysis enforced in CI; PRs require &ge; 2 reviewers incl. one code-owner.</td></tr>
+<tr><td>NFR-60</td><td>API versioning &amp; deprecation</td><td>Backwards-compatible within a major version; &ge; 6-month deprecation notice with migration guide.</td></tr>
+<tr><td>NFR-61</td><td>Configuration as data</td><td>Rules, weights, and thresholds are versioned data artefacts, not code; changes are reviewable and revertible.</td></tr>
+</tbody>
+</table>
+
+<!-- ============================= 5. EXTERNAL INTERFACES ============================= -->
+<h2 id="s5">5. External Interface Requirements</h2>
+<h3>5.1 User Interfaces</h3>
+<ul>
+<li>Management console built as a modern SPA (React 18) with a design system, responsive layout, light/dark themes, and WCAG 2.1 AA conformance.</li>
+<li>Real-time panels via WebSocket with automatic reconnection (exponential backoff) and a REST polling fallback (&le; 5 s).</li>
+<li>Charts via a lightweight, accessible charting library with data-table equivalents for screen readers.</li>
+<li>Client-side and server-side export paths (PDF/CSV/JSON); large ranges are generated server-side and delivered via signed download links.</li>
+</ul>
+<h3>5.2 Software Interfaces (External Services)</h3>
+<table>
+<thead><tr><th>Service</th><th>Usage</th><th>Handling</th></tr></thead>
+<tbody>
+<tr><td>Geolocation provider</td><td>IP &rarr; country/city/ISP/coords</td><td>Cached in Redis (24 h TTL); provider-agnostic adapter; graceful degradation on outage.</td></tr>
+<tr><td>Email/SMS gateway</td><td>Alert delivery</td><td>Provider credentials in secrets manager; retry with backoff; bounce handling.</td></tr>
+<tr><td>Managed TLS/Ingress</td><td>Certificate issuance/renewal, HTTPS termination</td><td>Automated via platform; no cert material in application code.</td></tr>
+<tr><td>SIEM / SOAR / ChatOps</td><td>Event streaming and incident automation</td><td>Native connectors (CEF/LEEF/JSON, webhooks); documented in §3.9.</td></tr>
+<tr><td>PostgreSQL 15 / Redis 7</td><td>Primary store / cache &amp; rate limiter</td><td>Managed HA services; async drivers; pooled connections.</td></tr>
+<tr><td>KMS / Secrets Manager</td><td>Key &amp; secret custody</td><td>Envelope encryption; rotation; optional BYOK.</td></tr>
+</tbody>
+</table>
+<h3>5.3 Hardware Interfaces</h3>
+<p>No direct hardware interfaces. All components run on standard cloud compute; ML inference is CPU-only (no GPU dependency).</p>
+
+<!-- ============================= 6. ARCHITECTURE ============================= -->
+<h2 id="s6">6. System Architecture</h2>
+<h3>6.1 Logical Component Overview</h3>
+<table>
+<thead><tr><th>Component</th><th>Technology</th><th>Responsibility</th></tr></thead>
+<tbody>
+<tr><td>Management Console &amp; Landing</td><td>React 18 + design system</td><td>Signup, SSO, dashboards, admin, docs.</td></tr>
+<tr><td>API Gateway / Edge</td><td>Managed LB + WAF + rate limiting</td><td>TLS termination, authN, coarse rate limiting, routing.</td></tr>
+<tr><td>Decision Service (control plane)</td><td>FastAPI (Python 3.11), stateless</td><td>Ingress filter orchestration, scoring fusion, decision &amp; defence logic.</td></tr>
+<tr><td>Rule Engine</td><td>Python module (data-driven rules)</td><td>Deterministic attack detection; hot-updatable rule packs.</td></tr>
+<tr><td>ML Inference</td><td>scikit-learn IF + RF (in-process or sidecar)</td><td>Anomaly scoring &amp; attack classification; explainability.</td></tr>
+<tr><td>Honeypot Service</td><td>Python + templating</td><td>Deception content generation; isolated attacker logging.</td></tr>
+<tr><td>Analytics &amp; Event Pipeline</td><td>Async workers + message queue</td><td>Non-blocking event ingest, aggregation, WebSocket fan-out.</td></tr>
+<tr><td>Identity &amp; Access</td><td>SSO (SAML/OIDC), SCIM, RBAC/ABAC</td><td>AuthN/AuthZ, provisioning, session &amp; token management.</td></tr>
+<tr><td>Integration Service</td><td>Webhooks, SIEM/SOAR connectors</td><td>Reliable outbound delivery with retries &amp; DLQ.</td></tr>
+<tr><td>Audit Service</td><td>Append-only / WORM store</td><td>Tamper-evident audit trail.</td></tr>
+<tr><td>Data Stores</td><td>PostgreSQL 15, Redis 7, Object storage</td><td>Relational data, cache/rate limiting, evidence/exports.</td></tr>
+<tr><td>Observability Stack</td><td>OpenTelemetry, metrics, logs, tracing</td><td>Monitoring, alerting, SLO tracking.</td></tr>
+</tbody>
+</table>
+
+<h3>6.2 Deployment Architecture</h3>
+<p>Kubernetes across &ge; 3 AZs in the primary region, provisioned by Terraform and deployed via GitOps. Stateless decision services scale horizontally behind the gateway; managed PostgreSQL (primary + sync replica + read replicas, PITR) and Redis Cluster provide state. A warm secondary region holds continuously-replicated data for DR (RPO &le; 5 min / RTO &le; 1 h). Environments are fully isolated: <em>dev</em>, <em>staging</em>, <em>production</em> (see §11).</p>
+
+<h3>6.3 End-to-End Request Processing Flow</h3>
+<table>
+<thead><tr><th>#</th><th>Step</th><th>Latency Target</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>Visitor request hits the customer's server; SDK intercepts and extracts metadata.</td><td>~2 ms</td></tr>
+<tr><td>2</td><td>SDK calls Decision API (<code>POST /v1/check</code>) over TLS.</td><td>~5 ms (network)</td></tr>
+<tr><td>3</td><td>Stage 1 — rate check, allow/block lists, scanner UA check.</td><td>&lt; 1 ms</td></tr>
+<tr><td>4</td><td>Stage 2 — rule engine evaluates core rules.</td><td>~50 ms</td></tr>
+<tr><td>5</td><td>Stage 2 — Isolation Forest anomaly score.</td><td>~100 ms</td></tr>
+<tr><td>6</td><td>Stage 2 — Random Forest classification.</td><td>~100 ms</td></tr>
+<tr><td>7</td><td>Decision engine fuses scores &rarr; level + action + explainability.</td><td>~20 ms</td></tr>
+<tr><td>8</td><td>If CRITICAL: honeypot content rendered.</td><td>~30 ms</td></tr>
+<tr><td>9</td><td>API returns decision to SDK; SDK enforces (pass / deny / 200 OK honeypot).</td><td>~7 ms</td></tr>
+<tr><td>10</td><td>Event published to async pipeline; persisted; dashboards updated.</td><td>Non-blocking, &lt; 2 s to UI</td></tr>
+</tbody>
+</table>
+<p class="small">Persistence and dashboard fan-out (step 10) are asynchronous — the decision is returned before writes complete, so logging never inflates the customer's request latency.</p>
+
+<!-- ============================= 7. DATA MODEL ============================= -->
+<h2 id="s7">7. Data Model &amp; Data Governance</h2>
+<h3>7.1 Core Entities (logical)</h3>
+<p>All tenant-scoped tables carry a <code>tenant_id</code> and are protected by row-level security. UUID primary keys and <code>TIMESTAMPTZ</code> (UTC) throughout.</p>
+<table>
+<thead><tr><th>Entity</th><th>Key Attributes</th><th>Notes</th></tr></thead>
+<tbody>
+<tr><td>tenants</td><td>id, name, tier, region, status, created_at</td><td>Top of hierarchy; entitlements attached.</td></tr>
+<tr><td>users</td><td>id, tenant_id, email, auth_source, mfa_enabled, status</td><td>Local or federated (SSO/SCIM).</td></tr>
+<tr><td>roles / role_bindings</td><td>role, scope (tenant/site), principal</td><td>RBAC/ABAC assignments.</td></tr>
+<tr><td>websites</td><td>id, tenant_id, url, status, created_at</td><td>Protected site.</td></tr>
+<tr><td>api_keys</td><td>id, site_id, key_id, secret_hash, status, rotated_at, expires_at</td><td>Multiple active keys for zero-downtime rotation; secret stored hashed only.</td></tr>
+<tr><td>threat_events</td><td>id, tenant_id, site_id, ip, attack_type, severity, action, score, model_version, rules_triggered, raw_request*, request_body*, timestamp</td><td>* retained &le; 24 h then hashed/deleted; time-partitioned.</td></tr>
+<tr><td>blocked_ips</td><td>id, site_id, ip/cidr, reason, blocked_at, expires_at, unblocked_at, actor</td><td>Reversible; audited.</td></tr>
+<tr><td>honeypot_sessions</td><td>id, site_id, attacker_ref, start_time, duration, total_requests</td><td>Separate schema; no FK to real data.</td></tr>
+<tr><td>attacker_actions</td><td>id, session_id, endpoint, method, payload, timestamp, tool_fingerprint</td><td>Isolated honeypot schema.</td></tr>
+<tr><td>attacker_profiles</td><td>id, source_ref, country, city, isp, tools(JSONB), first_seen, last_seen, total_sessions</td><td>Cross-session aggregation.</td></tr>
+<tr><td>audit_log</td><td>id, tenant_id, actor, action, target, before/after, ip, ts, correlation_id, hash_prev</td><td>Append-only, hash-chained (tamper-evident).</td></tr>
+</tbody>
+</table>
+
+<h3>7.2 Data Classification &amp; Retention</h3>
+<table>
+<thead><tr><th>Class</th><th>Examples</th><th>Handling</th><th>Default Retention</th></tr></thead>
+<tbody>
+<tr><td>Sensitive / regulated</td><td>Raw request bodies, credentials tried, PII in payloads</td><td>Encrypted; access-restricted; redacted in logs; never plaintext-persisted beyond window</td><td>&le; 24 h then hash/delete</td></tr>
+<tr><td>Security telemetry</td><td>Threat events, scores, attacker intel</td><td>Tenant-scoped; encrypted at rest</td><td>90 days hot, then archive (configurable)</td></tr>
+<tr><td>Operational</td><td>Metrics, non-PII logs, traces</td><td>Centralised, redacted</td><td>30–90 days</td></tr>
+<tr><td>Audit</td><td>Audit log</td><td>WORM / hash-chained</td><td>1 yr hot / 7 yr cold</td></tr>
+</tbody>
+</table>
+
+<h3>7.3 Data Governance, Residency &amp; Privacy</h3>
+<table>
+<thead><tr><th>ID</th><th>Requirement</th></tr></thead>
+<tbody>
+<tr><td>DG-1</td><td>Tenant data SHALL be pinned to a chosen region; cross-region movement limited to same-jurisdiction DR.</td></tr>
+<tr><td>DG-2</td><td>The platform SHALL fulfil <strong>DSARs</strong> (access, export, rectification, erasure) within regulatory windows via self-service or supported workflow.</td></tr>
+<tr><td>DG-3</td><td>A <strong>DPIA</strong> SHALL be maintained; processing purposes and lawful bases documented; data-processing addendum (DPA) available to customers.</td></tr>
+<tr><td>DG-4</td><td>Sub-processors SHALL be inventoried and disclosed; changes communicated per contract.</td></tr>
+<tr><td>DG-5</td><td>Tenant offboarding SHALL support verified export and complete deletion within a defined SLA.</td></tr>
+</tbody>
+</table>
+
+<!-- ============================= 8. API CONTRACT ============================= -->
+<h2 id="s8">8. API Contract</h2>
+<h3>8.1 Decision Endpoint</h3>
+<table>
+<thead><tr><th>Attribute</th><th>Value</th></tr></thead>
+<tbody>
+<tr><td>Endpoint</td><td><code>POST /v1/check</code></td></tr>
+<tr><td>Auth</td><td>Site key + secret (header) over TLS; optional mTLS for enterprise</td></tr>
+<tr><td>Content-Type</td><td><code>application/json</code></td></tr>
+<tr><td>Request</td><td><code>site_id</code> (UUID), <code>request.method</code>, <code>request.path</code>, <code>request.headers</code>, <code>request.body</code> (sampled), <code>request.ip</code>, <code>request.cookies</code>, <code>request.query</code></td></tr>
+<tr><td>Idempotency</td><td>Optional <code>Idempotency-Key</code> header for safe retries</td></tr>
+</tbody>
+</table>
+<pre><code>// 200 OK — ALLOW
+{ "action":"pass", "score":12, "level":"LOW",
+  "rules_triggered":[], "ml_score":0.08, "model_version":"rf-1.4.0",
+  "latency_ms":45, "request_id":"..." }
+
+// 200 OK — BLOCK
+{ "action":"block", "score":75, "level":"HIGH",
+  "rules_triggered":["brute_force"], "ml_score":0.70,
+  "explain":{"top_features":["args_length","special_char_count_args"]},
+  "latency_ms":48, "request_id":"..." }
+
+// 200 OK — HONEYPOT
+{ "action":"honeypot", "score":87, "level":"CRITICAL",
+  "rules_triggered":["sqli","scanner"], "ml_score":0.91,
+  "honeypot_content":"&lt;html&gt;...&lt;/html&gt;",
+  "latency_ms":52, "request_id":"..." }</code></pre>
+<h3>8.2 Error Model &amp; Standards</h3>
+<table>
+<thead><tr><th>Status</th><th>Meaning</th></tr></thead>
+<tbody>
+<tr><td>400 / 422</td><td>Malformed request / schema validation failure (RFC 7807 problem+json)</td></tr>
+<tr><td>401 / 403</td><td>Invalid credentials / insufficient scope</td></tr>
+<tr><td>429</td><td>Quota or rate limit exceeded (with <code>Retry-After</code>)</td></tr>
+<tr><td>5xx</td><td>Server error — SDK applies fail-open/closed policy</td></tr>
+</tbody>
+</table>
+<p class="small">All APIs are documented via OpenAPI 3.x, versioned under <code>/v1</code>, rate-limited per plan, and return a correlation <code>request_id</code> for traceability. Management-plane APIs use scoped bearer tokens.</p>
+
+<!-- ============================= 9. ML / MLOps ============================= -->
+<h2 id="s9">9. Machine-Learning Model Specification &amp; MLOps</h2>
+<h3>9.1 Models</h3>
+<table>
+<thead><tr><th>Attribute</th><th>Model 1 — Anomaly Detector</th><th>Model 2 — Attack Classifier</th></tr></thead>
+<tbody>
+<tr><td>Algorithm</td><td>Isolation Forest (scikit-learn)</td><td>Random Forest (scikit-learn)</td></tr>
+<tr><td>Purpose</td><td>Unsupervised: is this request statistically abnormal?</td><td>Supervised: what attack class is this?</td></tr>
+<tr><td>Training data</td><td>CSIC 2010 + governed supplemental traffic</td><td>CSIC 2010 (labelled: SQLi, XSS, buffer overflow, …)</td></tr>
+<tr><td>Features</td><td colspan="2">Shared feature set defined in §3.4.2</td></tr>
+<tr><td>Output</td><td>Anomaly probability 0.0–1.0</td><td>Class label + per-class probability</td></tr>
+<tr><td>Target</td><td colspan="2">&ge; 90% accuracy / F1 on the certification test split; CPU inference p95 &le; 200 ms</td></tr>
+<tr><td>Serialisation</td><td colspan="2">Versioned artefacts (joblib) in a model registry; loaded at startup / hot-swappable</td></tr>
+</tbody>
+</table>
+
+<h3>9.2 MLOps Lifecycle &amp; Governance</h3>
+<table>
+<thead><tr><th>ID</th><th>Requirement</th></tr></thead>
+<tbody>
+<tr><td>ML-1</td><td>Datasets, features, and models SHALL be <strong>versioned</strong> with lineage; every decision records the exact <code>model_version</code> used.</td></tr>
+<tr><td>ML-2</td><td>A reproducible training pipeline SHALL produce evaluation reports (accuracy, precision, recall, F1, confusion matrix, FP rate) gated against §4.3 thresholds before promotion.</td></tr>
+<tr><td>ML-3</td><td>Model promotion SHALL be staged (shadow &rarr; canary &rarr; full) with automated rollback on metric regression.</td></tr>
+<tr><td>ML-4</td><td>Production <strong>drift monitoring</strong> SHALL track score distributions and label feedback; alarms fire on &ge; 3% degradation (NFR-19).</td></tr>
+<tr><td>ML-5</td><td>A feedback loop (analyst-confirmed FP/FN) SHALL feed periodic retraining; retraining is change-controlled and audited.</td></tr>
+<tr><td>ML-6</td><td>Models SHALL provide feature-attribution explainability sufficient for analyst triage (FR-34).</td></tr>
+<tr><td>ML-7</td><td>Training data governance SHALL ensure licensing compliance and exclusion of customer PII from model training.</td></tr>
+</tbody>
+</table>
+
+<!-- ============================= 10. COMPLIANCE ============================= -->
+<h2 id="s10">10. Compliance, Regulatory &amp; Legal Requirements</h2>
+<table>
+<thead><tr><th>ID</th><th>Requirement</th></tr></thead>
+<tbody>
+<tr><td>CO-1</td><td>The platform SHALL be built and operated to achieve <strong>SOC 2 Type II</strong> (Security, Availability, Confidentiality) and support <strong>ISO/IEC 27001</strong> certification of the ISMS.</td></tr>
+<tr><td>CO-2</td><td>Application security SHALL target <strong>OWASP ASVS Level 2</strong> and mitigate the OWASP Top 10 and API Security Top 10.</td></tr>
+<tr><td>CO-3</td><td>Controls SHALL map to the <strong>NIST CSF</strong> functions (Identify, Protect, Detect, Respond, Recover) with an evidenced control matrix.</td></tr>
+<tr><td>CO-4</td><td>Processing of personal data SHALL comply with <strong>GDPR</strong> and <strong>CCPA/CPRA</strong>: lawful basis, data-subject rights, breach notification within statutory timelines, and a customer-facing DPA.</td></tr>
+<tr><td>CO-5</td><td>Where customers process cardholder data, Guardian SHALL not store PAN and SHALL support the customer's <strong>PCI-DSS v4.0</strong> obligations via redaction and scoping controls.</td></tr>
+<tr><td>CO-6</td><td>All third-party components SHALL be permissively licensed (MIT/BSD/Apache-2.0); an <strong>SBOM</strong> SHALL be produced per release; no copyleft in distributed artefacts.</td></tr>
+<tr><td>CO-7</td><td><strong>Ethical-use scope:</strong> testing and honeypot operation SHALL be limited to the customer's own assets and explicitly authorised targets; the platform SHALL provide no capability to attack third parties.</td></tr>
+<tr><td>CO-8</td><td>An <strong>incident-response and breach-notification</strong> process SHALL be maintained, tested, and contractually surfaced to customers.</td></tr>
+</tbody>
+</table>
+
+<!-- ============================= 11. DEVSECOPS ============================= -->
+<h2 id="s11">11. DevSecOps, Environments &amp; Release Management</h2>
+<table>
+<thead><tr><th>ID</th><th>Requirement</th></tr></thead>
+<tbody>
+<tr><td>OP-1</td><td>Fully isolated <strong>dev / staging / production</strong> environments with no shared data; production access is JIT, MFA-gated, and audited.</td></tr>
+<tr><td>OP-2</td><td>All infrastructure SHALL be defined as code (Terraform); changes peer-reviewed and applied via pipeline (GitOps).</td></tr>
+<tr><td>OP-3</td><td>CI SHALL run build, unit/integration tests, lint, type-check, SAST, dependency &amp; container scanning, and SBOM generation; merges are blocked on failure.</td></tr>
+<tr><td>OP-4</td><td>CD SHALL perform zero-downtime rolling / blue-green / canary deploys with automated health checks and one-click rollback.</td></tr>
+<tr><td>OP-5</td><td>Releases SHALL follow <strong>change management</strong>: versioned, changelog'd, approved, and reversible; risky changes gated behind feature flags.</td></tr>
+<tr><td>OP-6</td><td><strong>Incident management</strong> SHALL define severity levels, on-call rotation, response SLAs, and blameless post-mortems with tracked action items.</td></tr>
+<tr><td>OP-7</td><td>Backups, DR drills, and restore rehearsals SHALL be scheduled and evidenced (§4.6).</td></tr>
+<tr><td>OP-8</td><td>Secrets, keys, and certificates SHALL be centrally managed and rotated; no secret material in source control.</td></tr>
+</tbody>
+</table>
+
+<!-- ============================= 12. V&V ============================= -->
+<h2 id="s12">12. Verification &amp; Validation (Test Strategy)</h2>
+<h3>12.1 Test Levels</h3>
+<table>
+<thead><tr><th>Level</th><th>Scope &amp; Exit Criteria</th></tr></thead>
+<tbody>
+<tr><td>Unit</td><td>Rules, scoring fusion, defence actions, honeypot triggers, schema validation. Exit: &ge; 80% coverage on core modules; all pass.</td></tr>
+<tr><td>Integration</td><td>SDK &rarr; API &rarr; models &rarr; datastore; multi-tenant isolation; SSO/SCIM; webhook/SIEM delivery. Exit: all P0 flows green.</td></tr>
+<tr><td>System / E2E</td><td>Full attack scenarios end-to-end incl. honeypot <code>200 OK</code>, reversibility, dashboards. Exit: acceptance criteria (§15) met.</td></tr>
+<tr><td>Performance</td><td>Load, stress, soak, spike against SLOs (§4.1–4.2). Exit: p95/p99 targets met with headroom.</td></tr>
+<tr><td>Security</td><td>SAST/DAST, dependency/container scan, tenant-isolation tests, third-party pen-test. Exit: no open Critical/High findings.</td></tr>
+<tr><td>Resilience</td><td>Chaos/fault-injection: model down, Redis down, region failover. Exit: graceful degradation &amp; RTO/RPO met.</td></tr>
+<tr><td>Accessibility</td><td>Automated + manual WCAG 2.1 AA audit. Exit: no AA blockers.</td></tr>
+</tbody>
+</table>
+<h3>12.2 Representative Test Cases</h3>
+<table>
+<thead><tr><th>ID</th><th>Scenario</th><th>Expected</th></tr></thead>
+<tbody>
+<tr><td>UT-01</td><td>11 requests/1 s from one IP</td><td>Rate limit triggers (429/BLOCK)</td></tr>
+<tr><td>UT-04</td><td><code>POST username=admin' OR 1=1--</code></td><td>Score &ge; 70, type SQLi, severity CRITICAL</td></tr>
+<tr><td>UT-13</td><td>Combined score &ge; 85</td><td>action=honeypot, response 200 OK + fake HTML</td></tr>
+<tr><td>IT-04</td><td>Request scoring &ge; 85</td><td>200 OK honeypot — never 301/302</td></tr>
+<tr><td>IT-05</td><td>sqlmap against protected endpoint</td><td>200 OK with fake data; no real data leaked</td></tr>
+<tr><td>SEC-01</td><td>Tenant A requests Tenant B data</td><td>403 / empty; isolation upheld; audited</td></tr>
+<tr><td>RES-01</td><td>ML service killed mid-load</td><td>Fallback to rules; no decision-path crash; alarm raised</td></tr>
+<tr><td>DR-01</td><td>Primary region failover</td><td>Recovery within RTO &le; 1 h, data loss within RPO &le; 5 min</td></tr>
+<tr><td>AS-01…06</td><td>sqlmap, XSStrike, dirb/gobuster, hydra, nikto, OWASP ZAP</td><td>Detection &ge; 85% target (floor 70%); scanner + rules trigger</td></tr>
+</tbody>
+</table>
+
+<!-- ============================= 13. RISKS ============================= -->
+<h2 id="s13">13. Risk Register &amp; Mitigations</h2>
+<table>
+<thead><tr><th>ID</th><th>Risk</th><th>L</th><th>I</th><th>Mitigation</th></tr></thead>
+<tbody>
+<tr><td>R1</td><td>Training corpus too small for robust generalisation</td><td>M</td><td>H</td><td>Augment with governed supplemental traffic; target 100k+ samples; drift monitoring &amp; retraining loop.</td></tr>
+<tr><td>R2</td><td>False-positive rate exceeds ceiling in production</td><td>M</td><td>H</td><td>Conservative thresholds; Monitor-only onboarding mode; analyst FP feedback &amp; recalibration; per-route tuning.</td></tr>
+<tr><td>R3</td><td>Rate limiter blocks legitimate bursty/paginated traffic</td><td>M</td><td>M</td><td>Allowlists; per-route configurable windows; adaptive limits; simulation before enforce.</td></tr>
+<tr><td>R4</td><td>Honeypot serves deception to legitimate users</td><td>L</td><td>H</td><td>Activation only at score &ge; 85; regression tests; Monitor-only safety net.</td></tr>
+<tr><td>R5</td><td>Control-plane outage impacts customer traffic</td><td>L</td><td>H</td><td>Out-of-band design + SDK fail-open default; multi-AZ HA; DR to secondary region.</td></tr>
+<tr><td>R6</td><td>Multi-tenant data leakage</td><td>L</td><td>H</td><td>Authorization-layer + row-level security; automated isolation tests each release; pen-test.</td></tr>
+<tr><td>R7</td><td>Model drift degrades detection over time</td><td>M</td><td>M</td><td>Drift alarms; scheduled retraining; canary promotion with rollback.</td></tr>
+<tr><td>R8</td><td>Advanced attacker detects honeypot via timing</td><td>L</td><td>L</td><td>Documented limitation; response-timing normalisation on roadmap.</td></tr>
+<tr><td>R9</td><td>WebSocket instability at scale</td><td>M</td><td>M</td><td>Reconnect with backoff; REST polling fallback; connection sharding.</td></tr>
+<tr><td>R10</td><td>Dependency/supply-chain vulnerability</td><td>M</td><td>H</td><td>SBOM, dependency scanning, pinned/verified builds, rapid-patch SLA.</td></tr>
+</tbody>
+</table>
+
+<!-- ============================= 14. RTM ============================= -->
+<h2 id="s14">14. Requirements Traceability Matrix (Extract)</h2>
+<p class="small">Full RTM is maintained as a living artefact linking each requirement to design element, test case(s), and verification result. Extract below; Verification methods: T=Test, D=Demonstration, I=Inspection, A=Analysis.</p>
+<table>
+<thead><tr><th>Req</th><th>Business Obj.</th><th>Design Ref</th><th>Test Ref</th><th>Verify</th></tr></thead>
+<tbody>
+<tr><td>FR-25…30 (rules)</td><td>BO-2</td><td>§6.1 Rule Engine</td><td>UT-04…09, AS-01…06</td><td>T</td></tr>
+<tr><td>FR-39, FR-44 (honeypot 200 OK)</td><td>BO-1, BO-2</td><td>§6.1 Honeypot</td><td>UT-13, IT-04, IT-05</td><td>T</td></tr>
+<tr><td>FR-41 (reversibility)</td><td>BO-1</td><td>§3.5 Defence</td><td>IT (unblock/unlock)</td><td>T/D</td></tr>
+<tr><td>FR-09…13 (RBAC/SSO/SCIM/MFA)</td><td>BO-3</td><td>§6.1 Identity</td><td>IT-SSO, SEC-01</td><td>T</td></tr>
+<tr><td>NFR-01…03 (SLA/latency)</td><td>BO-1, BO-3</td><td>§6.2 Deploy</td><td>PT-01…05</td><td>T/A</td></tr>
+<tr><td>NFR-35, NFR-36 (RPO/RTO)</td><td>BO-3</td><td>§4.6 DR</td><td>DR-01</td><td>T/D</td></tr>
+<tr><td>NFR-15…17 (accuracy)</td><td>BO-2</td><td>§9 ML</td><td>ML eval, AS-01…06</td><td>T/A</td></tr>
+<tr><td>FR-72…75 (audit)</td><td>BO-5</td><td>§6.1 Audit</td><td>IT-audit, I</td><td>T/I</td></tr>
+<tr><td>CO-1…8 (compliance)</td><td>BO-3, BO-5</td><td>§10</td><td>Audit evidence</td><td>I/A</td></tr>
+</tbody>
+</table>
+
+<!-- ============================= 15. ACCEPTANCE ============================= -->
+<h2 id="s15">15. Acceptance Criteria &amp; Definition of Done</h2>
+<h3>15.1 Release Acceptance (must all hold)</h3>
+<table>
+<thead><tr><th>Criterion</th><th>Minimum</th><th>Target</th></tr></thead>
+<tbody>
+<tr><td>Detection rate (certification set)</td><td>&ge; 70%</td><td>&ge; 90%</td></tr>
+<tr><td>False-positive rate</td><td>&le; 5%</td><td>&le; 2%</td></tr>
+<tr><td>End-to-end latency (p95)</td><td>&le; 3 s</td><td>&le; 3 s / p99 &le; 5 s</td></tr>
+<tr><td>Control-plane availability</td><td>&ge; 99.9%</td><td>&ge; 99.95%</td></tr>
+<tr><td>Honeypot effectiveness</td><td>100% CRITICAL requests contained (200 OK, no real-data reach)</td><td>100%</td></tr>
+<tr><td>Multi-tenant isolation</td><td>Zero cross-tenant leakage in tests + pen-test</td><td>Zero</td></tr>
+<tr><td>DR objectives</td><td>RTO &le; 1 h, RPO &le; 5 min proven in drill</td><td>Met</td></tr>
+<tr><td>Security posture</td><td>No open Critical/High findings; SBOM clean</td><td>Met</td></tr>
+<tr><td>Accessibility</td><td>WCAG 2.1 AA, no blockers</td><td>Met</td></tr>
+<tr><td>Integration setup time</td><td>&lt; 15 min</td><td>&lt; 10 min</td></tr>
+</tbody>
+</table>
+<h3>15.2 Definition of Done (per feature)</h3>
+<ul>
+<li>Code reviewed (&ge; 2 approvers incl. code-owner); lin/type/static-analysis gates pass.</li>
+<li>Unit + integration tests added and green; coverage threshold maintained.</li>
+<li>Security review passed for P0/P1; threat model updated where relevant.</li>
+<li>Observability in place (logs, metrics, traces, alerts); runbook updated.</li>
+<li>Docs &amp; API reference updated; feature flag &amp; rollout plan defined.</li>
+<li>Requirement traced in the RTM with verification evidence recorded.</li>
+</ul>
+
+<!-- ============================= 16. APPENDICES ============================= -->
+<h2 id="s16">16. Appendices</h2>
+<h3>Appendix A — Priority Legend</h3>
+<p><span class="pill p0">P0</span> Must-have (gating) &nbsp; <span class="pill p1">P1</span> Important &nbsp; <span class="pill p2">P2</span> Nice-to-have &nbsp; <span class="pill p3">P3</span> Roadmap/stretch.</p>
+<h3>Appendix B — Subscription Tiers (indicative)</h3>
+<table>
+<thead><tr><th>Capability</th><th>Standard</th><th>Business</th><th>Enterprise</th></tr></thead>
+<tbody>
+<tr><td>Sites / quotas</td><td>Base</td><td>Higher</td><td>Custom</td></tr>
+<tr><td>SSO / SCIM</td><td>—</td><td>SSO</td><td>SSO + SCIM</td></tr>
+<tr><td>SIEM / SOAR connectors</td><td>Webhooks</td><td>+ SIEM</td><td>+ SOAR/ticketing</td></tr>
+<tr><td>Data residency / BYOK</td><td>Region</td><td>Region</td><td>Choice + BYOK</td></tr>
+<tr><td>Availability SLA</td><td>99.5%</td><td>99.9%</td><td>99.95%</td></tr>
+<tr><td>Support</td><td>Standard</td><td>Priority</td><td>24×7 + TAM</td></tr>
+</tbody>
+</table>
+<h3>Appendix C — Open Items &amp; Roadmap</h3>
+<ul>
+<li>LSTM/statistical traffic-anomaly predictor (P3) — z-score volume pre-alerts.</li>
+<li>Inline data-plane enforcement option (reverse-proxy/CDN) — future.</li>
+<li>Managed SOC / human-in-the-loop response — future.</li>
+<li>Additional SDKs (Go, Java, PHP, .NET) — roadmap.</li>
+</ul>
+<h3>Appendix D — CSIC 2010 Feature Mapping</h3>
+<table>
+<thead><tr><th>Source Feature</th><th>Extracted From</th><th>Used By</th></tr></thead>
+<tbody>
+<tr><td>Method / Path / Query</td><td>request.method / .path / parsed body</td><td>Rules + ML</td></tr>
+<tr><td>User-Agent</td><td>headers.User-Agent</td><td>Scanner detection</td></tr>
+<tr><td>Content length / param count</td><td>len(body) / parsed params</td><td>ML (body_length, args_count)</td></tr>
+<tr><td>Special-char ratio / entropy</td><td>char analysis of args &amp; body</td><td>ML (special_char_count, body_entropy)</td></tr>
+<tr><td>SQL/JS keyword presence</td><td>token match in body</td><td>Rules + ML</td></tr>
+<tr><td>Path depth</td><td>count of <code>/</code> in path</td><td>ML (path_depth)</td></tr>
+</tbody>
+</table>
+
+<hr>
+<p class="small" style="text-align:center;">— End of Document — AI Cyber Guardian &middot; Enterprise SRS v1.0 &middot; Document ID ACG-SRS-ENT-001 &middot; Confidential —</p>
+
+</div>
+</body>
+</html>
