@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>AI Cyber Guardian — Full-Stack Master Implementation Plan</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap');
+
+  @page {
+    size: A4 portrait;
+    margin: 18mm 16mm 18mm 16mm;
+    @bottom-right {
+      content: counter(page);
+      font-family: 'Inter', sans-serif;
+      font-size: 9pt;
+      color: #64748b;
+    }
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    color: #0f172a;
+    background: #ffffff;
+    line-height: 1.55;
+    font-size: 10pt;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* Cover Page */
+  .cover {
+    page-break-after: always;
+    min-height: 92vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 40px 20px 20px 20px;
+    border-bottom: 4px solid #0284c7;
+  }
+
+  .cover-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .shield-icon {
+    width: 48px;
+    height: 48px;
+    background: linear-gradient(135deg, #0284c7, #0369a1);
+    color: white;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    font-weight: bold;
+    box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);
+  }
+
+  .brand-text {
+    font-size: 16pt;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: #0f172a;
+  }
+  .brand-sub {
+    font-size: 9pt;
+    color: #0284c7;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  .cover-body {
+    margin-top: 60px;
+  }
+
+  .tag-pill {
+    display: inline-block;
+    background: #e0f2fe;
+    color: #0369a1;
+    font-size: 8.5pt;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin-bottom: 20px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  h1.cover-title {
+    font-size: 32pt;
+    line-height: 1.15;
+    font-weight: 800;
+    color: #0f172a;
+    margin: 0 0 16px 0;
+    letter-spacing: -0.03em;
+  }
+
+  p.cover-desc {
+    font-size: 12pt;
+    line-height: 1.6;
+    color: #475569;
+    max-width: 650px;
+    margin: 0 0 30px 0;
+  }
+
+  .meta-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-top: 40px;
+  }
+
+  .meta-item .label {
+    font-size: 7.5pt;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 4px;
+  }
+  .meta-item .val {
+    font-size: 10pt;
+    font-weight: 700;
+    color: #0f172a;
+  }
+
+  .cover-footer {
+    border-top: 1px solid #e2e8f0;
+    padding-top: 16px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 8.5pt;
+    color: #64748b;
+  }
+
+  /* Headings & Structure */
+  h2 {
+    font-size: 16pt;
+    font-weight: 800;
+    color: #0f172a;
+    border-bottom: 2px solid #e2e8f0;
+    padding-bottom: 6px;
+    margin-top: 32px;
+    margin-bottom: 14px;
+    letter-spacing: -0.02em;
+    page-break-after: avoid;
+  }
+
+  h3 {
+    font-size: 12pt;
+    font-weight: 700;
+    color: #0369a1;
+    margin-top: 20px;
+    margin-bottom: 8px;
+    page-break-after: avoid;
+  }
+
+  h4 {
+    font-size: 10pt;
+    font-weight: 700;
+    color: #1e293b;
+    margin-top: 12px;
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  p { margin: 0 0 10px 0; }
+
+  /* Callouts & Alerts */
+  .callout {
+    background: #f8fafc;
+    border-left: 4px solid #0284c7;
+    border-radius: 0 6px 6px 0;
+    padding: 12px 16px;
+    margin: 14px 0;
+    font-size: 9.5pt;
+  }
+  .callout-title {
+    font-weight: 700;
+    color: #0369a1;
+    margin-bottom: 4px;
+  }
+  .callout-success {
+    background: #f0fdf4;
+    border-left-color: #16a34a;
+  }
+  .callout-success .callout-title { color: #16a34a; }
+  .callout-warn {
+    background: #fffbeb;
+    border-left-color: #d97706;
+  }
+  .callout-warn .callout-title { color: #d97706; }
+
+  /* Tables */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 14px 0;
+    font-size: 9pt;
+  }
+  th, td {
+    padding: 8px 10px;
+    text-align: left;
+    border: 1px solid #e2e8f0;
+  }
+  th {
+    background: #f1f5f9;
+    font-weight: 700;
+    color: #334155;
+    font-size: 8.5pt;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+  tr:nth-child(even) td {
+    background: #f8fafc;
+  }
+
+  /* Badges */
+  .badge {
+    display: inline-block;
+    padding: 2px 7px;
+    border-radius: 4px;
+    font-size: 7.5pt;
+    font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .badge-crit { background: #fee2e2; color: #b91c1c; border: 1px solid #f87171; }
+  .badge-high { background: #ffedd5; color: #c2410c; border: 1px solid #fb923c; }
+  .badge-med { background: #fef3c7; color: #b45309; border: 1px solid #fcd34d; }
+  .badge-low { background: #dcfce7; color: #15803d; border: 1px solid #86efac; }
+  .badge-done { background: #e0f2fe; color: #0369a1; border: 1px solid #7dd3fc; }
+
+  /* Code Block */
+  pre, code {
+    font-family: 'JetBrains Mono', monospace;
+  }
+  code {
+    background: #f1f5f9;
+    color: #0f172a;
+    padding: 1px 4px;
+    border-radius: 3px;
+    font-size: 8.5pt;
+  }
+  pre {
+    background: #0f172a;
+    color: #e2e8f0;
+    padding: 12px 14px;
+    border-radius: 6px;
+    font-size: 8.5pt;
+    overflow-x: auto;
+    margin: 10px 0;
+    line-height: 1.45;
+  }
+
+  /* Step Card */
+  .step-card {
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    background: #ffffff;
+    margin-bottom: 20px;
+    padding: 16px 18px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+    page-break-inside: avoid;
+  }
+  .step-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid #f1f5f9;
+    padding-bottom: 8px;
+    margin-bottom: 10px;
+  }
+  .step-num {
+    background: #0284c7;
+    color: white;
+    font-weight: 800;
+    font-size: 9pt;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 8px;
+  }
+  .step-title {
+    font-size: 11pt;
+    font-weight: 800;
+    color: #0f172a;
+  }
+
+  .deliverables-list {
+    margin: 6px 0;
+    padding-left: 18px;
+  }
+  .deliverables-list li {
+    margin-bottom: 4px;
+    font-size: 9pt;
+  }
+
+  .page-break { page-break-after: always; }
+</style>
+</head>
+<body>
+
+<!-- ════════════════ COVER PAGE ════════════════ -->
+<div class="cover">
+  <div class="cover-header">
+    <div class="shield-icon">🛡️</div>
+    <div>
+      <div class="brand-text">AI CYBER GUARDIAN</div>
+      <div class="brand-sub">Autonomous Zero-Trust Web Defense Platform</div>
+    </div>
+  </div>
+
+  <div class="cover-body">
+    <div class="tag-pill">Full-Stack Master Blueprint & Execution Guide</div>
+    <h1 class="cover-title">Full-Stack System Roadmap<br>& Phased Implementation Plan</h1>
+    <p class="cover-desc">
+      A comprehensive, chronologically ordered architectural plan detailing the complete evolution of the AI Cyber Guardian platform — from real-time WebSocket pipelines and machine learning training to deception honeypot sandboxing, target lab integration, cloud containerization, and final academic defense.
+    </p>
+
+    <div class="meta-grid">
+      <div class="meta-item">
+        <div class="label">Project Title</div>
+        <div class="val">AI Cyber Guardian (2026–2027)</div>
+      </div>
+      <div class="meta-item">
+        <div class="label">Architecture Model</div>
+        <div class="val">Dual AI Engine + Deception Honeypot</div>
+      </div>
+      <div class="meta-item">
+        <div class="label">Document Version</div>
+        <div class="val">v2.4 Enterprise Edition</div>
+      </div>
+      <div class="meta-item">
+        <div class="label">Primary Stack</div>
+        <div class="val">FastAPI · React 19 · Redis · Docker</div>
+      </div>
+      <div class="meta-item">
+        <div class="label">Repository Target</div>
+        <div class="val">Prashant9998/AI-Gardian-2027</div>
+      </div>
+      <div class="meta-item">
+        <div class="label">Status</div>
+        <div class="val" style="color:#16a34a;">Phase 0 Verified · Ready for Step 1</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="cover-footer">
+    <div>Confidential & Proprietary — Department of Computer Science & Engineering</div>
+    <div>Generated: September 2026</div>
+  </div>
+</div>
+
+<!-- ════════════════ SECTION 1: BASELINE STATUS ════════════════ -->
+<h2>1. Current System Baseline (Phase 0 — 100% Completed)</h2>
+<p>
+  The initial foundation, detection engines, enterprise honeypot, SOC dashboard, and containerization have been built, thoroughly tested, and committed to the Git repository. The table below inventories the operational baseline:
+</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Subsystem / Module</th>
+      <th>Component & File Path</th>
+      <th>Core Technical Capabilities</th>
+      <th>Status</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Deterministic Rule Engine</strong></td>
+      <td><code>guardian-control-plane/core/rules.py</code></td>
+      <td>R1–R6 rules covering SQLi, XSS, Command Injection, Path Traversal, Scanners, Brute Force with recursive double URL-decoding.</td>
+      <td><span class="badge badge-done">✓ VERIFIED</span></td>
+    </tr>
+    <tr>
+      <td><strong>Rate Limiter & Ingress</strong></td>
+      <td><code>guardian-control-plane/core/rate_limiter.py</code></td>
+      <td>Sliding-window Redis rate limiter with automatic in-memory fallback (fail-open zero-trust behavior).</td>
+      <td><span class="badge badge-done">✓ VERIFIED</span></td>
+    </tr>
+    <tr>
+      <td><strong>Threat Fusion Engine</strong></td>
+      <td><code>guardian-control-plane/core/decision_engine.py</code></td>
+      <td>Hybrid scoring algorithm: <code>min(100, rule_score + ml_score * 30)</code> mapping to LOW, MEDIUM, HIGH, CRITICAL.</td>
+      <td><span class="badge badge-done">✓ VERIFIED</span></td>
+    </tr>
+    <tr>
+      <td><strong>Enterprise Honeypot</strong></td>
+      <td><code>guardian-control-plane/honeypot/*</code></td>
+      <td>Stateful Virtual File System (VFS) Linux shell, Canary Honeytokens (AWS, DB, JWT), Multi-surface lures (<code>/.env</code>, <code>/wp-login.php</code>), Adaptive Tarpit, STIX 2.1 exporter.</td>
+      <td><span class="badge badge-done">✓ VERIFIED</span></td>
+    </tr>
+    <tr>
+      <td><strong>React SOC Dashboard</strong></td>
+      <td><code>cyberprep-app/src/components/AICyberGuardianApp.jsx</code></td>
+      <td>Landing Page, Login Page, and 10 Dashboard Views (Overview, Live Feed, Analytics, Geo Radar Map, Blocked IPs, Honeypot Sessions, Attackers Grid, Profile Deep Dive, Sites, Reports & Settings).</td>
+      <td><span class="badge badge-done">✓ VERIFIED</span></td>
+    </tr>
+    <tr>
+      <td><strong>Docker Infrastructure</strong></td>
+      <td><code>docker-compose.yml</code></td>
+      <td>4-tier orchestration: PostgreSQL 15, Redis 7, Backend (FastAPI Python 3.11-slim), Frontend (Nginx Alpine + React 19).</td>
+      <td><span class="badge badge-done">✓ VERIFIED</span></td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="callout callout-success">
+  <div class="callout-title">Baseline Verification Status: 100% Operational</div>
+  The backend test suite reports <strong>13/13 passing Pytest tests</strong>. The frontend builds with 0 syntax or bundling errors (751ms compilation time) and is live on localhost. Remote repository <code>origin/main</code> is cleanly synchronized.
+</div>
+
+<div class="page-break"></div>
+
+<!-- ════════════════ SECTION 2: END-TO-END ARCHITECTURE ════════════════ -->
+<h2>2. End-to-End System Architecture</h2>
+<p>
+  The architecture operates on a defense-in-depth model where untrusted network traffic is analyzed in successive layers without degrading legitimate client performance.
+</p>
+
+<pre>
+[INCOMING HTTP REQUEST]
+       │
+       ▼
+┌─────────────────────────────────────────────────────────┐
+│ STAGE 1: INGRESS FILTERS (Sub-1ms Evaluation)           │
+│ • CIDR & IP Blacklist / Whitelist Matcher               │
+│ • Redis Sliding-Window Rate Limiter (Fail-Open Fallback)│
+└────────────────────────────┬────────────────────────────┘
+                             │
+                             ▼
+┌─────────────────────────────────────────────────────────┐
+│ STAGE 2: THREAT FUSION ENGINE                           │
+│ • Deterministic Rules (R1–R6 with Double URL-Decode)    │
+│ • Isolation Forest Anomaly Score (Zero-Day Exploits)    │
+│ • Random Forest Multiclass Score (Known Signatures)     │
+│ ➔ Threat Score Formula: min(100, RuleScore + ML × 30)   │
+└────────────────────────────┬────────────────────────────┘
+                             │
+                             ▼
+┌─────────────────────────────────────────────────────────┐
+│ STAGE 3: AUTONOMOUS DECISION ENGINE                     │
+│ ├─ [0–29]  LOW      ➔ Allow request + Audit Log        │
+│ ├─ [30–59] MEDIUM   ➔ Allow request + Flag Session     │
+│ ├─ [60–84] HIGH     ➔ 403 Forbidden + Block IP Banning │
+│ └─ [85–100] CRITICAL ➔ SILENT HONEYPOT TRAP ROUTING     │
+└────────────────────────────┬────────────────────────────┘
+                             │
+             ┌───────────────┴───────────────┐
+             ▼                               ▼
+┌─────────────────────────┐     ┌─────────────────────────────────────────┐
+│ REAL TARGET APPLICATION │     │ ENTERPRISE DECEPTION HONEYPOT           │
+│ Clean User Traffic Only │     │ • Virtual Linux File System (Fake Bash) │
+│ (E-Commerce / Banking)  │     │ • Canary Tokens (/etc/shadow, AWS Keys) │
+│                         │     │ • Adaptive Tarpit Latency Injection     │
+└─────────────────────────┘     │ • Automated STIX 2.1 Threat Intel Export│
+                                └────────────────────┬────────────────────┘
+                                                     │
+                                                     ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│ SOC ANALYTICS & DASHBOARD (React 19 + Recharts + Real-Time WebSockets)  │
+│ 10 Interactive Panels: Real-time attack feed, Geo Radar, Attacker Intel │
+└─────────────────────────────────────────────────────────────────────────┘
+</pre>
+
+<!-- ════════════════ SECTION 3: STEP-BY-STEP ROADMAP ════════════════ -->
+<h2>3. The Chronological 8-Step Master Implementation Plan</h2>
+<p>
+  To achieve an enterprise-ready system, development must proceed in the strict sequential order below. Each step builds the direct technical prerequisite for the next.
+</p>
+
+<!-- STEP 1 -->
+<div class="step-card">
+  <div class="step-header">
+    <div style="display:flex;align-items:center;">
+      <span class="step-num">1</span>
+      <span class="step-title">Real-Time WebSocket Streaming Pipeline</span>
+    </div>
+    <span class="badge badge-crit">HIGHEST PRIORITY</span>
+  </div>
+  <p><strong>Rationale:</strong> The frontend currently polls or uses local simulation. Connecting live WebSockets ensures sub-100ms attack alerts during demonstrations, giving immediate visual impact.</p>
+  
+  <h4>Technical Tasks:</h4>
+  <ul class="deliverables-list">
+    <li><strong>FastAPI WebSocket Server:</strong> Create <code>guardian-control-plane/api/routers/ws.py</code> exposing <code>/api/v1/ws/threats</code>. Implement a thread-safe <code>ConnectionManager</code> to broadcast security events to multiple connected SOC operators simultaneously.</li>
+    <li><strong>Event Interceptor Hook:</strong> Wire <code>evaluate_decision()</code> and <code>honeypot/engine.py</code> to fire asynchronous WebSocket payload broadcasts whenever a score > 30 is computed or a honeypot canary is tripped.</li>
+    <li><strong>React Custom Hook:</strong> Implement <code>cyberprep-app/src/hooks/useThreatStream.js</code> with auto-reconnect, exponential backoff, and state merging directly into the Live Threat Feed.</li>
+    <li><strong>Visual & Auditory Alerts:</strong> Add row pulse animation and optional alert chime for <code>CRITICAL</code> severity events.</li>
+  </ul>
+  <p><strong>Acceptance Criteria:</strong> Triggering a curl request with an SQL injection payload immediately displays the attack event on the React dashboard in &lt; 100ms without page refresh.</p>
+</div>
+
+<!-- STEP 2 -->
+<div class="step-card">
+  <div class="step-header">
+    <div style="display:flex;align-items:center;">
+      <span class="step-num">2</span>
+      <span class="step-title">Real ML Dataset Training & Model Serialization</span>
+    </div>
+    <span class="badge badge-high">STATISTICAL RIGOR</span>
+  </div>
+  <p><strong>Rationale:</strong> The ML engine currently uses synthetic data. Training on real HTTP attack datasets (CSIC 2010 and CIC-IDS2017) provides genuine scientific validity for university viva, conference publications, and production detection.</p>
+  
+  <h4>Technical Tasks:</h4>
+  <ul class="deliverables-list">
+    <li><strong>Data Preprocessing Pipeline:</strong> Create <code>guardian-control-plane/ml/preprocess.py</code> to parse HTTP requests, extract headers, query params, and body strings from the CSIC 2010 dataset.</li>
+    <li><strong>Feature Engineering:</strong> Extract request length, entropy, special symbol ratios (<code>'</code>, <code>"</code>, <code>&lt;</code>, <code>&gt;</code>, <code>;</code>, <code>--</code>, <code>\</code>, <code>/</code>), parameter count, and TF-IDF n-grams (1–3 chars).</li>
+    <li><strong>Model Training:</strong> Train an <strong>Isolation Forest</strong> (contamination=0.05) for zero-day anomaly detection and a <strong>Random Forest Classifier</strong> (100 estimators) for multi-class categorization.</li>
+    <li><strong>Model Artifact Serialization:</strong> Serialize trained weights into <code>isolation_forest.joblib</code>, <code>random_forest.joblib</code>, and <code>vectorizer.joblib</code>. Load models during FastAPI lifespan startup in &lt; 500ms.</li>
+  </ul>
+  <p><strong>Acceptance Criteria:</strong> Model achieves &ge; 92% F1-score and &le; 4.5% False Positive Rate on clean test traffic, backed by confusion matrix benchmarks.</p>
+</div>
+
+<div class="page-break"></div>
+
+<!-- STEP 3 -->
+<div class="step-card">
+  <div class="step-header">
+    <div style="display:flex;align-items:center;">
+      <span class="step-num">3</span>
+      <span class="step-title">Protected Target Application Lab ("Protected App Lab")</span>
+    </div>
+    <span class="badge badge-med">FUNCTIONAL VALIDATION</span>
+  </div>
+  <p><strong>Rationale:</strong> A security tool cannot be evaluated in isolation. Building a realistic target application (e.g. an E-commerce store or Student Portal) demonstrates the Guardian SDK actively defending a live business application.</p>
+  
+  <h4>Technical Tasks:</h4>
+  <ul class="deliverables-list">
+    <li><strong>Build Target Web App:</strong> Create <code>sample-target-app/</code> with realistic endpoints:
+      <ul>
+        <li><code>POST /api/auth/login</code> (User authentication with brute force vulnerability)</li>
+        <li><code>GET /api/catalog/search?q=</code> (Product search vulnerable to SQL injection)</li>
+        <li><code>POST /api/reviews</code> (Customer feedback vulnerable to stored XSS)</li>
+        <li><code>GET /api/files/view?doc=</code> (Document viewer vulnerable to path traversal)</li>
+      </ul>
+    </li>
+    <li><strong>SDK Integration:</strong> Attach Guardian middleware in 3 lines:
+      <pre>app.use(guardianMiddleware({ siteId: "shop-prod-01", controlPlane: "http://localhost:8000" }));</pre>
+    </li>
+    <li><strong>Behavioral Verification:</strong>
+      <ul>
+        <li>Legitimate traffic passes untouched (HTTP 200).</li>
+        <li>High-severity attacks receive an immediate security shield (HTTP 403).</li>
+        <li>Critical attackers accessing fake <code>/admin</code> or <code>/.env</code> are seamlessly diverted into the Honeypot without touching the target application's real database.</li>
+      </ul>
+    </li>
+  </ul>
+  <p><strong>Acceptance Criteria:</strong> Live attacks against the sample app are intercepted transparently with zero disruption to benign users.</p>
+</div>
+
+<!-- STEP 4 -->
+<div class="step-card">
+  <div class="step-header">
+    <div style="display:flex;align-items:center;">
+      <span class="step-num">4</span>
+      <span class="step-title">1-Click Interactive Attack Demo Harness</span>
+    </div>
+    <span class="badge badge-crit">KEY PRESENTATION ASSET</span>
+  </div>
+  <p><strong>Rationale:</strong> In a live project evaluation, manually typing curl commands is slow and prone to typos. An automated multi-stage attack harness demonstrates Red Team vs. Blue Team mechanics dynamically in 30 seconds.</p>
+  
+  <h4>Technical Tasks:</h4>
+  <ul class="deliverables-list">
+    <li><strong>Multi-Stage Attack Script:</strong> Create <code>simulate_demo_scenario.py</code> executing 4 distinct threat vectors in timed intervals:
+      <ul>
+        <li><em>Stage A (0–5s):</em> Reconnaissance scan sending scanner User-Agents (<code>sqlmap</code>, <code>nikto</code>).</li>
+        <li><em>Stage B (5–12s):</em> Credential Brute Force with 15 rapid failed logins to trip Rule R4 rate limiting.</li>
+        <li><em>Stage C (12–20s):</em> SQL Injection exploit attempt: <code>' UNION SELECT user, pass FROM admin--</code>.</li>
+        <li><em>Stage D (20–30s):</em> Trapped attacker exploring Honeypot Linux shell: executes <code>id</code>, <code>uname</code>, and <code>cat /etc/shadow</code> (tripping Canary honeytokens).</li>
+      </ul>
+    </li>
+    <li><strong>Dashboard Trigger Button:</strong> Add an interactive <strong>"▶ Run Live Attack Demo"</strong> button on the Dashboard Topbar that triggers the scenario and highlights corresponding dashboard panels sequentially.</li>
+  </ul>
+  <p><strong>Acceptance Criteria:</strong> Evaluators can click one button and watch the entire security lifecycle (detect, block, trap, report) unfold autonomously on screen.</p>
+</div>
+
+<!-- STEP 5 -->
+<div class="step-card">
+  <div class="step-header">
+    <div style="display:flex;align-items:center;">
+      <span class="step-num">5</span>
+      <span class="step-title">Official Python SDK Package (`cyber-guardian`)</span>
+    </div>
+    <span class="badge badge-med">ECOSYSTEM EXPANSION</span>
+  </div>
+  <p><strong>Rationale:</strong> Our Landing Page promotes a <code>pip install cyber-guardian</code> experience. Implementing the full Python SDK package completes the promise for FastAPI, Flask, and Django ecosystems.</p>
+  
+  <h4>Technical Tasks:</h4>
+  <ul class="deliverables-list">
+    <li><strong>Package Architecture:</strong> Create <code>guardian-sdk-python/</code> with <code>pyproject.toml</code> supporting <code>pip install -e .</code>.</li>
+    <li><strong>In-Memory Decision Cache:</strong> Implement LRU caching with TTL for clean IP decisions to prevent repetitive network latency on standard user sessions.</li>
+    <li><strong>Framework Middleware:</strong>
+      <ul>
+        <li>FastAPI/Starlette: <code>BaseHTTPMiddleware</code> implementation.</li>
+        <li>Flask: <code>before_request</code> and <code>after_request</code> hooks.</li>
+        <li>Django: <code>MiddlewareMixin</code> with exempt route configurations.</li>
+      </ul>
+    </li>
+    <li><strong>Asynchronous Telemetry:</strong> Non-blocking background worker dispatching security telemetry without delaying client response time (&lt; 2ms latency penalty).</li>
+  </ul>
+  <p><strong>Acceptance Criteria:</strong> A developer can install <code>cyber-guardian</code> via pip and protect any Python web framework with 3 lines of configuration code.</p>
+</div>
+
+<div class="page-break"></div>
+
+<!-- STEP 6 -->
+<div class="step-card">
+  <div class="step-header">
+    <div style="display:flex;align-items:center;">
+      <span class="step-num">6</span>
+      <span class="step-title">Database Persistence & Real PDF Report Generator</span>
+    </div>
+    <span class="badge badge-low">ENTERPRISE REPORTING</span>
+  </div>
+  <p><strong>Rationale:</strong> Security compliance requires historical auditability. Aggregating time-series data in PostgreSQL and generating downloadable executive PDF reports fulfills real-world enterprise requirements.</p>
+  
+  <h4>Technical Tasks:</h4>
+  <ul class="deliverables-list">
+    <li><strong>Database Migration Pipeline:</strong> Set up Alembic database migrations managing <code>ThreatEvent</code>, <code>AttackerProfile</code>, <code>BlockedIP</code>, and <code>HoneypotSession</code> tables in PostgreSQL.</li>
+    <li><strong>Timeseries Aggregation Queries:</strong> Write optimized indexed queries for hourly attack volume, geographic heatmaps, and tool fingerprint frequencies.</li>
+    <li><strong>Server-Side PDF Generation:</strong> Create endpoint <code>/api/v1/reporting/export-pdf</code> using <code>WeasyPrint</code> or headless Chromium to produce executive threat summaries with charts, incident timelines, and STIX indicators.</li>
+  </ul>
+  <p><strong>Acceptance Criteria:</strong> Clicking "Generate PDF Report" in the React dashboard downloads a polished, multi-page PDF summary compiled from real database records.</p>
+</div>
+
+<!-- STEP 7 -->
+<div class="step-card">
+  <div class="step-header">
+    <div style="display:flex;align-items:center;">
+      <span class="step-num">7</span>
+      <span class="step-title">Production Cloud Deployment & CI/CD Pipeline</span>
+    </div>
+    <span class="badge badge-low">PUBLIC DEMONSTRATION</span>
+  </div>
+  <p><strong>Rationale:</strong> Deploying the full stack on a cloud server with a real domain name and SSL certificate allows live remote demonstration from any device or presentation room.</p>
+  
+  <h4>Technical Tasks:</h4>
+  <ul class="deliverables-list">
+    <li><strong>Cloud Provisioning:</strong> Deploy to a DigitalOcean Droplet / AWS EC2 instance (Ubuntu 22.04 LTS).</li>
+    <li><strong>Automated TLS via Caddy:</strong> Set up Caddy as the edge reverse proxy for automated Let's Encrypt SSL certificates and WebSocket termination.</li>
+    <li><strong>GitHub Actions CI/CD (<code>.github/workflows/ci.yml</code>):</strong> Automated pipeline running Pytest and Vite build verification on every pull request to ensure zero regression.</li>
+  </ul>
+  <p><strong>Acceptance Criteria:</strong> The complete platform is accessible over public HTTPS (e.g. <code>https://guardian.yourdomain.com</code>) with automated health recovery.</p>
+</div>
+
+<!-- STEP 8 -->
+<div class="step-card">
+  <div class="step-header">
+    <div style="display:flex;align-items:center;">
+      <span class="step-num">8</span>
+      <span class="step-title">Academic Defense, Viva Package & Research Paper</span>
+    </div>
+    <span class="badge badge-done">FINAL PROJECT DELIVERABLES</span>
+  </div>
+  <p><strong>Rationale:</strong> For final college/university submission, documentation, research publications, and viva performance carry significant weight alongside code.</p>
+  
+  <h4>Technical Tasks:</h4>
+  <ul class="deliverables-list">
+    <li><strong>Comprehensive Project Report:</strong> Final thesis covering Introduction, Literature Review, Methodology, Design Architecture, Experimental Results, and Future Scope.</li>
+    <li><strong>IEEE Conference Research Paper Draft:</strong> Formatted 6-page paper titled <em>"Autonomous Real-Time Web Application Defense using Machine Learning Threat Fusion and Stateful Deception Honeypots"</em>.</li>
+    <li><strong>15-Slide Presentation Deck:</strong> Clear slides detailing problem statements, threat matrix, architecture flowcharts, and comparative performance benchmarks.</li>
+    <li><strong>Viva Q&A Cheat Sheet:</strong> Anticipated defense questions covering rate-limiting race conditions, ML adversarial evasion, honeypot escape prevention, and fail-open design.</li>
+  </ul>
+  <p><strong>Acceptance Criteria:</strong> Complete defense package ready for submission and presentation with zero outstanding documentation gaps.</p>
+</div>
+
+<div class="page-break"></div>
+
+<!-- ════════════════ SECTION 4: THREAT DECISION MATRIX ════════════════ -->
+<h2>4. Threat Decision Matrix & Response Protocols</h2>
+<p>
+  The decision engine fuses deterministic signatures with machine learning probabilities to classify incoming requests into four actionable response tiers:
+</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Score Band</th>
+      <th>Severity</th>
+      <th>Detection Signatures / Triggers</th>
+      <th>Autonomous Response Action</th>
+      <th>Telemetry Logged</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>0 – 29</strong></td>
+      <td><span class="badge badge-low">LOW</span></td>
+      <td>Normal user browsing, valid form submissions, static assets, score &lt; 30.</td>
+      <td><strong>Pass through untouched.</strong> Minimal audit log recorded.</td>
+      <td>Timestamp, IP hash, path, latency.</td>
+    </tr>
+    <tr>
+      <td><strong>30 – 59</strong></td>
+      <td><span class="badge badge-med">MEDIUM</span></td>
+      <td>Scanner user-agents (<code>nikto</code>, <code>dirbuster</code>), minor anomalies, parameter fuzzing.</td>
+      <td><strong>Pass through + Flag Session.</strong> Email notification dispatched if enabled.</td>
+      <td>Full headers, query params, tool fingerprint.</td>
+    </tr>
+    <tr>
+      <td><strong>60 – 84</strong></td>
+      <td><span class="badge badge-high">HIGH</span></td>
+      <td>Repeated failed logins (> 15 in 120s), Path Traversal (<code>../../etc/passwd</code>), XSS.</td>
+      <td><strong>Immediate HTTP 403 Block.</strong> Temporary IP ban added to Redis cache.</td>
+      <td>IP address, rule violations, payload snippet, ban TTL.</td>
+    </tr>
+    <tr>
+      <td><strong>85 – 100</strong></td>
+      <td><span class="badge badge-crit">CRITICAL</span></td>
+      <td>SQL Injection (UNION/SELECT), Command Injection, access to fake lures (<code>/.env</code>, <code>/actuator/env</code>).</td>
+      <td><strong>SILENT HONEYPOT TRAP ROUTING.</strong> Attacker routed into Virtual Linux Shell sandbox; Adaptive Tarpit latency injected; Canary honeytokens deployed.</td>
+      <td>Command history, keystroke timing, canary exfiltration targets, STIX 2.1 intelligence bundle.</td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- ════════════════ SECTION 5: RISK MITIGATION MATRIX ════════════════ -->
+<h2>5. Architectural Risk Mitigation & Reliability Standards</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>Potential Failure Mode</th>
+      <th>Severity</th>
+      <th>Engineering Mitigation in Architecture</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Redis Service Outage</strong></td>
+      <td>HIGH</td>
+      <td><strong>Fail-Open Architecture:</strong> If Redis is unreachable, the rate limiter logs a CRITICAL error and allows traffic to flow into Stage 2 rather than taking the protected site offline.</td>
+    </tr>
+    <tr>
+      <td><strong>ML Engine Latency Spike</strong></td>
+      <td>MEDIUM</td>
+      <td><strong>Asynchronous Timeout Guard:</strong> ML evaluation is capped at 120ms. If processing exceeds this threshold, the deterministic rule score takes precedence immediately.</td>
+    </tr>
+    <tr>
+      <td><strong>Attacker Honeypot Escape</strong></td>
+      <td>CRITICAL</td>
+      <td><strong>Pure In-Memory VFS Sandbox:</strong> Commands run in a synthetic virtual file system without spawning real OS sub-processes (no <code>exec</code>, <code>os.system</code>, or real subshells).</td>
+    </tr>
+    <tr>
+      <td><strong>High Volume DoS Attacks</strong></td>
+      <td>HIGH</td>
+      <td><strong>Tiered Sliding-Window Throttling:</strong> Burst limits reject abusive IPs at the edge before deep ML feature extraction is invoked.</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="callout callout-warn">
+  <div class="callout-title">Ethical & Operational Safeguards</div>
+  This system is built exclusively for defensive security research and authorized application shielding. The honeypot subsystem strictly monitors incoming traffic and never performs outbound lateral scanning or counter-offensive actions.
+</div>
+
+</body>
+</html>
