@@ -3,7 +3,6 @@
 An AI-powered, real-time autonomous web application security platform that detects, blocks, and traps cyber attackers.
 
 ---
-
 ## 🚀 What It Does
 
 AI Cyber Guardian acts as an intelligent zero-trust security layer that sits in front of any web application. Every incoming HTTP request passes through a two-stage detection pipeline:
