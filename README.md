@@ -4,7 +4,6 @@ An AI-powered, real-time autonomous web application security platform that detec
 
 ---
 ## 🚀 What It Does
-
 AI Cyber Guardian acts as an intelligent zero-trust security layer that sits in front of any web application. Every incoming HTTP request passes through a two-stage detection pipeline:
 
 1. **Stage 1 — Ingress Filter**: Instant IP blocklist/allowlist check and sliding-window Redis-based rate limiting (sub-millisecond evaluation with fail-open safety).
@@ -13,7 +12,6 @@ AI Cyber Guardian acts as an intelligent zero-trust security layer that sits in 
 Based on the score, the platform automatically **logs**, **blocks**, **alerts**, or **deploys an adaptive honeypot trap** — returning a convincing virtual Linux shell and fake admin surface to keep attackers trapped while recording complete forensic telemetry.
 
 ---
-
 ## ✨ Key Features
 
 - **🔍 Real-Time Autonomous Defense**: Immediate mitigation against SQLi, XSS, Command Injection, Brute Force, Path Traversal, and Automated Scanners (`sqlmap`, `nikto`, `hydra`, `nmap`).
