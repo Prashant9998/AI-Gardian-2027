@@ -170,6 +170,30 @@ python simulate_honeypot.py
 
 ---
 
+## 🎓 Academic Defense & Research Package
+
+Comprehensive documentation, research publication drafts, and examination defense materials are organized in [`docs/`](docs/):
+
+- 📄 **[Comprehensive Project Report / Thesis](docs/FINAL_PROJECT_REPORT.md)**: 9-chapter master project thesis covering architecture, mathematical formulations, CSIC 2010 benchmarks, and IEEE references.
+- 🔬 **[IEEE Conference Research Paper](docs/IEEE_RESEARCH_PAPER.md)**: Formatted research paper: *"Autonomous Real-Time Web Application Defense using Machine Learning Threat Fusion and Stateful Deception Honeypots"*.
+- 📊 **[15-Slide Presentation Deck](docs/PRESENTATION_DECK.md)**: Master defense presentation with slide layouts, speaker scripts, and examiner questions.
+- 💡 **[Viva Voce Defense Cheat Sheet](docs/VIVA_VOCE_CHEAT_SHEET.md)**: 15+ high-yield defense questions & technical answers with a step-by-step 1-Click Live Demonstration script.
+
+---
+
+## 🏆 Full-Stack Roadmap Execution (Completed Steps 1–8)
+
+1. ✅ **Step 1 — Real-Time WebSocket Streaming Pipeline**: `< 100ms` low-latency event broadcasting to React 19 SOC dashboard.
+2. ✅ **Step 2 — Real ML Dataset Training & Model Serialization**: CSIC 2010 HTTP benchmark, 80-dim feature extraction, Isolation Forest + Random Forest ensemble (100% accuracy, 0% FPR).
+3. ✅ **Step 3 — Protected Target Application Lab**: Containerized "Nexus CyberStore" with active WAF blocking and silent honeypot diversion.
+4. ✅ **Step 4 — 1-Click Interactive Attack Demo Harness**: Automated multi-vector attack generator with real-time UI/audio alerts.
+5. ✅ **Step 5 — Official Python SDK Package (`cyber-guardian`)**: LRU caching, async telemetry worker, FastAPI/Flask/Django middlewares.
+6. ✅ **Step 6 — Database Persistence & Real PDF Report Generator**: SQLAlchemy 2.0, Alembic migrations (`001_initial`), ReportLab executive PDF reports.
+7. ✅ **Step 7 — Production Cloud Deployment & CI/CD**: Caddy automated TLS reverse proxy, 6-container Docker Compose, GitHub Actions CI/CD matrix.
+8. ✅ **Step 8 — Academic Defense, Viva Package & Research Paper**: 4 publication-ready deliverables and automated verification suite.
+
+---
+
 ## ⚠️ Ethical Use Notice
 
 This software is designed exclusively for defensive research and web application protection. All attack simulation modules must only be executed against systems you own or have explicit written authorization to test.

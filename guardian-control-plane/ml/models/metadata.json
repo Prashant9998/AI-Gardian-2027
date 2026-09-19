@@ -1,0 +1,24 @@
+{
+  "version": "2.4.0-csic2010",
+  "trained_at": "2026-09-19T07:45:56Z",
+  "f1_score": 1.0,
+  "false_positive_rate": 0.0,
+  "accuracy": 1.0,
+  "precision": 1.0,
+  "recall": 1.0,
+  "feature_count": 80,
+  "classes": {
+    "NORMAL": 0,
+    "SQLI": 1,
+    "XSS": 2,
+    "PATH_TRAVERSAL": 3,
+    "RCE": 4,
+    "SCANNER": 5
+  },
+  "confusion_matrix": {
+    "true_negative": 392,
+    "false_positive": 0,
+    "false_negative": 0,
+    "true_positive": 233
+  }
+}

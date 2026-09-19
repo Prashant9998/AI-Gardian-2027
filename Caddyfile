@@ -1,0 +1,82 @@
+# ==============================================================================
+# AI Cyber Guardian — Production Edge Reverse Proxy (Caddyfile)
+# Provides automated Let's Encrypt SSL/TLS, HTTP-to-HTTPS redirect,
+# native WebSocket proxying, and enterprise security headers.
+# ==============================================================================
+
+{
+    # Global options
+    email {$ACME_EMAIL:admin@cyberguardian.io}
+    admin off
+}
+
+# Domain endpoint (defaults to localhost if GUARDIAN_DOMAIN is not set)
+{$GUARDIAN_DOMAIN:localhost} {
+
+    # Security Headers
+    header {
+        Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+        X-Content-Type-Options "nosniff"
+        X-Frame-Options "SAMEORIGIN"
+        Referrer-Policy "strict-origin-when-cross-origin"
+        Permissions-Policy "camera=(), microphone=(), geolocation=()"
+        -Server
+    }
+
+    # Gzip & Zstandard compression
+    encode gzip zstd
+
+    # Real-Time WebSocket Streaming Pipeline (< 100ms Ingestion)
+    # Caddy natively manages WebSocket upgrades on HTTP/1.1 and HTTP/2
+    @websockets {
+        path /api/v1/ws/*
+    }
+    reverse_proxy @websockets backend:8000 {
+        header_up Host {host}
+        header_up X-Real-IP {remote_host}
+        header_up X-Forwarded-For {remote_host}
+        header_up X-Forwarded-Proto {scheme}
+    }
+
+    # Guardian Control Plane API & Health Endpoints
+    @api {
+        path /api/*
+        path /health
+        path /docs
+        path /openapi.json
+    }
+    reverse_proxy @api backend:8000 {
+        header_up Host {host}
+        header_up X-Real-IP {remote_host}
+        header_up X-Forwarded-For {remote_host}
+        header_up X-Forwarded-Proto {scheme}
+    }
+
+    # Protected Target Business Application Lab ("Nexus CyberStore")
+    @targetApp {
+        path /target/*
+    }
+    handle @targetApp {
+        uri strip_prefix /target
+        reverse_proxy target-app:3001 {
+            header_up Host {host}
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_host}
+            header_up X-Forwarded-Proto {scheme}
+        }
+    }
+
+    # React SOC Dashboard & Static SPA Assets (Default Route)
+    reverse_proxy frontend:80 {
+        header_up Host {host}
+        header_up X-Real-IP {remote_host}
+        header_up X-Forwarded-For {remote_host}
+        header_up X-Forwarded-Proto {scheme}
+    }
+
+    # Logging
+    log {
+        output stdout
+        format json
+    }
+}

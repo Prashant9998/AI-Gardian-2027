@@ -8,7 +8,7 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from core.config import settings
 from core.logger import app_logger
 from db.database import engine, Base
-from api.routers import ingestion, decisions, reporting, honeypot
+from api.routers import ingestion, decisions, reporting, honeypot, ws, demo, ml_ops
 import models.honeypot_schema # Ensure Honeypot tables are registered with Base.metadata
 
 @asynccontextmanager
@@ -49,8 +49,16 @@ async def lifespan(app: FastAPI):
                     app_logger.info("Seeded default Tenant, Site, and APIKey (guardian-prod-demo-key-2026).")
             finally:
                 db.close()
+        # Warmup and verify ML models in memory (< 500ms startup requirement)
+        import time
+        from core.ml_engine import fusion_engine
+        ml_start = time.time()
+        fusion_engine.ml_engine.load_models()
+        fusion_engine.ml_engine.evaluate({"path": "/health", "query": "", "body": ""})
+        ml_load_time_ms = (time.time() - ml_start) * 1000.0
+        app_logger.info(f"ML threat models hydrated & warmed up in {ml_load_time_ms:.2f}ms (< 500ms target).")
     except Exception as e:
-        app_logger.error(f"Error creating/seeding database tables: {e}")
+        app_logger.error(f"Error creating/seeding database tables or ML loading: {e}")
         
     yield
     
@@ -79,6 +87,9 @@ app.include_router(ingestion.router)
 app.include_router(decisions.router)
 app.include_router(reporting.router)
 app.include_router(honeypot.router)
+app.include_router(ws.router)
+app.include_router(demo.router)
+app.include_router(ml_ops.router)
 # app.include_router(admin.router)
 
 @app.get("/health")

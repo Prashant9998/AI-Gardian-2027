@@ -1,0 +1,42 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cyber-guardian"
+version = "1.0.0"
+description = "Official Python SDK for AI Cyber Guardian: Autonomous Zero-Trust Web Defense Platform"
+readme = "README.md"
+authors = [
+    { name = "AI Cyber Guardian Team", email = "security@cyberguardian.io" }
+]
+license = { text = "Apache-2.0" }
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Security",
+    "Topic :: Internet :: WWW/HTTP :: WSGI :: Middleware",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+keywords = ["security", "waf", "zero-trust", "honeypot", "machine-learning", "fastapi", "flask", "django"]
+requires-python = ">=3.10"
+dependencies = [
+    "httpx>=0.24.0",
+]
+
+[project.optional-dependencies]
+fastapi = ["fastapi>=0.100.0", "starlette>=0.27.0"]
+flask = ["flask>=2.0.0"]
+django = ["django>=4.0.0"]
+all = ["fastapi>=0.100.0", "starlette>=0.27.0", "flask>=2.0.0", "django>=4.0.0"]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["cyber_guardian*"]

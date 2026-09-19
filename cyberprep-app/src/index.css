@@ -1,6 +1,252 @@
-/* Reset — CyberPrepPro injects its own styles */
+/* Reset */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+}
+
+/* ── Emotion Agency Theme Design Tokens ──────────────────────────────────────── */
+:root {
+  --primary: #9047ff;
+  --primary-rgb: 144, 71, 255;
+  --primary-active: #7114ff;
+  --status-danger: #ff3b30;
+  --status-success: #319f43;
+  --background: #0b0816;
+  --foreground: #f5efff;
+  --card: #140e26;
+  --border: #2a1b47;
+  --muted: #8b7ca8;
+  --glass: rgba(20, 14, 38, 0.75);
+}
+
+:root[data-theme='emotion'] {
+  --primary: #9047ff;
+  --primary-rgb: 144, 71, 255;
+  --primary-active: #7114ff;
+  --status-danger: #ff3b30;
+  --status-success: #319f43;
+  --background: #0b0816;
+  --foreground: #f5efff;
+  --card: #150f28;
+  --border: #2c1d4d;
+  --muted: #8e80ab;
+  --glass: rgba(21, 15, 40, 0.85);
+}
+
+:root[data-theme='dark'] {
+  --primary: #58a6ff;
+  --primary-rgb: 88, 166, 255;
+  --primary-active: #1f6feb;
+  --status-danger: #f85149;
+  --status-success: #3fb950;
+  --background: #0d1117;
+  --foreground: #e6edf3;
+  --card: #161b22;
+  --border: #30363d;
+  --muted: #8b949e;
+  --glass: rgba(22, 27, 34, 0.85);
+}
+
+:root[data-theme='light'] {
+  --primary: #7928ca;
+  --primary-rgb: 121, 40, 202;
+  --primary-active: #601ca8;
+  --status-danger: #e00;
+  --status-success: #0070f3;
+  --background: #f7f5fd;
+  --foreground: #1a102f;
+  --card: #ffffff;
+  --border: #e2d9f3;
+  --muted: #695d82;
+  --glass: rgba(255, 255, 255, 0.85);
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Inter', sans-serif;
+  overflow-x: hidden;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* ── 12-Column Architectural Alignment Grid ────────────────────────────────── */
+.app-grid {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 1.25rem;
+  padding: 0 1.5rem;
+}
+
+.app-grid__col {
+  background-color: rgba(144, 71, 255, 0.03);
+  border-left: 1px dashed rgba(144, 71, 255, 0.12);
+  border-right: 1px dashed rgba(144, 71, 255, 0.12);
+  height: 100%;
+}
+
+/* ── Emotion Agency Kinetic Double-Slide Button ────────────────────────────── */
+.kinetic-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  background: var(--primary);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.kinetic-btn__content {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 1.2em;
+  overflow: hidden;
+}
+
+.kinetic-btn__sub-1,
+.kinetic-btn__sub-2 {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+  line-height: 1.2;
+}
+
+.kinetic-btn:hover .kinetic-btn__sub-1 {
+  transform: translateY(-120%);
+}
+
+.kinetic-btn:hover .kinetic-btn__sub-2 {
+  transform: translateY(-100%);
+}
+
+.kinetic-btn__shadow {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 60%;
+  background-color: var(--primary);
+  border-radius: 9999px;
+  filter: blur(14px);
+  opacity: 0;
+  transform: scale(0.7);
+  transition: opacity 0.4s ease, transform 0.4s ease, visibility 0.4s;
+  visibility: hidden;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.kinetic-btn:hover .kinetic-btn__shadow {
+  opacity: 0.85;
+  transform: scale(1.05);
+  visibility: visible;
+}
+
+/* ── Emotion Agency Floating AI Assistant & Liquid Bubble ──────────────────── */
+@keyframes ai-bubble-morph {
+  0% {
+    filter: hue-rotate(0deg) saturate(1.1);
+  }
+  50% {
+    filter: hue-rotate(40deg) saturate(1.3);
+  }
+  100% {
+    filter: hue-rotate(0deg) saturate(1.1);
+  }
+}
+
+.ai-btn-glow {
+  animation: ai-bubble-morph 8s ease-in-out infinite alternate;
+  background: radial-gradient(circle at 60% 40%, #c084fc, #9047ff 50%, #6366f1 85%, #00e5ff);
+  box-shadow: 0 0 25px rgba(144, 71, 255, 0.6), inset 0 0 15px rgba(255, 255, 255, 0.4);
+}
+
+.ai-bubble-pulse {
+  background: rgba(20, 14, 38, 0.85);
+  border: 1px solid rgba(144, 71, 255, 0.4);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+/* ── Apple-Style Spring Physics Animations for Settings ────────────────────── */
+@keyframes appleBlobOpen {
+  0% {
+    opacity: 0;
+    transform: scale(0.85) translateY(8px);
+    filter: blur(6px);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.03) translateY(-2px);
+    filter: blur(0px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes applePanelClose {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.9) translateY(6px);
+  }
+}
+
+.apple-spring-open {
+  animation: appleBlobOpen 0.42s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+/* ── Sound Waveform Canvas ─────────────────────────────────────────────────── */
+.sound-viz-container {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.65rem;
+  border-radius: 9999px;
+  background: rgba(144, 71, 255, 0.08);
+  border: 1px solid rgba(144, 71, 255, 0.2);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.sound-viz-container:hover {
+  background: rgba(144, 71, 255, 0.16);
+  border-color: rgba(144, 71, 255, 0.45);
+}
+
+/* ── Minimalist Preloader ──────────────────────────────────────────────────── */
+.emotion-preloader {
+  position: fixed;
+  inset: 0;
+  z-index: 100000;
+  background: #0b0816;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.6s ease;
+}
+
+.emotion-preloader--hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
 }

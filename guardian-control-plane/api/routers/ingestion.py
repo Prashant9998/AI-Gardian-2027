@@ -16,6 +16,9 @@ from core.rules import RuleEngine
 from core.ml_engine import fusion_engine
 from core.decision_engine import decision_engine
 from core.logger import app_logger
+from api.routers.ws import broadcast_threat_event
+import datetime
+import uuid
 
 router = APIRouter(prefix="/api/v1/ingestion", tags=["Ingestion"])
 
@@ -83,6 +86,30 @@ async def evaluate_request(
     # 2. Rate Limiting Check (Redis-backed)
     is_allowed, rl_tier = await check_rate_limit(site_id, source_ip, endpoint_type=payload.get("endpoint_type", "generic"))
     if not is_allowed:
+        rl_event = {
+            "event_type": "THREAT_EVENT",
+            "id": f"evt-rl-{uuid.uuid4().hex[:8]}",
+            "timestamp": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+            "time": datetime.datetime.now().strftime("%H:%M:%S"),
+            "ip": source_ip,
+            "country": "🌐 External Host",
+            "countryName": "External",
+            "city": "Cloud Edge",
+            "isp": "Client Network",
+            "rule_id": "R4_RATE_LIMIT",
+            "attack_type": "R4_RATE_LIMIT",
+            "type": "BruteForce",
+            "score": 78.0,
+            "level": "HIGH",
+            "severity": "HIGH",
+            "path": payload.get("path", "/"),
+            "method": payload.get("method", "POST"),
+            "payload": f"Rate limit burst exceeded on {payload.get('endpoint_type', 'generic')} endpoint ({rl_tier})",
+            "status": "Blocked by WAF",
+            "action": "BLOCK",
+            "triggered_rules": ["R4_RATE_LIMIT"]
+        }
+        background_tasks.add_task(broadcast_threat_event, rl_event)
         return {"action": "BLOCK", "reason": f"rate_limit_exceeded:{rl_tier}"}
 
     # -------------------------------------------------------------
@@ -113,6 +140,49 @@ async def evaluate_request(
         severity = "CRITICAL"
         
     action = decision_engine.map_severity_to_action(severity)
+
+    triggered_rule_names = [r["rule"] for r in rule_result.triggered_rules]
+    primary_rule = triggered_rule_names[0] if triggered_rule_names else ("R4_BRUTE_FORCE" if rule_result.is_critical_override else ("ML_ANOMALY" if final_score >= 30 else "CLEAN_TRAFFIC"))
+    status_text = "Trapped in Honeypot" if action == "HONEYPOT" else ("Blocked by WAF" if action == "BLOCK" else "Monitored")
+
+    rule_to_type = {
+        "R1_SQLI": "SQLi",
+        "R2_XSS": "XSS",
+        "R3_PATH_TRAVERSAL": "PathTraversal",
+        "R4_RATE_LIMIT": "BruteForce",
+        "R4_BRUTE_FORCE": "BruteForce",
+        "R5_SCANNER": "Scanner",
+        "R6_OVERSIZED": "Anomaly"
+    }
+    short_type = rule_to_type.get(primary_rule, primary_rule)
+
+    # Construct real-time WebSocket threat event for SOC dashboard
+    threat_event = {
+        "event_type": "THREAT_EVENT",
+        "id": f"evt-{uuid.uuid4().hex[:10]}",
+        "timestamp": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+        "time": datetime.datetime.now().strftime("%H:%M:%S"),
+        "ip": source_ip,
+        "country": payload.get("country", "🌐 External Host"),
+        "countryName": payload.get("country_name", "External"),
+        "city": payload.get("city", "Cloud Edge"),
+        "isp": payload.get("isp", "Client Network"),
+        "rule_id": primary_rule,
+        "attack_type": primary_rule,
+        "type": short_type,
+        "score": round(float(final_score), 1),
+        "level": severity,
+        "severity": severity,
+        "path": payload.get("path", "/"),
+        "method": payload.get("method", "GET"),
+        "payload": str(payload.get("query") or payload.get("body") or payload.get("headers", ""))[:250],
+        "status": status_text,
+        "action": action,
+        "triggered_rules": triggered_rule_names
+    }
+
+    # Broadcast to active WebSockets in real time (< 100ms)
+    background_tasks.add_task(broadcast_threat_event, threat_event)
     
     # Trigger webhook asynchronously if severity is MEDIUM/HIGH
     background_tasks.add_task(
@@ -123,12 +193,12 @@ async def evaluate_request(
     # Log to PostgreSQL asynchronously
     background_tasks.add_task(
         log_security_event,
-        db, site_id, payload, rule_result.total_score, ml_score_raw, final_score, severity, action, [r["rule"] for r in rule_result.triggered_rules]
+        db, site_id, payload, rule_result.total_score, ml_score_raw, final_score, severity, action, triggered_rule_names
     )
 
     return {
         "action": action,
         "severity": severity,
         "score": final_score,
-        "triggered_rules": [r["rule"] for r in rule_result.triggered_rules]
+        "triggered_rules": triggered_rule_names
     }

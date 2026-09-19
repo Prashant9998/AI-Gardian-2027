@@ -1,6 +1,5 @@
-version: '3.8'
-
 services:
+  # 1. Primary Relational Storage (PostgreSQL 15)
   postgres:
     image: postgres:15-alpine
     container_name: guardian-postgres
@@ -19,6 +18,7 @@ services:
       retries: 5
     restart: unless-stopped
 
+  # 2. Real-Time In-Memory Rate Limiting & Banning Cache (Redis 7)
   redis:
     image: redis:7-alpine
     container_name: guardian-redis
@@ -33,6 +33,7 @@ services:
       retries: 5
     restart: unless-stopped
 
+  # 3. AI Cyber Guardian Control Plane (FastAPI + scikit-learn + WebSockets)
   backend:
     build:
       context: ./guardian-control-plane
@@ -42,6 +43,7 @@ services:
       - DATABASE_URL=postgresql://guardian:guardianpassword@postgres:5432/guardian_db
       - REDIS_URL=redis://redis:6379/0
       - ENVIRONMENT=production
+      - PYTHONUNBUFFERED=1
     ports:
       - "8000:8000"
     depends_on:
@@ -49,19 +51,66 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/health')\" || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
     restart: unless-stopped
 
+  # 4. Protected Target Application Lab ("Nexus CyberStore")
+  target-app:
+    build:
+      context: .
+      dockerfile: sample-target-app/Dockerfile
+    container_name: guardian-target-app
+    environment:
+      - PORT=3001
+      - GUARDIAN_CONTROL_PLANE=http://backend:8000
+      - GUARDIAN_API_KEY=guardian-prod-demo-key-2026
+    ports:
+      - "3001:3001"
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # 5. React 19 SOC Analytics Dashboard (Vite + Nginx)
   frontend:
     build:
       context: ./cyberprep-app
       dockerfile: Dockerfile
     container_name: guardian-frontend
     ports:
+      - "3000:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # 6. Production Edge Reverse Proxy with Automated TLS (Caddy)
+  caddy:
+    image: caddy:2-alpine
+    container_name: guardian-edge-proxy
+    restart: unless-stopped
+    ports:
       - "80:80"
+      - "443:443"
+    environment:
+      - GUARDIAN_DOMAIN=${GUARDIAN_DOMAIN:-localhost}
+      - ACME_EMAIL=${ACME_EMAIL:-admin@cyberguardian.io}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
     depends_on:
       - backend
-    restart: unless-stopped
+      - frontend
+      - target-app
 
 volumes:
   pgdata:
   redisdata:
+  caddy_data:
+  caddy_config:

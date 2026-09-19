@@ -1,0 +1,14 @@
+{
+  "name": "sample-target-app",
+  "version": "1.0.0",
+  "description": "Nexus CyberStore - Protected Target Application Lab",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "guardian-sdk-node": "file:../guardian-sdk-node"
+  }
+}

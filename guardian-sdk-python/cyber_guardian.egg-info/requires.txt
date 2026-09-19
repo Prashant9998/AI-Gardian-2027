@@ -1,0 +1,17 @@
+httpx>=0.24.0
+
+[all]
+fastapi>=0.100.0
+starlette>=0.27.0
+flask>=2.0.0
+django>=4.0.0
+
+[django]
+django>=4.0.0
+
+[fastapi]
+fastapi>=0.100.0
+starlette>=0.27.0
+
+[flask]
+flask>=2.0.0

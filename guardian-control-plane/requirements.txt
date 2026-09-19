@@ -1,8 +1,12 @@
 fastapi
-uvicorn
+uvicorn[standard]
 redis
 sqlalchemy
 psycopg2-binary
 scikit-learn
 numpy
 httpx
+joblib
+reportlab
+alembic
+websockets

@@ -11,8 +11,8 @@ try:
     redis_pool = redis.ConnectionPool.from_url(
         settings.redis_url, 
         decode_responses=True,
-        socket_connect_timeout=0.05,
-        socket_timeout=0.05
+        socket_connect_timeout=1.0,
+        socket_timeout=0.5
     )
     redis_client = redis.Redis(connection_pool=redis_pool)
 except Exception as e:

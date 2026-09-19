@@ -1,130 +1,167 @@
-import math
+"""
+Machine Learning Threat Inference & Threat Fusion Engine
+Loads serialized Joblib models (Isolation Forest + Random Forest + TF-IDF Vectorizer)
+trained on the CSIC 2010 HTTP benchmark dataset for zero-day anomaly detection and multi-class categorization.
+"""
+
+import os
+import sys
+import time
+import joblib
 import numpy as np
-from sklearn.ensemble import IsolationForest, RandomForestClassifier
 from core.config import settings
 from core.logger import app_logger
+from ml.features import AdvancedFeatureExtractor
 
-class FeatureExtractor:
-    @staticmethod
-    def calculate_entropy(text: str) -> float:
-        if not text:
-            return 0.0
-        entropy = 0
-        for x in set(text):
-            p_x = float(text.count(x)) / len(text)
-            entropy += - p_x * math.log2(p_x)
-        return entropy
+MODELS_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "ml", "models")
 
-    @staticmethod
-    def extract_features(request: dict) -> list:
-        # Reconstruct payload safely
-        path = str(request.get("path", ""))
-        query = str(request.get("query", ""))
-        body = str(request.get("body", ""))
-        full_payload = f"{path} {query} {body}"
-        
-        length = len(full_payload)
-        entropy = FeatureExtractor.calculate_entropy(full_payload)
-        
-        special_chars = set("!@#$%^&*()_+-=[]{}|;':\",./<>?")
-        special_count = sum(1 for c in full_payload if c in special_chars)
-        special_ratio = special_count / length if length > 0 else 0.0
-        
-        # We can extract more features like SQL keywords, etc., but this is the baseline
-        return [length, entropy, special_ratio]
-
+CATEGORY_NAMES = {
+    0: "NORMAL",
+    1: "SQLI",
+    2: "XSS",
+    3: "PATH_TRAVERSAL",
+    4: "RCE",
+    5: "SCANNER"
+}
 
 class MLEngine:
     """
-    Stage 2 Deep Analysis: Machine Learning Models & Threat Fusion.
-    In a real environment, models would be loaded from disk (e.g. joblib)
-    trained on DVWA data. For the initial phase, we use mock/synthetic training.
+    Stage 2 Deep Analysis: Machine Learning Models & Anomaly Scoring.
+    Loads serialized scikit-learn models from disk (< 500ms startup).
     """
     def __init__(self):
+        self.isolation_forest = None
+        self.random_forest = None
+        self.feature_extractor = AdvancedFeatureExtractor()
+        self.is_loaded = False
+        self.load_models()
+
+    def load_models(self, force: bool = False) -> bool:
+        """Loads serialized models from ml/models/ with latency benchmarking."""
+        if self.is_loaded and not force:
+            return True
+
+        start_time = time.time()
+        iso_path = os.path.join(MODELS_DIR, "isolation_forest.joblib")
+        rf_path = os.path.join(MODELS_DIR, "random_forest.joblib")
+        vec_path = os.path.join(MODELS_DIR, "vectorizer.joblib")
+
+        if os.path.exists(iso_path) and os.path.exists(rf_path) and os.path.exists(vec_path):
+            try:
+                self.isolation_forest = joblib.load(iso_path)
+                self.random_forest = joblib.load(rf_path)
+                self.feature_extractor.vectorizer = joblib.load(vec_path)
+                self.feature_extractor.is_fitted = True
+                self.is_loaded = True
+
+                load_ms = (time.time() - start_time) * 1000.0
+                app_logger.info(f"Loaded serialized Joblib ML models from disk in {load_ms:.2f}ms.")
+                return True
+            except Exception as e:
+                app_logger.error(f"Failed to load serialized models: {e}. Falling back to baseline.")
+
+        # Fallback: train lightweight baseline if models missing
+        self._train_fallback_models()
+        load_ms = (time.time() - start_time) * 1000.0
+        app_logger.warning(f"Initialized fallback ML models in {load_ms:.2f}ms.")
+        return True
+
+    def _train_fallback_models(self):
+        """Lightweight fallback models in case serialized joblib files are missing."""
+        from sklearn.ensemble import IsolationForest, RandomForestClassifier
+        from ml.dataset import load_csic_benchmark_dataset
+
+        train_data, _ = load_csic_benchmark_dataset(normal_count=400, attack_count_per_type=40)
+        train_texts = [self.feature_extractor.extract_text(r) for r in train_data]
+        self.feature_extractor.fit_vectorizer(train_texts)
+
+        X_train = self.feature_extractor.transform_batch(train_data)
+        y_train = np.array([r["label"] for r in train_data])
+
         self.isolation_forest = IsolationForest(contamination=0.05, random_state=42)
+        self.isolation_forest.fit(X_train[y_train == 0])
+
         self.random_forest = RandomForestClassifier(n_estimators=50, random_state=42)
-        self.is_trained = False
-        self._train_mock_models()
-        
-    def _train_mock_models(self):
-        # Generate synthetic 'normal' data (short length, low entropy, low special char ratio)
-        np.random.seed(42)
-        normal_data = np.column_stack((
-            np.random.normal(50, 20, 1000),      # length
-            np.random.normal(3.5, 0.5, 1000),    # entropy
-            np.random.normal(0.05, 0.02, 1000)   # special_ratio
-        ))
-        
-        # Generate synthetic 'attack' data (long length, high entropy, high special char ratio)
-        attack_data = np.column_stack((
-            np.random.normal(300, 100, 200),
-            np.random.normal(4.8, 0.4, 200),
-            np.random.normal(0.2, 0.05, 200)
-        ))
-        
-        X_train = np.vstack((normal_data, attack_data))
-        # Labels: 0 = Normal, 1 = Attack
-        y_train = np.hstack((np.zeros(1000), np.ones(200)))
-        
-        # Train IF on normal data only
-        self.isolation_forest.fit(normal_data)
-        
-        # Train RF on labeled mixed data
         self.random_forest.fit(X_train, y_train)
-        self.is_trained = True
-        app_logger.info("Mock ML models trained successfully.")
+        self.is_loaded = True
 
     def evaluate(self, request: dict) -> float:
         """
-        Evaluate the request using IF and RF, returning an ML score (0-100).
+        Evaluates the request using Isolation Forest and Random Forest.
+        Returns a threat score between 0.0 and 100.0.
         """
-        features = FeatureExtractor.extract_features(request)
-        X = np.array(features).reshape(1, -1)
-        
-        # Isolation Forest prediction: 1 (normal), -1 (anomaly)
-        # Convert to anomaly score 0 (normal) to 1 (highly anomalous)
-        # IF decision_function returns negative for anomalies, positive for normal
-        if_score = self.isolation_forest.decision_function(X)[0]
-        # Normalize to 0-1 range (roughly)
-        anomaly_prob = max(0.0, min(1.0, 0.5 - if_score * 0.5))
-        
-        # Random Forest prediction probability for class 1 (Attack)
-        rf_prob = self.random_forest.predict_proba(X)[0][1]
-        
-        # Combine them (e.g. equal weight)
-        combined_ml_prob = (anomaly_prob + rf_prob) / 2.0
-        
-        # Scale to 0-100
-        return combined_ml_prob * 100.0
+        if not self.is_loaded:
+            self.load_models()
+
+        # Extract features (< 3ms)
+        X = self.feature_extractor.transform(request).reshape(1, -1)
+
+        # 1. Isolation Forest Anomaly Score
+        # decision_function yields > 0 for normal, < 0 for anomalous
+        if_raw = self.isolation_forest.decision_function(X)[0]
+        # Smooth mapping to probability 0.0 - 1.0
+        anomaly_prob = max(0.0, min(1.0, 0.5 - (if_raw * 1.5)))
+
+        # 2. Random Forest Classification Probability
+        probs = self.random_forest.predict_proba(X)[0]
+        top_class = int(self.random_forest.predict(X)[0])
+        classes = list(self.random_forest.classes_)
+        if 0 in classes:
+            idx_normal = classes.index(0)
+            rf_normal_prob = float(probs[idx_normal])
+            rf_attack_prob = 1.0 - rf_normal_prob
+        else:
+            rf_attack_prob = float(probs[1]) if len(probs) > 1 else 0.0
+
+        # When an attack class is identified by Random Forest
+        if top_class != 0:
+            final_ml_score = 65.0 + (rf_attack_prob * 35.0)
+        elif rf_attack_prob < 0.1 and if_raw > -0.05:
+            # High confidence clean normal traffic
+            final_ml_score = max(0.0, min(20.0, (1.0 - max(0.0, if_raw)) * 10.0))
+        else:
+            combined_prob = (0.3 * anomaly_prob) + (0.7 * rf_attack_prob)
+            final_ml_score = min(100.0, max(0.0, combined_prob * 100.0))
+
+        return round(float(final_ml_score), 1)
+
+    def predict_category(self, request: dict) -> str:
+        """Returns the predicted threat category name (e.g. SQLI, XSS, NORMAL)."""
+        if not self.is_loaded:
+            self.load_models()
+
+        X = self.feature_extractor.transform(request).reshape(1, -1)
+        pred_class = int(self.random_forest.predict(X)[0])
+        return CATEGORY_NAMES.get(pred_class, "ANOMALY")
 
 
 class ThreatFusionEngine:
     """
-    Blends Deterministic Rule Score with ML Score into a single Threat Score.
+    Blends Deterministic Rule Score with ML Score into a single Composite Threat Score.
     """
     def __init__(self):
         self.ml_engine = MLEngine()
-        # rules.py engine is handled outside and passed here to fuse
-        
+
     def fuse(self, rule_score: float, is_critical_override: bool, request: dict) -> float:
         if is_critical_override:
-            # R4 Brute-force override bypasses blending entirely
+            # R4 Brute-force hard override forces 100.0
             return 100.0
-            
+
         ml_score = self.ml_engine.evaluate(request)
-        
+
         rule_weight = settings.get("rule_weight", 0.6)
         ml_weight = settings.get("ml_weight", 0.4)
-        
+
         # Scale rule score so >= 10.0 is 100%, 8.0 is 80%, 6.0 is 60%
         normalized_rule_score = min(100.0, (rule_score / settings.get("threshold_high", 10.0)) * 100.0)
-        
+
         if normalized_rule_score >= 60.0:
             final_score = max(normalized_rule_score, (normalized_rule_score * rule_weight) + (ml_score * ml_weight))
         else:
             final_score = (normalized_rule_score * rule_weight) + (ml_score * ml_weight)
-            
+
         return min(100.0, max(0.0, final_score))
 
-# Singleton
+
+# Global Singleton
 fusion_engine = ThreatFusionEngine()

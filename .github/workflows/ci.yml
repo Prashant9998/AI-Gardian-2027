@@ -1,0 +1,132 @@
+name: AI Cyber Guardian CI/CD Pipeline
+
+'on':
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  # ============================================================================
+  # 1. Backend Control Plane & Detection Pipeline Verification
+  # ============================================================================
+  backend-tests:
+    name: Backend Test Suite (Python ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12"]
+
+    services:
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: "pip"
+
+      - name: Install System Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libpq-dev
+
+      - name: Install Python Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r guardian-control-plane/requirements.txt
+          pip install reportlab alembic build
+          pip install -e guardian-sdk-python
+
+      - name: Run Alembic Database Migrations
+        run: |
+          cd guardian-control-plane
+          python -m alembic upgrade head
+
+      - name: Execute Full Pytest Test Suite (50+ Unit & Integration Tests)
+        run: |
+          cd guardian-control-plane
+          python -m pytest -v --tb=short
+
+  # ============================================================================
+  # 2. Official Python SDK Package (`cyber-guardian`) Packaging & Distribution Check
+  # ============================================================================
+  sdk-packaging:
+    name: Python SDK Distribution Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Packaging Tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install build twine
+
+      - name: Build Wheel & Source Distribution
+        run: |
+          cd guardian-sdk-python
+          python -m build
+
+      - name: Validate Package Metadata
+        run: |
+          cd guardian-sdk-python
+          twine check dist/*
+
+  # ============================================================================
+  # 3. React 19 SOC Analytics Dashboard Production Build
+  # ============================================================================
+  frontend-build:
+    name: Frontend Vite Production Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "npm"
+          cache-dependency-path: cyberprep-app/package-lock.json
+
+      - name: Install Dependencies
+        run: |
+          cd cyberprep-app
+          npm ci
+
+      - name: Run Vite Production Build
+        run: |
+          cd cyberprep-app
+          npm run build
+
+  # ============================================================================
+  # 4. Multi-Container Docker Compose Syntax & Configuration Linting
+  # ============================================================================
+  docker-validation:
+    name: Docker Compose Syntax Validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Validate Docker Compose Configuration
+        run: |
+          docker compose config

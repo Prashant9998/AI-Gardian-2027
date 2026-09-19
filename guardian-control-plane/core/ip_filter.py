@@ -12,9 +12,9 @@ class IPFilterEngine:
         self.allowlist_cidrs = []
         self.blocklist_cidrs = []
         
-        # Load defaults (e.g., blocking known malicious subnets, allowing internal)
+        # Load defaults (empty by default; configurable via load_rules)
         self.load_rules(
-            allowlist=["127.0.0.1/32", "192.168.0.0/16", "10.0.0.0/8"],
+            allowlist=[],
             blocklist=[] # Add known malicious CIDRs here
         )
 

