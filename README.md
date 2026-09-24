@@ -10,7 +10,6 @@ AI Cyber Guardian acts as an intelligent zero-trust security layer that sits in 
 2. **Stage 2 — AI Decision Engine & Threat Fusion**: Combines a deterministic rule engine (covering SQLi, XSS, Command Injection, Path Traversal, Brute Force, and Vulnerability Scanners with double URL-decoding) with two trained Machine Learning models (Isolation Forest for zero-day anomaly detection + Random Forest for attack classification) to produce an authoritative unified threat score (0–100).
 
 Based on the score, the platform automatically **logs**, **blocks**, **alerts**, or **deploys an adaptive honeypot trap** — returning a convincing virtual Linux shell and fake admin surface to keep attackers trapped while recording complete forensic telemetry.
-
 ---
 ## ✨ Key Features
 
