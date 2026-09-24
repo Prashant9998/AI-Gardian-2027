@@ -31,6 +31,7 @@ Based on the score, the platform automatically **logs**, **blocks**, **alerts**,
 
 ## 🏗️ System Architecture
 
+
 ```text
 Incoming HTTP Request
         │
