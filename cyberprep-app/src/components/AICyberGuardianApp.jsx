@@ -3657,33 +3657,6 @@ export default function AICyberGuardianApp() {
             {s.label}
           </button>
         ))}
-        <div style={{ width: 1, height: 16, background: T.border, margin: "0 4px" }} />
-        <button
-          onMouseEnter={playHoverSound}
-          onClick={() => {
-            playClickSound();
-            setPreloaderDone(false);
-          }}
-          title="Replay SYS.LINK Uplink Sequence"
-          style={{
-            padding: "5px 12px",
-            background: "rgba(47, 224, 125, 0.15)",
-            color: "#2fe07d",
-            border: "1px solid rgba(47, 224, 125, 0.3)",
-            borderRadius: 20,
-            cursor: "pointer",
-            fontSize: 11,
-            fontWeight: 600,
-            fontFamily: "inherit",
-            transition: "all 0.15s",
-          }}
-        >
-          ⚡ Replay Uplink
-        </button>
-        <div style={{ width: 1, height: 16, background: T.border, margin: "0 4px" }} />
-        <span style={{ color: T.muted, fontSize: 11, display: "flex", alignItems: "center", paddingRight: 4 }}>
-          AI Cyber Guardian UI
-        </span>
       </div>
 
       {/* Screen Routing */}
