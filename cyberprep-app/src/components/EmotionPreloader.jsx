@@ -28,6 +28,8 @@ const KF = [
 
 const RUN = 8600;
 const HOLD = 1600;
+const BLANK = 420;
+const LOOP = RUN + HOLD + BLANK;
 
 const PHASES = [
   [0, "INITIALIZING CORE SYSTEMS"],
@@ -64,9 +66,11 @@ export default function EmotionPreloader({ onComplete }) {
   const plateRef = useRef(null);
   const numRef = useRef(null);
   const readoutRef = useRef(null);
+  const barRef = useRef(null);
   const dotsRef = useRef(null);
   const hazeRef = useRef(null);
   const statRef = useRef(null);
+  const statTextRef = useRef(null);
   const grainRef = useRef(null);
   const grain2Ref = useRef(null);
   const tickRefs = useRef([]);
@@ -93,8 +97,9 @@ export default function EmotionPreloader({ onComplete }) {
   useEffect(() => {
     // ── 1. Scale fitting ──
     const fit = () => {
+      const s = Math.min(window.innerWidth / 1200, window.innerHeight / 800);
+      document.documentElement.style.setProperty("--s", String(s));
       if (rootRef.current) {
-        const s = Math.min(window.innerWidth / 1200, window.innerHeight / 800);
         rootRef.current.style.setProperty("--s", String(s));
       }
     };
@@ -145,10 +150,9 @@ export default function EmotionPreloader({ onComplete }) {
     }
 
     // ── 4. Progress timeline loop ──
-    const FREEZE =
-      typeof window !== "undefined"
-        ? new URLSearchParams(window.location.search).get("p")
-        : null;
+    const searchParams = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null;
+    const FREEZE = searchParams ? searchParams.get("p") : null;
+    const shouldLoopForever = searchParams ? searchParams.get("loop") === "true" : false;
 
     const barW = 604;
     const tickW = 5.4;
@@ -160,32 +164,54 @@ export default function EmotionPreloader({ onComplete }) {
     let lastPct = -1;
     let lastDots = -1;
     let lastPhase = "";
+    let cycle = 0;
     let animId = null;
 
     function frame(now) {
       if (hasFinishedRef.current) return;
 
       const elapsed = now - start;
+      const c = Math.floor(elapsed / LOOP);
+      if (c !== cycle && shouldLoopForever) {
+        cycle = c;
+        if (stageRef.current) {
+          stageRef.current.classList.remove("reset");
+          void stageRef.current.offsetWidth;
+          stageRef.current.classList.add("reset");
+        }
+      }
 
       let pct = 0;
       let visible = true;
 
-      if (elapsed < RUN) {
-        pct = valueAt(elapsed / RUN);
-      } else if (elapsed < RUN + HOLD) {
-        pct = 100;
-        if (!chirpPlayedRef.current) {
-          chirpPlayedRef.current = true;
-          try {
-            playChirpSound();
-          } catch {
-            // Audio error suppressed
-          }
+      if (shouldLoopForever) {
+        const e = elapsed % LOOP;
+        if (e < RUN) {
+          pct = valueAt(e / RUN);
+        } else if (e < RUN + HOLD) {
+          pct = 100;
+        } else {
+          pct = 0;
+          visible = (e - RUN - HOLD) % 220 < 130;
         }
       } else {
-        // Sequence completed successfully
-        handleFinish();
-        return;
+        if (elapsed < RUN) {
+          pct = valueAt(elapsed / RUN);
+        } else if (elapsed < RUN + HOLD) {
+          pct = 100;
+          if (!chirpPlayedRef.current) {
+            chirpPlayedRef.current = true;
+            try {
+              playChirpSound();
+            } catch {
+              // Audio error suppressed
+            }
+          }
+        } else {
+          // Uplink sequence completed successfully
+          handleFinish();
+          return;
+        }
       }
 
       if (FREEZE !== null) {
@@ -201,8 +227,8 @@ export default function EmotionPreloader({ onComplete }) {
         const ph = phaseFor(shown);
         if (ph !== lastPhase) {
           lastPhase = ph;
-          if (statRef.current && statRef.current.firstChild) {
-            statRef.current.firstChild.nodeValue = ph;
+          if (statTextRef.current) {
+            statTextRef.current.textContent = ph;
           }
         }
       }
@@ -257,7 +283,7 @@ export default function EmotionPreloader({ onComplete }) {
           ? 0
           : FREEZE !== null
           ? 3
-          : Math.floor(((now - start) / 380) % 4);
+          : Math.floor((elapsed / 380) % 4);
 
       if (d !== lastDots) {
         if (dotsRef.current) {
@@ -287,7 +313,7 @@ export default function EmotionPreloader({ onComplete }) {
     >
       <div className="pool" />
 
-      {/* Skip button for rapid access */}
+      {/* Skip button for instant testing or access */}
       <button
         type="button"
         className="sys-link-skip-btn"
@@ -324,7 +350,7 @@ export default function EmotionPreloader({ onComplete }) {
             ))}
           </div>
           <div className="status" ref={statRef}>
-            INITIALIZING CORE SYSTEMS
+            <span ref={statTextRef}>INITIALIZING CORE SYSTEMS</span>
             <span className="dots" ref={dotsRef} id="dots">
               ...
             </span>
