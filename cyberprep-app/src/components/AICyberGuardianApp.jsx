@@ -25,6 +25,7 @@ import EmotionGridOverlay from "./EmotionGridOverlay";
 import EmotionPreloader from "./EmotionPreloader";
 import EmotionAIAssistant from "./EmotionAIAssistant";
 import KineticButton from "./KineticButton";
+import RealtimeGeoThreatMap from "./RealtimeGeoThreatMap";
 import {
   playClickSound,
   playHoverSound,
@@ -2320,76 +2321,15 @@ function Dashboard({ onNav, onOpenAttacker }) {
             <div>
               <Card style={{ marginBottom: 14 }}>
                 <PanelTitle icon="🌍" title="GLOBAL ATTACK ORIGIN DISTRIBUTION" right="Live Sensor Feeds" />
-                <div
-                  style={{
-                    height: 220,
-                    background: `radial-gradient(ellipse at 50% 50%, #162436 0%, #0D1117 80%)`,
-                    borderRadius: 6,
-                    border: `1px solid ${T.border}`,
-                    position: "relative",
-                    overflow: "hidden",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
+                <RealtimeGeoThreatMap
+                  events={events}
+                  newId={newId}
+                  isWsConnected={isWsConnected}
+                  onNodeClick={(node) => {
+                    if (node.ip) setSelectedAttackerIP(node.ip);
+                    setActiveNav("attackers");
                   }}
-                >
-                  {/* Stylized world grid dots */}
-                  <svg width="100%" height="100%" style={{ position: "absolute", inset: 0, opacity: 0.35 }}>
-                    <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
-                      <circle cx="2" cy="2" r="1" fill={T.blue} />
-                    </pattern>
-                    <rect width="100%" height="100%" fill="url(#grid)" />
-                  </svg>
-
-                  {/* Dynamic threat pins */}
-                  {[
-                    { x: "78%", y: "42%", label: "Beijing", count: 47, col: T.critical },
-                    { x: "64%", y: "30%", label: "Moscow", count: 31, col: T.high },
-                    { x: "36%", y: "70%", label: "São Paulo", count: 28, col: T.high },
-                    { x: "52%", y: "34%", label: "Frankfurt", count: 19, col: T.medium },
-                    { x: "70%", y: "52%", label: "Mumbai", count: 14, col: T.medium },
-                    { x: "24%", y: "38%", label: "Ashburn", count: 9, col: T.low },
-                  ].map((p, i) => (
-                    <div
-                      key={i}
-                      style={{
-                        position: "absolute",
-                        left: p.x,
-                        top: p.y,
-                        transform: "translate(-50%, -50%)",
-                        display: "flex",
-                        flexDirection: "column",
-                        alignItems: "center",
-                        cursor: "pointer",
-                      }}
-                      onClick={() => setActiveNav("attackers")}
-                    >
-                      <div
-                        style={{
-                          width: 12,
-                          height: 12,
-                          borderRadius: "50%",
-                          background: p.col,
-                          boxShadow: `0 0 12px ${p.col}`,
-                        }}
-                      />
-                      <span
-                        style={{
-                          fontSize: 10,
-                          fontWeight: 600,
-                          color: T.text,
-                          background: `${T.surface}cc`,
-                          padding: "1px 4px",
-                          borderRadius: 3,
-                          marginTop: 3,
-                          border: `1px solid ${T.border}`,
-                        }}
-                      >
-                        {p.label} ({p.count})
-                      </span>
-                    </div>
-                  ))}
-                </div>
+                />
               </Card>
 
               <Card>
