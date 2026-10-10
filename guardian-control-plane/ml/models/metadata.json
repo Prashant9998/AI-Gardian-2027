@@ -1,6 +1,6 @@
 {
   "version": "2.4.0-csic2010",
-  "trained_at": "2026-09-19T07:45:56Z",
+  "trained_at": "2026-09-21T17:10:06Z",
   "f1_score": 1.0,
   "false_positive_rate": 0.0,
   "accuracy": 1.0,
@@ -16,9 +16,9 @@
     "SCANNER": 5
   },
   "confusion_matrix": {
-    "true_negative": 392,
+    "true_negative": 382,
     "false_positive": 0,
     "false_negative": 0,
-    "true_positive": 233
+    "true_positive": 243
   }
 }
