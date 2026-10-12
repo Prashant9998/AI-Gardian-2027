@@ -102,6 +102,7 @@ Incoming HTTP Request
 ├── guardian-sdk-node/              # Client SDK middleware for Node.js / Express
 ├── simulate_attacks.py             # Live attack stream generator (SQLi, XSS, Scanners)
 ├── simulate_honeypot.py            # Automated honeypot & tarpit verification tool
+├── major/                          # Major Project deliverables (Thesis, SRS, PRD, IEEE paper, Diagrams)
 └── README.md
 ```
 
@@ -173,12 +174,12 @@ python simulate_honeypot.py
 
 ## 🎓 Academic Defense & Research Package
 
-Comprehensive documentation, research publication drafts, and examination defense materials are organized in [`docs/`](docs/):
+Comprehensive documentation, research publication drafts, and examination defense materials are organized in [`major/docs/`](major/docs/):
 
-- 📄 **[Comprehensive Project Report / Thesis](docs/FINAL_PROJECT_REPORT.md)**: 9-chapter master project thesis covering architecture, mathematical formulations, CSIC 2010 benchmarks, and IEEE references.
-- 🔬 **[IEEE Conference Research Paper](docs/IEEE_RESEARCH_PAPER.md)**: Formatted research paper: *"Autonomous Real-Time Web Application Defense using Machine Learning Threat Fusion and Stateful Deception Honeypots"*.
-- 📊 **[15-Slide Presentation Deck](docs/PRESENTATION_DECK.md)**: Master defense presentation with slide layouts, speaker scripts, and examiner questions.
-- 💡 **[Viva Voce Defense Cheat Sheet](docs/VIVA_VOCE_CHEAT_SHEET.md)**: 15+ high-yield defense questions & technical answers with a step-by-step 1-Click Live Demonstration script.
+- 📄 **[Comprehensive Project Report / Thesis](major/docs/FINAL_PROJECT_REPORT.md)**: 9-chapter master project thesis covering architecture, mathematical formulations, CSIC 2010 benchmarks, and IEEE references.
+- 🔬 **[IEEE Conference Research Paper](major/docs/IEEE_RESEARCH_PAPER.md)**: Formatted research paper: *"Autonomous Real-Time Web Application Defense using Machine Learning Threat Fusion and Stateful Deception Honeypots"*.
+- 📊 **[15-Slide Presentation Deck](major/docs/PRESENTATION_DECK.md)**: Master defense presentation with slide layouts, speaker scripts, and examiner questions.
+- 💡 **[Viva Voce Defense Cheat Sheet](major/docs/VIVA_VOCE_CHEAT_SHEET.md)**: 15+ high-yield defense questions & technical answers with a step-by-step 1-Click Live Demonstration script.
 
 ---
 
