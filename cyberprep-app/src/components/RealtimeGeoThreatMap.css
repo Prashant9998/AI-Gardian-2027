@@ -1,0 +1,262 @@
+/* RealtimeGeoThreatMap.css — High-Tech SOC Threat Geomap */
+
+.geo-map-container {
+  position: relative;
+  width: 100%;
+  border-radius: 8px;
+  overflow: hidden;
+  background: radial-gradient(ellipse at 50% 50%, #121c2e 0%, #080c14 75%, #05080f 100%);
+  border: 1px solid rgba(144, 71, 255, 0.25);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.5), inset 0 0 40px rgba(0, 229, 255, 0.03);
+  user-select: none;
+  transition: height 0.3s ease;
+}
+
+/* Radar Sweep Effect */
+.geo-radar-sweep {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: conic-gradient(
+    from 0deg at 50% 50%,
+    rgba(0, 229, 255, 0.12) 0deg,
+    rgba(0, 229, 255, 0.04) 30deg,
+    transparent 60deg,
+    transparent 360deg
+  );
+  animation: geoRadarRotate 7s linear infinite;
+  opacity: 0.8;
+  mix-blend-mode: screen;
+}
+
+@keyframes geoRadarRotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* CRT Scanline Overlay */
+.geo-scanlines {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(0, 229, 255, 0.02) 0px,
+    rgba(0, 229, 255, 0.02) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  opacity: 0.6;
+}
+
+/* SVG Map Paths */
+.geo-country-path {
+  fill: #141c2c;
+  stroke: rgba(0, 229, 255, 0.18);
+  stroke-width: 0.5;
+  transition: fill 0.2s ease, stroke 0.2s ease;
+}
+
+.geo-country-path:hover {
+  fill: #1c273e;
+  stroke: rgba(0, 229, 255, 0.45);
+}
+
+.geo-country-path.targeted {
+  fill: rgba(0, 229, 255, 0.08);
+  stroke: rgba(0, 229, 255, 0.5);
+}
+
+.geo-country-path.attacking {
+  fill: rgba(255, 59, 48, 0.08);
+  stroke: rgba(255, 59, 48, 0.35);
+}
+
+/* Cybernetic Threat Arc */
+.geo-attack-arc {
+  fill: none;
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 4px currentColor);
+  animation: arcDash 1.2s linear infinite;
+}
+
+@keyframes arcDash {
+  to {
+    stroke-dashoffset: -28;
+  }
+}
+
+/* Pulsing Ripple Wave for Threat Nodes */
+.geo-pulse-ring {
+  animation: pulseRipple 2.2s cubic-bezier(0.2, 0.8, 0.2, 1) infinite;
+  transform-origin: center;
+}
+
+@keyframes pulseRipple {
+  0% {
+    r: 6;
+    opacity: 0.9;
+    stroke-width: 2;
+  }
+  100% {
+    r: 26;
+    opacity: 0;
+    stroke-width: 0.5;
+  }
+}
+
+.geo-target-ring {
+  animation: targetShieldPulse 3s ease-in-out infinite;
+}
+
+@keyframes targetShieldPulse {
+  0%, 100% {
+    r: 16;
+    opacity: 0.5;
+  }
+  50% {
+    r: 22;
+    opacity: 0.85;
+  }
+}
+
+/* Top Telemetry HUD */
+.geo-hud-header {
+  position: absolute;
+  top: 10px;
+  left: 12px;
+  right: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.geo-hud-header > * {
+  pointer-events: auto;
+}
+
+.geo-hud-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  background: rgba(14, 22, 36, 0.85);
+  border: 1px solid rgba(0, 229, 255, 0.3);
+  border-radius: 4px;
+  font-family: "Geist Mono", monospace, monospace;
+  font-size: 11px;
+  color: #00e5ff;
+  letter-spacing: 0.5px;
+  box-shadow: 0 0 10px rgba(0, 229, 255, 0.15);
+  backdrop-filter: blur(6px);
+}
+
+.geo-live-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #2fe07d;
+  box-shadow: 0 0 8px #2fe07d;
+  animation: liveBlink 1.4s ease-in-out infinite;
+}
+
+@keyframes liveBlink {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.85); }
+}
+
+.geo-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.geo-btn-control {
+  background: rgba(13, 19, 33, 0.85);
+  border: 1px solid rgba(144, 71, 255, 0.35);
+  color: #c9b4f7;
+  font-family: "Geist Mono", monospace;
+  font-size: 10px;
+  letter-spacing: 0.4px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(4px);
+}
+
+.geo-btn-control:hover {
+  border-color: #00e5ff;
+  color: #00e5ff;
+  background: rgba(0, 229, 255, 0.1);
+}
+
+.geo-btn-control.active {
+  background: rgba(0, 229, 255, 0.18);
+  border-color: #00e5ff;
+  color: #00e5ff;
+  font-weight: 600;
+  box-shadow: 0 0 8px rgba(0, 229, 255, 0.3);
+}
+
+/* Tooltip Popup */
+.geo-tooltip {
+  position: absolute;
+  z-index: 20;
+  pointer-events: auto;
+  background: rgba(11, 16, 28, 0.94);
+  border: 1px solid #00e5ff;
+  box-shadow: 0 0 20px rgba(0, 229, 255, 0.25), 0 8px 16px rgba(0, 0, 0, 0.6);
+  border-radius: 6px;
+  padding: 10px 14px;
+  color: #f5efff;
+  font-family: "Geist Mono", -apple-system, sans-serif;
+  min-width: 190px;
+  max-width: 260px;
+  backdrop-filter: blur(8px);
+  transform: translate(-50%, -100%);
+  margin-top: -14px;
+}
+
+.geo-tooltip::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 6px;
+  border-style: solid;
+  border-color: #00e5ff transparent transparent transparent;
+}
+
+/* Bottom Threat Ticker */
+.geo-ticker {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(8, 12, 20, 0.9);
+  border-top: 1px solid rgba(0, 229, 255, 0.2);
+  padding: 4px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: "Geist Mono", monospace;
+  font-size: 10px;
+  color: #8e80ab;
+  z-index: 10;
+  backdrop-filter: blur(4px);
+}
+
+.geo-ticker-latest {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #f5efff;
+}

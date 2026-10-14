@@ -1,16 +1,16 @@
 # 🛡️ AI Cyber Guardian
 
-An AI-powered, real-time autonomous web application security platform that detects, blocks, and traps cyber attackers.
 
+An AI-powered, real-time autonomous web application security platform that detects, blocks, and traps cyber attackers.-
 ---
 ## 🚀 What It Does
 AI Cyber Guardian acts as an intelligent zero-trust security layer that sits in front of any web application. Every incoming HTTP request passes through a two-stage detection pipeline:
+
 
 1. **Stage 1 — Ingress Filter**: Instant IP blocklist/allowlist check and sliding-window Redis-based rate limiting (sub-millisecond evaluation with fail-open safety).
 2. **Stage 2 — AI Decision Engine & Threat Fusion**: Combines a deterministic rule engine (covering SQLi, XSS, Command Injection, Path Traversal, Brute Force, and Vulnerability Scanners with double URL-decoding) with two trained Machine Learning models (Isolation Forest for zero-day anomaly detection + Random Forest for attack classification) to produce an authoritative unified threat score (0–100).
 
 Based on the score, the platform automatically **logs**, **blocks**, **alerts**, or **deploys an adaptive honeypot trap** — returning a convincing virtual Linux shell and fake admin surface to keep attackers trapped while recording complete forensic telemetry.
-
 ---
 ## ✨ Key Features
 
@@ -31,6 +31,7 @@ Based on the score, the platform automatically **logs**, **blocks**, **alerts**,
 ---
 
 ## 🏗️ System Architecture
+
 
 ```text
 Incoming HTTP Request
@@ -101,6 +102,7 @@ Incoming HTTP Request
 ├── guardian-sdk-node/              # Client SDK middleware for Node.js / Express
 ├── simulate_attacks.py             # Live attack stream generator (SQLi, XSS, Scanners)
 ├── simulate_honeypot.py            # Automated honeypot & tarpit verification tool
+├── major/                          # Major Project deliverables (Thesis, SRS, PRD, IEEE paper, Diagrams)
 └── README.md
 ```
 
@@ -172,12 +174,12 @@ python simulate_honeypot.py
 
 ## 🎓 Academic Defense & Research Package
 
-Comprehensive documentation, research publication drafts, and examination defense materials are organized in [`docs/`](docs/):
+Comprehensive documentation, research publication drafts, and examination defense materials are organized in [`major/docs/`](major/docs/):
 
-- 📄 **[Comprehensive Project Report / Thesis](docs/FINAL_PROJECT_REPORT.md)**: 9-chapter master project thesis covering architecture, mathematical formulations, CSIC 2010 benchmarks, and IEEE references.
-- 🔬 **[IEEE Conference Research Paper](docs/IEEE_RESEARCH_PAPER.md)**: Formatted research paper: *"Autonomous Real-Time Web Application Defense using Machine Learning Threat Fusion and Stateful Deception Honeypots"*.
-- 📊 **[15-Slide Presentation Deck](docs/PRESENTATION_DECK.md)**: Master defense presentation with slide layouts, speaker scripts, and examiner questions.
-- 💡 **[Viva Voce Defense Cheat Sheet](docs/VIVA_VOCE_CHEAT_SHEET.md)**: 15+ high-yield defense questions & technical answers with a step-by-step 1-Click Live Demonstration script.
+- 📄 **[Comprehensive Project Report / Thesis](major/docs/FINAL_PROJECT_REPORT.md)**: 9-chapter master project thesis covering architecture, mathematical formulations, CSIC 2010 benchmarks, and IEEE references.
+- 🔬 **[IEEE Conference Research Paper](major/docs/IEEE_RESEARCH_PAPER.md)**: Formatted research paper: *"Autonomous Real-Time Web Application Defense using Machine Learning Threat Fusion and Stateful Deception Honeypots"*.
+- 📊 **[15-Slide Presentation Deck](major/docs/PRESENTATION_DECK.md)**: Master defense presentation with slide layouts, speaker scripts, and examiner questions.
+- 💡 **[Viva Voce Defense Cheat Sheet](major/docs/VIVA_VOCE_CHEAT_SHEET.md)**: 15+ high-yield defense questions & technical answers with a step-by-step 1-Click Live Demonstration script.
 
 ---
 

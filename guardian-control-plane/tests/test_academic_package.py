@@ -10,7 +10,7 @@ from pathlib import Path
 import pytest
 
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
-DOCS_DIR = REPO_ROOT / "docs"
+DOCS_DIR = (REPO_ROOT / "major" / "docs") if (REPO_ROOT / "major" / "docs").exists() else (REPO_ROOT / "docs")
 
 FINAL_REPORT_PATH = DOCS_DIR / "FINAL_PROJECT_REPORT.md"
 RESEARCH_PAPER_PATH = DOCS_DIR / "IEEE_RESEARCH_PAPER.md"
