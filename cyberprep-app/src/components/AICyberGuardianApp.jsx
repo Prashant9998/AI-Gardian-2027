@@ -27,6 +27,7 @@ import EmotionPreloader from "./EmotionPreloader";
 import EmotionAIAssistant from "./EmotionAIAssistant";
 import KineticButton from "./KineticButton";
 import RealtimeGeoThreatMap from "./RealtimeGeoThreatMap";
+import AdminDashboard from "./AdminDashboard";
 import {
   playClickSound,
   playHoverSound,
@@ -858,6 +859,7 @@ function Landing({ onNav }) {
 
 // ── Screen: Login ──────────────────────────────────────────────────────────
 function Login({ onNav }) {
+  const [role, setRole] = useState("client"); // "client" | "admin"
   const [email, setEmail] = useState("client@example.com");
   const [pass, setPass] = useState("••••••••••");
   const [loading, setLoading] = useState(false);
@@ -874,11 +876,24 @@ function Login({ onNav }) {
     outline: "none",
   };
 
+  function selectRole(r) {
+    setRole(r);
+    if (r === "admin") {
+      setEmail("admin@cyberguardian.ai");
+    } else {
+      setEmail("client@example.com");
+    }
+  }
+
   function submit() {
     setLoading(true);
     setTimeout(() => {
       setLoading(false);
-      onNav("dashboard");
+      if (role === "admin" || email.includes("admin")) {
+        onNav("admin");
+      } else {
+        onNav("dashboard");
+      }
     }, 600);
   }
 
@@ -909,12 +924,65 @@ function Login({ onNav }) {
         </span>
       </nav>
       <div style={{ flex: 1, display: "flex", alignItems: "center", justifyCenter: "center", justifyContent: "center", padding: 24 }}>
-        <Card style={{ width: "100%", maxWidth: 380, padding: "32px 30px" }}>
-          <div style={{ textAlign: "center", marginBottom: 28 }}>
-            <span style={{ fontSize: 32 }}>🛡️</span>
-            <h2 style={{ fontSize: 20, fontWeight: 700, color: T.text, margin: "10px 0 4px" }}>Welcome back</h2>
-            <p style={{ color: T.muted, fontSize: 13 }}>Sign in to your account</p>
+        <Card style={{ width: "100%", maxWidth: 400, padding: "32px 30px" }}>
+          <div style={{ textAlign: "center", marginBottom: 24 }}>
+            <span style={{ fontSize: 32 }}>{role === "admin" ? "👑" : "🛡️"}</span>
+            <h2 style={{ fontSize: 20, fontWeight: 700, color: T.text, margin: "10px 0 4px" }}>
+              {role === "admin" ? "Super Admin Portal" : "Welcome back"}
+            </h2>
+            <p style={{ color: T.muted, fontSize: 13 }}>
+              {role === "admin" ? "Sign in to platform control plane" : "Sign in to your customer SOC"}
+            </p>
           </div>
+
+          {/* Quick Role Preset Switcher */}
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr",
+              gap: 8,
+              marginBottom: 20,
+              background: T.surface2,
+              padding: 4,
+              borderRadius: 6,
+            }}
+          >
+            <button
+              type="button"
+              onClick={() => selectRole("client")}
+              style={{
+                background: role === "client" ? T.blue : "transparent",
+                color: role === "client" ? "#0D1117" : T.muted,
+                border: "none",
+                borderRadius: 4,
+                padding: "7px 10px",
+                fontSize: 12,
+                fontWeight: 700,
+                cursor: "pointer",
+                transition: "all 0.15s",
+              }}
+            >
+              👤 Client SOC
+            </button>
+            <button
+              type="button"
+              onClick={() => selectRole("admin")}
+              style={{
+                background: role === "admin" ? T.purple : "transparent",
+                color: role === "admin" ? "#ffffff" : T.muted,
+                border: "none",
+                borderRadius: 4,
+                padding: "7px 10px",
+                fontSize: 12,
+                fontWeight: 700,
+                cursor: "pointer",
+                transition: "all 0.15s",
+              }}
+            >
+              👑 Super Admin
+            </button>
+          </div>
+
           <div style={{ marginBottom: 16 }}>
             <label style={{ color: T.muted, fontSize: 12, display: "block", marginBottom: 5 }}>Email</label>
             <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="your@email.com" style={inputStyle} />
@@ -937,21 +1005,24 @@ function Login({ onNav }) {
             style={{
               width: "100%",
               padding: "10px",
-              background: loading ? T.surface2 : T.blue,
-              color: loading ? T.muted : "#0D1117",
+              background: loading ? T.surface2 : role === "admin" ? T.purple : T.blue,
+              color: loading ? T.muted : role === "admin" ? "#ffffff" : "#0D1117",
               border: "none",
               borderRadius: 5,
               fontSize: 13,
-              fontWeight: 600,
+              fontWeight: 700,
               cursor: loading ? "not-allowed" : "pointer",
               fontFamily: "inherit",
               transition: "all 0.2s",
+              boxShadow: role === "admin" ? `0 0 14px ${T.purple}66` : `0 0 14px ${T.blue}44`,
             }}
           >
-            {loading ? "Signing in..." : "Sign In →"}
+            {loading ? "Signing in..." : role === "admin" ? "Access Control Plane →" : "Sign In →"}
           </button>
           <p style={{ textAlign: "center", color: T.muted, fontSize: 12, marginTop: 16 }}>
-            No account? <span style={{ color: T.blue, cursor: "pointer" }}>Register</span>
+            {role === "admin" ? "Authorized personnel only • 2FA enforced" : (
+              <>No account? <span style={{ color: T.blue, cursor: "pointer" }}>Register</span></>
+            )}
           </p>
         </Card>
       </div>
@@ -1532,6 +1603,32 @@ function Dashboard({ onNav, onOpenAttacker }) {
               }}
             >
               ⚙️ <span style={{ textTransform: "uppercase" }}>SETTINGS</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                playClickSound();
+                onNav("admin");
+              }}
+              title="Access Platform Super-Administrative Control Plane"
+              style={{
+                background: "rgba(144, 71, 255, 0.2)",
+                border: "1px solid rgba(144, 71, 255, 0.5)",
+                color: "#d8b4fe",
+                borderRadius: "9999px",
+                padding: "6px 13px",
+                cursor: "pointer",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 5,
+                fontSize: 11,
+                fontFamily: "'IBM Plex Mono', monospace",
+                fontWeight: 700,
+                transition: "all 0.2s ease",
+              }}
+            >
+              👑 <span style={{ textTransform: "uppercase" }}>ADMIN PANEL</span>
             </button>
 
             <Btn small primary onClick={() => setAddSiteModal(true)}>
@@ -3624,9 +3721,15 @@ function AttackerProfile({ ip, onBack, onBlockIP }) {
 
 // ── Root Master Component ──────────────────────────────────────────────────
 export default function AICyberGuardianApp() {
-  const [screen, setScreen] = useState("dashboard");
+  const [screen, setScreen] = useState(() => {
+    const params = new URLSearchParams(window.location.search);
+    return params.get("screen") || "admin";
+  });
   const [selectedAttackerIP, setSelectedAttackerIP] = useState(null);
-  const [preloaderDone, setPreloaderDone] = useState(false);
+  const [preloaderDone, setPreloaderDone] = useState(() => {
+    const params = new URLSearchParams(window.location.search);
+    return params.get("skip_preloader") === "true";
+  });
 
   useEffect(() => {
     document.body.style.margin = "0";
@@ -3638,7 +3741,8 @@ export default function AICyberGuardianApp() {
   const screens = [
     { id: "landing", label: "🏠 Landing" },
     { id: "login", label: "🔐 Login" },
-    { id: "dashboard", label: "📊 Dashboard" },
+    { id: "dashboard", label: "📊 Client SOC" },
+    { id: "admin", label: "👑 Admin Panel" },
   ];
 
   return (
@@ -3676,8 +3780,8 @@ export default function AICyberGuardianApp() {
             }}
             style={{
               padding: "5px 14px",
-              background: screen === s.id && !selectedAttackerIP ? T.blue : "transparent",
-              color: screen === s.id && !selectedAttackerIP ? "#0D1117" : T.muted,
+              background: screen === s.id && !selectedAttackerIP ? (s.id === "admin" ? T.purple : T.blue) : "transparent",
+              color: screen === s.id && !selectedAttackerIP ? (s.id === "admin" ? "#ffffff" : "#0D1117") : T.muted,
               border: "none",
               borderRadius: 20,
               cursor: "pointer",
@@ -3685,6 +3789,7 @@ export default function AICyberGuardianApp() {
               fontWeight: 600,
               fontFamily: "inherit",
               transition: "all 0.15s",
+              boxShadow: screen === s.id && s.id === "admin" ? `0 0 12px ${T.purple}88` : "none",
             }}
           >
             {s.label}
@@ -3699,6 +3804,12 @@ export default function AICyberGuardianApp() {
         <Dashboard
           onNav={setScreen}
           onOpenAttacker={(ip) => setSelectedAttackerIP(ip)}
+        />
+      )}
+      {screen === "admin" && !selectedAttackerIP && (
+        <AdminDashboard
+          onNav={setScreen}
+          onSwitchToUserSoc={() => setScreen("dashboard")}
         />
       )}
       {selectedAttackerIP && (
