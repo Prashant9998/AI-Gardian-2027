@@ -243,6 +243,133 @@ def generate_sample(category: str) -> Dict[str, Any]:
             "category": "SCANNER"
         }
 
+def clean_and_categorize_request(url: str, payload: str, method: str, user_agent: str, label_str: str) -> Dict[str, Any]:
+    """
+    Cleans raw HTTP request fields from CSIC 2010 CSV, applies URL decoding,
+    extracts path and query parameters, and maps attack categories.
+    """
+    from urllib.parse import urlparse, unquote_plus
+    
+    # 1. Clean & Decode URL and Path
+    raw_url = str(url).strip() if url else ""
+    try:
+        parsed = urlparse(raw_url)
+        path = unquote_plus(parsed.path or "/")
+        query = unquote_plus(parsed.query or "")
+    except Exception:
+        path = "/"
+        query = ""
+
+    # 2. Clean & Decode Body / Payload
+    raw_body = str(payload).strip() if payload and str(payload).lower() != "nan" else ""
+    try:
+        body = unquote_plus(raw_body)
+    except Exception:
+        body = raw_body
+
+    # 3. Clean Headers
+    ua = str(user_agent).strip() if user_agent and str(user_agent).lower() != "nan" else ""
+    clean_method = str(method).strip().upper() if method and str(method).lower() != "nan" else "GET"
+
+    # 4. Map binary label: norm -> 0, anom -> 1
+    label = 0 if str(label_str).strip().lower() == "norm" else 1
+
+    # 5. Fine-grained category detection from payload & path
+    combined_content = f"{path} {query} {body} {ua}".lower()
+    if label == 0:
+        category = "NORMAL"
+    elif any(k in combined_content for k in ["select", "union", "drop table", "1=1", "or '", "information_schema", "sleep("]):
+        category = "SQLI"
+    elif any(k in combined_content for k in ["<script", "javascript:", "alert(", "<svg", "onerror=", "onload="]):
+        category = "XSS"
+    elif any(k in combined_content for k in ["../", "..\\", "etc/passwd", "win.ini", "etc/shadow", "boot.ini"]):
+        category = "PATH_TRAVERSAL"
+    elif any(k in combined_content for k in ["; cat", "| whoami", "&& uname", "& dir", "/bin/sh"]):
+        category = "RCE"
+    elif any(k in combined_content for k in ["nikto", "sqlmap", "dirbuster", "acunetix", "nmap"]):
+        category = "SCANNER"
+    else:
+        category = "SQLI" # Default prominent attack class in CSIC anom
+
+    return {
+        "path": path,
+        "query": query,
+        "body": body,
+        "method": clean_method,
+        "headers": {"User-Agent": ua},
+        "label": label,
+        "category": category
+    }
+
+def load_csic_from_csv(
+    csv_path: str,
+    sample_size: int = 14000,
+    test_split: float = 0.30,
+    random_state: int = 42
+) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
+    """
+    Loads, cleans, reconstructs complete HTTP requests from parameters,
+    and performs a stratified 70/30 train-test split on official CSIC 2010 CSV.
+    """
+    import pandas as pd
+    from sklearn.model_selection import train_test_split
+
+    df = pd.read_csv(csv_path, low_memory=False)
+
+    # Standardize label
+    df["label_clean"] = df["label"].astype(str).str.strip().str.lower()
+    df = df[df["label_clean"].isin(["norm", "anom"])]
+
+    # In Pete Scully's Weka CSV, multi-parameter requests are broken into one row per parameter
+    # Group consecutive rows with the same request index into full HTTP requests
+    df["req_id"] = (df["index"] != df["index"].shift()).cumsum()
+    reqs = df.groupby("req_id").agg({
+        "url": "first",
+        "method": "first",
+        "userAgent": "first",
+        "label_clean": "first",
+        "payload": lambda x: "&".join([str(v) for v in x if pd.notna(v) and str(v).lower() != "nan"])
+    }).reset_index(drop=True)
+
+    # Stratified balance sampling for optimal training and test representation
+    n_per_class = sample_size // 2
+    norm_df = reqs[reqs["label_clean"] == "norm"]
+    anom_df = reqs[reqs["label_clean"] == "anom"]
+
+    # Sample CSIC requests
+    sampled_norm = norm_df.sample(n=min(len(norm_df), int(n_per_class * 0.75)), random_state=random_state)
+    sampled_anom = anom_df.sample(n=min(len(anom_df), n_per_class), random_state=random_state)
+    combined_df = pd.concat([sampled_norm, sampled_anom]).sample(frac=1.0, random_state=random_state)
+
+    # Clean and categorize individual requests
+    cleaned_records = []
+    for _, row in combined_df.iterrows():
+        rec = clean_and_categorize_request(
+            url=row.get("url"),
+            payload=row.get("payload"),
+            method=row.get("method"),
+            user_agent=row.get("userAgent"),
+            label_str=row.get("label_clean")
+        )
+        cleaned_records.append(rec)
+
+    # Augment normal class with standard modern enterprise paths (e.g. /products, /login, /home, /about, /api)
+    # This prevents the classifier from over-fitting strictly to the CSIC 'tienda1.jsp' paths
+    modern_normal_count = int(n_per_class * 0.25)
+    for _ in range(modern_normal_count):
+        cleaned_records.append(generate_sample("NORMAL"))
+
+    # Stratified 70% Train / 30% Test Split
+    labels = [r["label"] for r in cleaned_records]
+    train_records, test_records = train_test_split(
+        cleaned_records,
+        test_size=test_split,
+        random_state=random_state,
+        stratify=labels
+    )
+
+    return train_records, test_records
+
 def load_csic_benchmark_dataset(
     normal_count: int = 1600,
     attack_count_per_type: int = 180,
@@ -271,3 +398,4 @@ def load_csic_benchmark_dataset(
     test_data = samples[split_idx:]
 
     return train_data, test_data
+

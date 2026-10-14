@@ -60,3 +60,14 @@ export async function unblockIP(ip) {
     return true; // Local simulation success
   }
 }
+
+export async function fetchMLStatus() {
+  try {
+    const res = await fetch(`${API_BASE}/ml/status`);
+    if (!res.ok) throw new Error("Failed to fetch ML status");
+    return await res.json();
+  } catch {
+    return null;
+  }
+}
+

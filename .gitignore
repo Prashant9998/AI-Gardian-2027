@@ -36,3 +36,10 @@ guardian_dev.db
 .vscode/
 .idea/
 *.log
+
+# Raw Datasets
+*.csv
+*.zip
+guardian-control-plane/ml/data/
+.agent/
+
