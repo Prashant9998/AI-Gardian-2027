@@ -26,32 +26,8 @@ class IEEENumberedCanvas(canvas.Canvas):
         super(IEEENumberedCanvas, self).save()
 
     def draw_ieee_decorations(self, page_count):
-        self.saveState()
-        self.setFont("Times-Roman", 8)
-        self.setFillColor(colors.HexColor("#333333"))
-        
-        # Page 1: First page footnote / footer notice
-        if self._pageNumber == 1:
-            self.setStrokeColor(colors.HexColor("#666666"))
-            self.setLineWidth(0.5)
-            self.line(45, 42, 290, 42)
-            self.drawString(45, 32, "Manuscript submitted for peer review. Department of Computer Science & Engineering.")
-            self.drawString(45, 23, "Pre-print publication draft formatted under standard IEEE 2-column specifications.")
-            self.drawRightString(567, 32, f"Page {self._pageNumber} of {page_count}")
-        else:
-            # Running Header on later pages (clean separation to avoid overlap)
-            self.drawString(45, 755, "IEEE TRANSACTIONS ON DEPENDABLE AND SECURE COMPUTING")
-            self.drawRightString(567, 755, "AI CYBER GUARDIAN PRE-PRINT")
-            self.setStrokeColor(colors.HexColor("#999999"))
-            self.setLineWidth(0.4)
-            self.line(45, 749, 567, 749)
-            
-            # Running Footer on later pages
-            self.line(45, 38, 567, 38)
-            self.drawString(45, 26, "CONFIDENTIAL & PROPRIETARY — PRE-PRINT RESEARCH DRAFT")
-            self.drawRightString(567, 26, f"Page {self._pageNumber} of {page_count}")
-            
-        self.restoreState()
+        # AI template headers, footers, and draft watermarks removed for clean academic appearance
+        pass
 
 def create_ieee_pdf(output_filename="IEEE_RESEARCH_PAPER_AI_CYBER_GUARDIAN.pdf"):
     # US Letter: 612 x 792 pt (8.5 x 11 inches)
@@ -225,7 +201,7 @@ def create_ieee_pdf(output_filename="IEEE_RESEARCH_PAPER_AI_CYBER_GUARDIAN.pdf")
     
     # ==================== PAGE 1 TOP: TITLE & ABSTRACT ====================
     story.append(Paragraph("Deterministic and Statistical Threat Fusion with In-Memory Cyber Deception for Application-Layer Defense", title_style))
-    story.append(Paragraph("<b>AI Cyber Guardian Research & Engineering Group</b><br/>Department of Computer Science & Engineering / Information Security<br/><i>Pre-Print Camera-Ready Draft — Standard IEEE Conference & Transactions Format</i>", author_style))
+    story.append(Paragraph("<b>AI Cyber Guardian Research & Engineering Group</b><br/>Department of Computer Science & Engineering / Information Security", author_style))
     
     abstract_text = (
         "<b><i>Abstract</i>—Production web services face persistent application-layer attacks ranging from structured "

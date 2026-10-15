@@ -250,3 +250,74 @@ body {
   visibility: hidden;
   pointer-events: none;
 }
+
+/* ── Cyberpunk Futuristic Design System Utilities ────────────────────────── */
+@keyframes neonPulseGlow {
+  0%, 100% {
+    box-shadow: 0 0 15px rgba(0, 240, 255, 0.4), inset 0 0 15px rgba(0, 240, 255, 0.1);
+    border-color: rgba(0, 240, 255, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(0, 240, 255, 0.7), inset 0 0 25px rgba(0, 240, 255, 0.25);
+    border-color: rgba(0, 240, 255, 0.85);
+  }
+}
+
+@keyframes laserSweepScan {
+  0% { transform: translateY(-100%); opacity: 0; }
+  50% { opacity: 0.8; }
+  100% { transform: translateY(400%); opacity: 0; }
+}
+
+@keyframes radarPing {
+  0% { transform: scale(0.9); opacity: 0.8; }
+  70% { transform: scale(2.2); opacity: 0; }
+  100% { transform: scale(2.4); opacity: 0; }
+}
+
+@keyframes glitchShimmer {
+  0%, 100% { text-shadow: 0 0 20px rgba(0, 240, 255, 0.6), 0 0 40px rgba(0, 240, 255, 0.2); }
+  33% { text-shadow: -2px 0 #ff007f, 2px 0 #00f0ff, 0 0 25px rgba(0, 240, 255, 0.8); }
+  66% { text-shadow: 2px 0 #39ff14, -2px 0 #ff007f, 0 0 30px rgba(255, 0, 128, 0.6); }
+}
+
+.cyber-orbitron {
+  font-family: 'Orbitron', 'Rajdhani', monospace, sans-serif !important;
+}
+
+.cyber-code {
+  font-family: 'Fira Code', 'Geist Mono', monospace !important;
+}
+
+.cyber-glass-card {
+  backdrop-filter: blur(24px) saturate(190%);
+  -webkit-backdrop-filter: blur(24px) saturate(190%);
+  background: rgba(10, 16, 32, 0.68);
+  border: 1px solid rgba(0, 240, 255, 0.28);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7), 0 0 25px rgba(0, 240, 255, 0.08);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.cyber-glass-card:hover {
+  border-color: rgba(0, 240, 255, 0.6);
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.85), 0 0 35px rgba(0, 240, 255, 0.22);
+  transform: translateY(-4px);
+}
+
+/* Custom Cyber Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #060913;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 240, 255, 0.35);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #00f0ff;
+  box-shadow: 0 0 10px #00f0ff;
+}
+

