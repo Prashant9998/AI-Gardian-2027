@@ -1,0 +1,23 @@
+{
+  "name": "vulnerable-web-app",
+  "version": "1.0.0",
+  "description": "Vulnerable Demo Web Application for AI Cyber Guardian real-time defense demonstration",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": [
+    "cybersecurity",
+    "vulnerable-app",
+    "ai-defense",
+    "waf-demo",
+    "honeypot"
+  ],
+  "author": "AI Cyber Guardian Research Team",
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.19.2"
+  }
+}
