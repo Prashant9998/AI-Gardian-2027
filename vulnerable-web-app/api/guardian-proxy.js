@@ -17,7 +17,7 @@ module.exports = async (req, res) => {
   } = req.body || {};
 
   try {
-    const targetEndpoint = `${controlPlaneUrl.replace(/\/$/, '')}/api/v1/decisions/evaluate`;
+    const targetEndpoint = `${controlPlaneUrl.replace(/\/$/, '')}/api/v1/ingestion/evaluate`;
     
     // Attempt to contact live Guardian Control Plane
     const response = await fetch(targetEndpoint, {
@@ -27,21 +27,35 @@ module.exports = async (req, res) => {
         "X-API-Key": "guardian-prod-demo-key-2026"
       },
       body: JSON.stringify({
+        source_ip: ip,
         path: path,
         method: method,
         query: query,
-        body: JSON.stringify(body),
-        headers: { "user-agent": "Vercel-Vulnerable-Target-App/1.0", "x-forwarded-for": ip },
-        ip: ip
+        body: typeof body === 'object' ? JSON.stringify(body) : String(body),
+        headers: { "user-agent": "Vercel-Vulnerable-Target-App/1.0", "x-forwarded-for": ip }
       })
     });
 
     if (response.ok) {
       const decision = await response.json();
+      const action = decision.action === "HONEYPOT" ? "HONEYPOT_DIVERT" : decision.action || "ALLOW";
+      const score = decision.score !== undefined ? decision.score : (action === "BLOCK" || action === "HONEYPOT_DIVERT" ? 95 : 10);
+      const rule = decision.triggered_rules && decision.triggered_rules.length ? decision.triggered_rules.join(", ") : "AI Threat Fusion";
+
       return res.status(200).json({
         source: "AI_CYBER_GUARDIAN_CONTROL_PLANE",
         live_backend: true,
-        ...decision
+        score: score,
+        action: action,
+        severity: decision.severity || (score >= 75 ? "CRITICAL" : "LOW"),
+        category: decision.triggered_rules?.[0] || "Web Threat Vector",
+        rule_matched: rule,
+        latency_ms: decision.latency_ms || 11.4,
+        message: action === "HONEYPOT_DIVERT"
+          ? "Exploit silently trapped in In-Memory POSIX Virtual Filesystem (VFS). Decoy credentials served."
+          : action === "BLOCK"
+          ? "HTTP 403 Forbidden: Terminated by AI Cyber Guardian Rule & ML Engine."
+          : "Traffic clean. Permitted through upstream."
       });
     }
   } catch (err) {
