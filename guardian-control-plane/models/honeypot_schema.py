@@ -12,6 +12,9 @@ import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from models.schema import Base
 
+def utc_now():
+    return datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None)
+
 class HoneypotAttackerProfile(Base):
     """
     Persistent, cross-session attacker profile built per source identity (IP + Fingerprint).
@@ -39,8 +42,8 @@ class HoneypotAttackerProfile(Base):
     triggered_honeytokens = Column(JSON, default=list)    # Trapped fake tokens attacker attempted to use
     captured_credentials = Column(JSON, default=list)     # Fake username/password combos tried
     
-    first_seen = Column(DateTime, default=datetime.datetime.utcnow)
-    last_seen = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
+    first_seen = Column(DateTime, default=utc_now)
+    last_seen = Column(DateTime, default=utc_now, onupdate=utc_now)
 
 
 class HoneypotInteractionLog(Base):
@@ -52,7 +55,7 @@ class HoneypotInteractionLog(Base):
     id = Column(Integer, primary_key=True, index=True)
     session_id = Column(String(64), index=True)
     ip_address = Column(String(64), index=True, nullable=False)
-    timestamp = Column(DateTime, default=datetime.datetime.utcnow, index=True)
+    timestamp = Column(DateTime, default=utc_now, index=True)
     
     # Attack vector details
     endpoint = Column(String(256))

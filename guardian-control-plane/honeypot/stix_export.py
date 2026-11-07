@@ -23,8 +23,8 @@ class STIXExporter:
             "type": "identity",
             "spec_version": "2.1",
             "id": identity_id,
-            "created": datetime.datetime.utcnow().isoformat() + "Z",
-            "modified": datetime.datetime.utcnow().isoformat() + "Z",
+            "created": datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z"),
+            "modified": datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z"),
             "name": "AI Cyber Guardian Deception Sensor",
             "identity_class": "system"
         })
@@ -41,14 +41,14 @@ class STIXExporter:
                 "type": "indicator",
                 "spec_version": "2.1",
                 "id": indicator_id,
-                "created": datetime.datetime.utcnow().isoformat() + "Z",
-                "modified": datetime.datetime.utcnow().isoformat() + "Z",
+                "created": datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z"),
+                "modified": datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z"),
                 "name": f"Malicious Probing Host: {ip}",
                 "description": f"Attacker observed probing high-severity honeypot endpoints from {country}. Threat Level: {threat_level}.",
                 "indicator_types": ["malicious-activity", "anomalous-activity"],
                 "pattern": f"[ipv4-addr:value = '{ip}']",
                 "pattern_type": "stix",
-                "valid_from": datetime.datetime.utcnow().isoformat() + "Z",
+                "valid_from": datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z"),
                 "confidence": 95 if threat_level == "CRITICAL" else 80
             })
 
@@ -59,8 +59,8 @@ class STIXExporter:
                     "type": "attack-pattern",
                     "spec_version": "2.1",
                     "id": attack_pattern_id,
-                    "created": datetime.datetime.utcnow().isoformat() + "Z",
-                    "modified": datetime.datetime.utcnow().isoformat() + "Z",
+                    "created": datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z"),
+                    "modified": datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z"),
                     "name": tactic,
                     "external_references": [
                         {

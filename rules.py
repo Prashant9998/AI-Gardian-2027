@@ -184,7 +184,7 @@ class RuleEngine:
             r"<\s*iframe[^>]*>",
         ]]
 
-        # --- R3: Path Traversal signatures ---
+        # --- R3: Path Traversal & Command Injection signatures ---
         self.path_traversal_patterns = [re.compile(p, re.IGNORECASE) for p in [
             r"\.\./",
             r"\.\.\\",
@@ -192,6 +192,8 @@ class RuleEngine:
             r"/etc/(passwd|shadow|hosts)",
             r"c:\\windows\\(system32|win\.ini)",
             r"boot\.ini",
+            r"(;|\||&&)\s*(ls|cat|whoami|id|pwd|wget|curl|ping|nc|bash|sh|php|perl|python|ruby)\b", # Command Injection
+            r"`(ls|cat|whoami|id|pwd|wget|curl|ping|nc|bash|sh|php|perl|python|ruby)`"
         ]]
 
         # --- R5: Known attack tool / scanner User-Agents ---

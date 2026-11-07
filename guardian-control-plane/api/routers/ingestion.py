@@ -83,9 +83,22 @@ async def evaluate_request(
     elif ip_action == "BLOCK":
         return {"action": "BLOCK", "reason": "ip_blocklist"}
         
-    # 2. Rate Limiting Check (Redis-backed)
+    # 2. Rate Limiting Check (Redis-backed with in-memory fallback)
     is_allowed, rl_tier = await check_rate_limit(site_id, source_ip, endpoint_type=payload.get("endpoint_type", "generic"))
     if not is_allowed:
+        if rl_tier == "brute_force":
+            action = "HONEYPOT"
+            severity = "CRITICAL"
+            status_text = "Trapped in Honeypot"
+            threat_score = 100.0
+            triggered_rule = "R4_BRUTE_FORCE"
+        else:
+            action = "BLOCK"
+            severity = "HIGH"
+            status_text = "Blocked by WAF"
+            threat_score = 78.0
+            triggered_rule = "R4_RATE_LIMIT"
+
         rl_event = {
             "event_type": "THREAT_EVENT",
             "id": f"evt-rl-{uuid.uuid4().hex[:8]}",
@@ -96,21 +109,27 @@ async def evaluate_request(
             "countryName": "External",
             "city": "Cloud Edge",
             "isp": "Client Network",
-            "rule_id": "R4_RATE_LIMIT",
-            "attack_type": "R4_RATE_LIMIT",
+            "rule_id": triggered_rule,
+            "attack_type": triggered_rule,
             "type": "BruteForce",
-            "score": 78.0,
-            "level": "HIGH",
-            "severity": "HIGH",
+            "score": threat_score,
+            "level": severity,
+            "severity": severity,
             "path": payload.get("path", "/"),
             "method": payload.get("method", "POST"),
             "payload": f"Rate limit burst exceeded on {payload.get('endpoint_type', 'generic')} endpoint ({rl_tier})",
-            "status": "Blocked by WAF",
-            "action": "BLOCK",
-            "triggered_rules": ["R4_RATE_LIMIT"]
+            "status": status_text,
+            "action": action,
+            "triggered_rules": [triggered_rule]
         }
         background_tasks.add_task(broadcast_threat_event, rl_event)
-        return {"action": "BLOCK", "reason": f"rate_limit_exceeded:{rl_tier}"}
+        return {
+            "action": action,
+            "severity": severity,
+            "score": threat_score,
+            "triggered_rules": [triggered_rule],
+            "reason": f"rate_limit_exceeded:{rl_tier}"
+        }
 
     # -------------------------------------------------------------
     # Stage 2: Deep Analysis (Rules & AI)

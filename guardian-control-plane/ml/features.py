@@ -12,7 +12,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 SQLI_KEYWORDS = ["select", "union", "insert", "drop", "table", "from", "where", "information_schema", "schema", "sleep(", "--", "or '1'='1", "or 1=1"]
 XSS_KEYWORDS = ["<script", "</script", "onerror", "onload", "javascript:", "<iframe", "<img", "<svg", "document.cookie", "alert("]
 PATH_KEYWORDS = ["../", "..\\", "etc/passwd", "etc/shadow", "win.ini", "boot.ini", "%2e%2e%2f", "/proc/self"]
-RCE_KEYWORDS = ["; cat", "| whoami", "&& uname", "& dir", "`id`", "$(whoami)", "/bin/bash", "netstat", "nc -e"]
+RCE_KEYWORDS = ["; cat", "| whoami", "; whoami", "whoami", "&& uname", "& dir", "`id`", "$(whoami)", "/bin/bash", "netstat", "nc -e"]
 SCANNER_KEYWORDS = ["wp-login", ".env", ".git", "actuator", "phpmyadmin", "server-status", "swagger-ui"]
 SCANNER_UAS = ["nikto", "sqlmap", "dirbuster", "nmap", "acunetix", "nessus"]
 

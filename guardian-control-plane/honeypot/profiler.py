@@ -9,7 +9,7 @@ import hashlib
 import json
 import logging
 from typing import Dict, Any, Optional, Tuple, List
-from datetime import datetime, timedelta
+from datetime import datetime, timezone, timedelta
 from sqlalchemy.orm import Session
 
 logger = logging.getLogger("HoneypotProfiler")
@@ -145,13 +145,13 @@ class AttackerProfiler:
                 interaction_count=1,
                 captured_credentials=[credentials] if credentials else [],
                 triggered_honeytokens=[honeytoken] if honeytoken else [],
-                first_seen=datetime.utcnow(),
-                last_seen=datetime.utcnow()
+                first_seen=datetime.now(timezone.utc).replace(tzinfo=None),
+                last_seen=datetime.now(timezone.utc).replace(tzinfo=None)
             )
             db.add(profile)
         else:
             profile.interaction_count += 1
-            profile.last_seen = datetime.utcnow()
+            profile.last_seen = datetime.now(timezone.utc).replace(tzinfo=None)
             profile.tool_fingerprint = fingerprint
             
             # Append new MITRE tactics

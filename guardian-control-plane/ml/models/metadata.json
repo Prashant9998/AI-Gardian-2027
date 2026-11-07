@@ -1,11 +1,11 @@
 {
   "version": "2.4.0-csic2010",
-  "trained_at": "2026-10-14T06:01:06Z",
-  "f1_score": 0.939,
-  "false_positive_rate": 3.5833,
-  "accuracy": 0.9404,
-  "precision": 0.9624,
-  "recall": 0.9167,
+  "trained_at": "2026-11-07T12:35:02Z",
+  "f1_score": 0.9982,
+  "false_positive_rate": 0.0,
+  "accuracy": 0.9987,
+  "precision": 1.0,
+  "recall": 0.9964,
   "feature_count": 144,
   "classes": {
     "NORMAL": 0,
@@ -16,9 +16,9 @@
     "SCANNER": 5
   },
   "confusion_matrix": {
-    "true_negative": 2314,
-    "false_positive": 86,
-    "false_negative": 200,
-    "true_positive": 2200
+    "true_negative": 476,
+    "false_positive": 0,
+    "false_negative": 1,
+    "true_positive": 273
   }
 }

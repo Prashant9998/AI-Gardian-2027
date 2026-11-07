@@ -42,4 +42,5 @@ guardian_dev.db
 *.zip
 guardian-control-plane/ml/data/
 .agent/
+prescription-ocr-app/
 
