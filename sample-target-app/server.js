@@ -19,6 +19,17 @@ const PORT = process.env.PORT || 3001;
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+// Security hardening headers (Anti-Clickjacking, MIME Sniffing, XSS Protection, Transport Security)
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+  res.setHeader('X-Permitted-Cross-Domain-Policies', 'none');
+  next();
+});
+
 
 // ── 1. Attach AI Cyber Guardian Security SDK (3 Lines of Code!) ─────────────
 app.use(guardianMiddleware({
@@ -108,6 +119,57 @@ app.post('/api/reviews', (req, res) => {
     success: true,
     message: "Review submitted successfully.",
     review: newReview
+  });
+});
+
+
+// ── Server-Side Payment & Cart Verification (Item #17: Anti FE-only payment tampering) ──
+app.post('/api/checkout', (req, res) => {
+  const { items, submitted_total } = req.body || {};
+  if (!Array.isArray(items) || items.length === 0) {
+    return res.status(400).json({ error: "Cart items are required for checkout." });
+  }
+
+  // Authoritative server-side price lookup (Never trust client-submitted prices!)
+  let calculated_total = 0;
+  const verified_items = [];
+
+  for (const item of items) {
+    const catalogItem = PRODUCTS.find(p => p.id === Number(item.id));
+    if (!catalogItem) {
+      return res.status(400).json({ error: `Invalid product ID: ${item.id}` });
+    }
+    const qty = Math.max(1, parseInt(item.quantity) || 1);
+    const lineTotal = catalogItem.price * qty;
+    calculated_total += lineTotal;
+    verified_items.push({
+      id: catalogItem.id,
+      name: catalogItem.name,
+      price: catalogItem.price, // Server authoritative price
+      quantity: qty,
+      subtotal: parseFloat(lineTotal.toFixed(2))
+    });
+  }
+
+  calculated_total = parseFloat(calculated_total.toFixed(2));
+
+  // Check if attacker tampered with submitted total on frontend
+  if (submitted_total !== undefined && Math.abs(Number(submitted_total) - calculated_total) > 0.01) {
+    return res.status(400).json({
+      error: "Payment integrity violation: Client submitted total does not match authoritative server catalog price.",
+      tampering_detected: true,
+      authoritative_total: calculated_total,
+      submitted_total: submitted_total
+    });
+  }
+
+  return res.json({
+    status: "success",
+    message: "Order verified and processed via secure server-side payment validation.",
+    order_id: `ord_${Date.now()}`,
+    items: verified_items,
+    total_amount: calculated_total,
+    currency: "USD"
   });
 });
 

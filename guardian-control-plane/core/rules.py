@@ -197,6 +197,56 @@ class RuleEngine:
             r"`(ls|cat|whoami|id|pwd|wget|curl|ping|nc|bash|sh|php|perl|python|ruby)`"
         ]]
 
+
+        # --- R7: NoSQL Injection signatures ---
+        self.nosqli_patterns = [re.compile(p, re.IGNORECASE) for p in [
+            r"(\$where|\$regex|\$ne|\$gt|\$gte|\$lt|\$lte|\$in|\$nin|\$exists|\$or|\$and|\$nor)\s*:",
+            r"['\"]?\$where['\"]?\s*:",
+            r"\btojson\s*\(",
+            r"\bObjectId\s*\(['\"][0-9a-fA-F]{24}['\"]\)",
+            r"\{\s*['\"]\$gt['\"]\s*:\s*['\"]['\"]\s*\}"
+        ]]
+
+        # --- R8: SSRF (Server-Side Request Forgery) signatures ---
+        self.ssrf_patterns = [re.compile(p, re.IGNORECASE) for p in [
+            r"\b169\.254\.169\.254\b",
+            r"\bmetadata\.google\.internal\b",
+            r"\b100\.100\.100\.200\b",
+            r"\b(url|uri|dest|destination|redirect|proxy|feed|webhook|target)\s*=\s*https?://(127\.0\.0\.1|0\.0\.0\.0|localhost|::1|0x7f000001|2130706433)\b",
+            r"\b(url|uri|dest|destination|redirect|proxy|feed|webhook|target)\s*=\s*https?://(10\.\d{1,3}\.\d{1,3}\.\d{1,3}|172\.(1[6-9]|2\d|3[01])\.\d{1,3}\.\d{1,3}|192\.168\.\d{1,3}\.\d{1,3})\b",
+            r"\b(gopher|dict|ldap|file)://",
+        ]]
+
+        # --- R9: Open Redirect signatures ---
+        self.open_redirect_patterns = [re.compile(p, re.IGNORECASE) for p in [
+            r"(?:[?&]|^|\b)(redirect|redirect_to|redirect_url|next|return|return_to|dest|destination|forward|target|url)\s*=\s*(https?:)?//(?!localhost|127\.0\.0\.1)[^&\s]+",
+            r"(?:[?&]|^|\b)(redirect|redirect_to|redirect_url|next|return|return_to|dest|destination|forward|target|url)\s*=\s*(javascript:|data:)",
+            r"(?:[?&]|^|\b)(redirect|redirect_to|redirect_url|next|return|return_to|dest|destination|forward|target|url)\s*=\s*//[a-zA-Z0-9]"
+        ]]
+
+        # --- R10: Mass Assignment & Privilege Escalation Tampering ---
+        self.mass_assignment_patterns = [re.compile(p, re.IGNORECASE) for p in [
+            r"['\"]?(is_admin|is_superuser|is_staff|superuser|permissions|user_role)['\"]?\s*[:=]\s*(true|1|['\"](true|admin|root|manager|staff)['\"])",
+            r"['\"]?role['\"]?\s*[:=]\s*['\"](admin|superadmin|root|system|sysadmin)['\"]",
+            r"['\"]?(account_balance|credit_balance|wallet_amount)['\"]?\s*[:=]\s*[0-9]{4,}"
+        ]]
+
+        # --- R11: Vulnerable JWT Attack signatures ---
+        self.jwt_attack_patterns = [re.compile(p, re.IGNORECASE) for p in [
+            r"['\"]?alg['\"]?\s*:\s*['\"]none['\"]",
+            r"\beyJhbGciOiJub25l",
+            r"\beyJ[A-Za-z0-9_-]{10,}\.eyJ[A-Za-z0-9_-]{10,}\.\s*$",
+            r"['\"]?kid['\"]?\s*:\s*['\"](\.\./|/|['\"]|;\s*--)",
+        ]]
+
+        # --- R12: Insecure File Upload / Extension Probes ---
+        self.insecure_upload_patterns = [re.compile(p, re.IGNORECASE) for p in [
+            r"\.(php[0-9]?|phtml|phar|exe|jspx?|asp|aspx|sh|bash|bat|cmd|cgi|pl|py)(\.|\%00|$)",
+            r"filename=['\"][^'\"]*\.(php[0-9]?|phtml|phar|exe|jsp|asp|sh|bat)['\"]",
+            r"<\?php\b|<\s*script\s+language=['\"]php",
+            r"\.(svg|xml)['\"]?[^\r\n]*<\s*script"
+        ]]
+
         # --- R5: Known attack tool / scanner User-Agents ---
         self.scanner_signatures = [
             "sqlmap", "nikto", "acunetix", "nmap", "gobuster", "wpscan", "burpsuite", "dirbuster"
@@ -324,6 +374,91 @@ class RuleEngine:
             }
         return None
 
+
+    # ================================================================
+    # R7: NoSQL Injection Detection
+    # ================================================================
+    def r7_nosqli(self, request: dict) -> Optional[dict]:
+        payload = self._get_payload(request)
+        hits = [p.pattern for p in self.nosqli_patterns if p.search(payload)]
+        if hits:
+            return {
+                "rule": "R7_NOSQLI",
+                "score": self.config.get("R7_weight", 7.0),
+                "detail": {"matched_patterns": len(hits)}
+            }
+        return None
+
+    # ================================================================
+    # R8: SSRF (Server-Side Request Forgery) Detection
+    # ================================================================
+    def r8_ssrf(self, request: dict) -> Optional[dict]:
+        payload = self._get_payload(request)
+        hits = [p.pattern for p in self.ssrf_patterns if p.search(payload)]
+        if hits:
+            return {
+                "rule": "R8_SSRF",
+                "score": self.config.get("R8_weight", 8.0),
+                "detail": {"matched_patterns": len(hits)}
+            }
+        return None
+
+    # ================================================================
+    # R9: Open Redirect Detection
+    # ================================================================
+    def r9_open_redirect(self, request: dict) -> Optional[dict]:
+        target = self._get_payload(request)
+        hits = [p.pattern for p in self.open_redirect_patterns if p.search(target)]
+        if hits:
+            return {
+                "rule": "R9_OPEN_REDIRECT",
+                "score": self.config.get("R9_weight", 6.0),
+                "detail": {"matched_patterns": len(hits)}
+            }
+        return None
+
+    # ================================================================
+    # R10: Mass Assignment & Privilege Escalation Detection
+    # ================================================================
+    def r10_mass_assignment(self, request: dict) -> Optional[dict]:
+        payload = self._get_payload(request)
+        hits = [p.pattern for p in self.mass_assignment_patterns if p.search(payload)]
+        if hits:
+            return {
+                "rule": "R10_MASS_ASSIGNMENT",
+                "score": self.config.get("R10_weight", 6.0),
+                "detail": {"matched_patterns": len(hits)}
+            }
+        return None
+
+    # ================================================================
+    # R11: Vulnerable JWT Attack Detection
+    # ================================================================
+    def r11_jwt_vuln(self, request: dict) -> Optional[dict]:
+        payload = self._get_payload(request) + " " + str(request.get("headers", ""))
+        hits = [p.pattern for p in self.jwt_attack_patterns if p.search(payload)]
+        if hits:
+            return {
+                "rule": "R11_JWT_VULN",
+                "score": self.config.get("R11_weight", 7.0),
+                "detail": {"matched_patterns": len(hits)}
+            }
+        return None
+
+    # ================================================================
+    # R12: Insecure File Upload Detection
+    # ================================================================
+    def r12_insecure_file_upload(self, request: dict) -> Optional[dict]:
+        payload = self._get_payload(request)
+        hits = [p.pattern for p in self.insecure_upload_patterns if p.search(payload)]
+        if hits:
+            return {
+                "rule": "R12_FILE_UPLOAD",
+                "score": self.config.get("R12_weight", 7.0),
+                "detail": {"matched_patterns": len(hits)}
+            }
+        return None
+
     # ================================================================
     # Orchestration: Run all rules and calculate final score
     # ================================================================
@@ -331,6 +466,8 @@ class RuleEngine:
         rule_fns = [
             self.r1_sqli, self.r2_xss, self.r3_path_traversal,
             self.r4_brute_force, self.r5_scanner, self.r6_anomalous_structure,
+            self.r7_nosqli, self.r8_ssrf, self.r9_open_redirect,
+            self.r10_mass_assignment, self.r11_jwt_vuln, self.r12_insecure_file_upload,
         ]
 
         result = DetectionResult()

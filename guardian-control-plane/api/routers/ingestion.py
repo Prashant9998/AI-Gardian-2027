@@ -171,7 +171,13 @@ async def evaluate_request(
         "R4_RATE_LIMIT": "BruteForce",
         "R4_BRUTE_FORCE": "BruteForce",
         "R5_SCANNER": "Scanner",
-        "R6_OVERSIZED": "Anomaly"
+        "R6_OVERSIZED": "Anomaly",
+        "R7_NOSQLI": "NoSQLi",
+        "R8_SSRF": "SSRF",
+        "R9_OPEN_REDIRECT": "OpenRedirect",
+        "R10_MASS_ASSIGNMENT": "MassAssignment",
+        "R11_JWT_VULN": "VulnerableJWT",
+        "R12_FILE_UPLOAD": "InsecureUpload"
     }
     short_type = rule_to_type.get(primary_rule, primary_rule)
 

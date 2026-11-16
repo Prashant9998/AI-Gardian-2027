@@ -1,3 +1,7 @@
+import json
+import hmac
+import hashlib
+import time
 import httpx
 import asyncio
 from core.config import settings
@@ -57,7 +61,22 @@ class DecisionEngine:
         })
         
         try:
-            httpx.post(webhook_url, json=alert_payload, timeout=0.5)
+            # Item #19: Cryptographically sign outgoing webhooks with HMAC-SHA256
+            webhook_secret = settings.get("alert_webhook_secret", "guardian-webhook-secret-key-2026")
+            timestamp_str = str(int(time.time()))
+            payload_bytes = json.dumps(alert_payload, sort_keys=True).encode("utf-8")
+            signature = hmac.new(
+                webhook_secret.encode("utf-8"),
+                msg=f"t={timestamp_str}.".encode("utf-8") + payload_bytes,
+                digestmod=hashlib.sha256
+            ).hexdigest()
+
+            headers = {
+                "X-Guardian-Signature-256": f"t={timestamp_str},v1={signature}",
+                "X-Guardian-Timestamp": timestamp_str,
+                "Content-Type": "application/json"
+            }
+            httpx.post(webhook_url, json=alert_payload, headers=headers, timeout=0.5)
         except Exception as e:
             app_logger.error(f"Failed to dispatch alert webhook: {e}")
 
